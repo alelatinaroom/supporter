@@ -774,6 +774,13 @@ textarea { resize: vertical; min-height: 60px; }
   flex-direction: column;
   gap: 16px;
 }
+.radio-mixlr-embed iframe {
+  border-radius: var(--radius-xs);
+}
+.radio-direct-player audio {
+  width: 100%;
+  border-radius: var(--radius-xs);
+}
 .radio-status {
   display: flex;
   align-items: center;

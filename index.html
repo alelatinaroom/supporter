@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AleLatina Supporter Rooms</title>
-<link rel="stylesheet" href="css/style.css?v=11">
+<link rel="stylesheet" href="css/style.css?v=12">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -239,9 +239,14 @@
           <span class="radio-status-dot"></span>
           <span>In diretta</span>
         </div>
-        <audio id="radioAudio" controls autoplay></audio>
+        <div id="radioMixlrEmbed" class="radio-mixlr-embed" style="display:none">
+          <iframe id="mixlrIframe" src="" width="100%" height="180px" scrolling="no" frameborder="no"></iframe>
+        </div>
+        <div id="radioDirectPlayer" class="radio-direct-player" style="display:none">
+          <audio id="radioAudio" controls autoplay></audio>
+        </div>
         <div class="radio-stream-name" id="radioStreamName">AleLatina Radio</div>
-        <div class="radio-actions">
+        <div class="radio-actions" id="radioActions">
           <button id="radioPlayBtn" class="btn btn-primary"><i class="fas fa-play"></i> Play</button>
           <button id="radioStopBtn" class="btn btn-ghost"><i class="fas fa-stop"></i> Stop</button>
         </div>
@@ -285,7 +290,11 @@
     </div>
     <div id="adminRadio" class="admin-section">
       <div class="form-group">
-        <label>URL Stream (Diretta)</label>
+        <label>Username Mixlr (streaming live)</label>
+        <input type="text" id="adminMixlrUser" class="form-input" placeholder="alelatinablog">
+      </div>
+      <div class="form-group">
+        <label>URL Stream alternativo (se non usi Mixlr)</label>
         <input type="text" id="adminStreamUrl" class="form-input" placeholder="https://example.com/stream.mp3">
       </div>
       <div class="form-group">
@@ -441,6 +450,6 @@
 
 </div>
 
-<script src="js/app.js?v=11"></script>
+<script src="js/app.js?v=12"></script>
 </body>
 </html>

@@ -78,7 +78,7 @@ const APP = {
     currentFilter: 'all',
     sidebarOpen: false,
     redirectAfterLogin: null,
-    radio: JSON.parse(localStorage.getItem('alelatina_radio')) || { streamUrl: '', streamName: 'AleLatina Radio', podcasts: [] },
+    radio: JSON.parse(localStorage.getItem('alelatina_radio')) || { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [] },
   },
 
   /* ---------- DOM REFS ---------- */
@@ -189,6 +189,10 @@ const APP = {
       pmError: $('pmError'),
       radioPage: $('radioPage'),
       radioAudio: $('radioAudio'),
+      radioMixlrEmbed: $('radioMixlrEmbed'),
+      radioDirectPlayer: $('radioDirectPlayer'),
+      radioActions: $('radioActions'),
+      mixlrIframe: $('mixlrIframe'),
       radioPlayBtn: $('radioPlayBtn'),
       radioStopBtn: $('radioStopBtn'),
       radioStreamName: $('radioStreamName'),
@@ -197,6 +201,7 @@ const APP = {
       sidebarRadioBadge: $('sidebarRadioBadge'),
       adminStreamUrl: $('adminStreamUrl'),
       adminStreamName: $('adminStreamName'),
+      adminMixlrUser: $('adminMixlrUser'),
       adminSaveStreamBtn: $('adminSaveStreamBtn'),
       adminAddPodcastBtn: $('adminAddPodcastBtn'),
       adminPodcastList: $('adminPodcastList'),
@@ -1158,7 +1163,15 @@ const APP = {
 
   /* ---------- RADIO ---------- */
   radioPlay() {
-    const streamUrl = this.state.radio.streamUrl;
+    const radio = this.state.radio;
+    if (radio.mixlrUsername) {
+      // Mixlr auto-plays in the embed, just reload
+      if (this.el.mixlrIframe) {
+        this.el.mixlrIframe.src = 'https://mixlr.com/embed/player/' + encodeURIComponent(radio.mixlrUsername.trim());
+      }
+      return;
+    }
+    const streamUrl = radio.streamUrl;
     if (!streamUrl) {
       this.toast('Nessuna diretta configurata.', 'warning');
       return;
@@ -1176,12 +1189,16 @@ const APP = {
       this.el.radioAudio.pause();
       this.el.radioAudio.src = '';
     }
+    // Stop Mixlr: remove the iframe source
+    if (this.el.mixlrIframe) {
+      this.el.mixlrIframe.src = '';
+    }
   },
 
   updateRadioBadge() {
     const badge = this.el.sidebarRadioBadge;
     if (!badge) return;
-    if (this.state.radio.streamUrl) {
+    if (this.state.radio.streamUrl || this.state.radio.mixlrUsername) {
       badge.style.display = '';
     } else {
       badge.style.display = 'none';
@@ -1194,17 +1211,33 @@ const APP = {
       this.el.radioStreamName.textContent = radio.streamName || 'AleLatina Radio';
     }
 
-    // Show/hide config info
+    const hasMixlr = radio.mixlrUsername && radio.mixlrUsername.trim();
+    const hasStream = radio.streamUrl && radio.streamUrl.trim();
     const configInfo = this.el.radioConfigInfo;
     const playerCard = document.querySelector('.radio-player-card');
-    if (configInfo && playerCard) {
-      if (radio.streamUrl) {
-        configInfo.style.display = 'none';
-        playerCard.style.display = '';
+
+    if (hasMixlr || hasStream) {
+      if (configInfo) configInfo.style.display = 'none';
+      if (playerCard) playerCard.style.display = '';
+
+      if (hasMixlr) {
+        // Show Mixlr embed
+        if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = '';
+        if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = 'none';
+        if (this.el.radioActions) this.el.radioActions.style.display = 'none';
+        if (this.el.mixlrIframe) {
+          this.el.mixlrIframe.src = 'https://mixlr.com/embed/player/' + encodeURIComponent(radio.mixlrUsername.trim());
+        }
       } else {
-        configInfo.style.display = '';
-        playerCard.style.display = 'none';
+        // Show direct audio player
+        if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = 'none';
+        if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = '';
+        if (this.el.radioActions) this.el.radioActions.style.display = '';
+        if (this.el.radioAudio) this.el.radioAudio.src = radio.streamUrl;
       }
+    } else {
+      if (configInfo) configInfo.style.display = '';
+      if (playerCard) playerCard.style.display = 'none';
     }
 
     this.renderPodcastList();
@@ -1253,7 +1286,9 @@ const APP = {
   adminSaveRadioConfig() {
     const url = this.el.adminStreamUrl.value.trim();
     const name = this.el.adminStreamName.value.trim();
+    const mixlr = this.el.adminMixlrUser.value.trim();
     this.state.radio.streamUrl = url;
+    this.state.radio.mixlrUsername = mixlr;
     if (name) this.state.radio.streamName = name;
     this.saveRadio();
     this.updateRadioBadge();
@@ -1265,6 +1300,7 @@ const APP = {
     const radio = this.state.radio;
     if (this.el.adminStreamUrl) this.el.adminStreamUrl.value = radio.streamUrl || '';
     if (this.el.adminStreamName) this.el.adminStreamName.value = radio.streamName || 'AleLatina Radio';
+    if (this.el.adminMixlrUser) this.el.adminMixlrUser.value = radio.mixlrUsername || '';
     this.renderAdminPodcastList();
   },
 
