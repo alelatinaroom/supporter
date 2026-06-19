@@ -669,27 +669,15 @@ const APP = {
         }
         break;
       case 'radio':
-        if (this.state.currentUser) {
-          this.el.radioPage.style.display = '';
-          this.renderRadioPage();
-        } else {
-          this.navigateTo('guestbook');
-        }
+        this.el.radioPage.style.display = '';
+        this.renderRadioPage();
         break;
       case 'editorials':
-        if (this.state.currentUser) {
-          this.el.editorialsPage.style.display = '';
-          this.renderEditorials();
-        } else {
-          this.navigateTo('guestbook');
-        }
+        this.el.editorialsPage.style.display = '';
+        this.renderEditorials();
         break;
       case 'article':
-        if (this.state.currentUser) {
-          this.el.articlePage.style.display = '';
-        } else {
-          this.navigateTo('guestbook');
-        }
+        this.el.articlePage.style.display = '';
         break;
       case 'editorPanel':
         if (this.state.currentUser && (this.state.currentUser.role === 'editor' || this.state.currentUser.role === 'admin')) {
