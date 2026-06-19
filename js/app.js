@@ -545,6 +545,10 @@ const APP = {
   },
 
   enterAsGuest() {
+    this.enterAsGuestPage('guestbook');
+  },
+
+  enterAsGuestPage(page) {
     this.state.currentUser = null;
     this.el.homePage.style.display = 'none';
     this.el.topBar.style.display = '';
@@ -559,7 +563,7 @@ const APP = {
     if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = 'none';
     if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = 'none';
 
-    this.navigateTo('guestbook');
+    this.navigateTo(page);
   },
 
   enterAsUser() {
