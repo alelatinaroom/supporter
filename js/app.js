@@ -149,6 +149,17 @@ const APP = {
       adminMsgCount: $('adminMsgCount'),
       adminUserCount: $('adminUserCount'),
       adminClearFiltered: $('adminClearFiltered'),
+      adminAddUserBtn: $('adminAddUserBtn'),
+      userModal: $('userModal'),
+      userModalTitle: $('userModalTitle'),
+      userModalClose: $('userModalClose'),
+      umUsername: $('umUsername'),
+      umEmail: $('umEmail'),
+      umPassword: $('umPassword'),
+      umRole: $('umRole'),
+      umError: $('umError'),
+      umCancelBtn: $('umCancelBtn'),
+      umSaveBtn: $('umSaveBtn'),
       toastContainer: $('toastContainer'),
       sidebarItems: qsa('.sidebar-item[data-page]'),
       sidebarMsgBadge: $('sidebarMsgBadge'),
@@ -250,6 +261,25 @@ const APP = {
 
     // Admin clear filtered
     this.el.adminClearFiltered.addEventListener('click', () => this.adminClearFiltered());
+
+    // Admin add/edit user
+    if (this.el.adminAddUserBtn) {
+      this.el.adminAddUserBtn.addEventListener('click', () => this.adminOpenCreateUser());
+    }
+    if (this.el.userModalClose) {
+      this.el.userModalClose.addEventListener('click', () => this.adminCloseUserModal());
+    }
+    if (this.el.umCancelBtn) {
+      this.el.umCancelBtn.addEventListener('click', () => this.adminCloseUserModal());
+    }
+    if (this.el.umSaveBtn) {
+      this.el.umSaveBtn.addEventListener('click', () => this.adminSaveUser());
+    }
+    if (this.el.userModal) {
+      this.el.userModal.addEventListener('click', e => {
+        if (e.target === this.el.userModal) this.adminCloseUserModal();
+      });
+    }
 
     // Profile
     if (this.el.profileAvatarOverlay) {
@@ -909,6 +939,7 @@ const APP = {
           <button class="btn btn-ghost btn-sm" onclick="APP.adminToggleBan('${u.id}')">
             <i class="fas ${banned ? 'fa-check-circle' : 'fa-ban'}"></i> ${banned ? 'Sbanna' : 'Banna'}
           </button>
+          <button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditUser('${u.id}')"><i class="fas fa-pen"></i></button>
           <button class="btn btn-danger btn-sm" onclick="APP.adminDeleteUser('${u.id}')"><i class="fas fa-user-slash"></i></button>`;
       } else if (isSelf) {
         actions = '<span style="font-size:11px;color:var(--text-muted)">Sei tu</span>';
@@ -975,6 +1006,99 @@ const APP = {
     this.renderAdminMessages();
     this.renderMessages();
     this.toast(filtered.length + ' messaggi filtrati eliminati.', 'info');
+  },
+
+  /* ---------- ADMIN: USER MANAGEMENT ---------- */
+  adminOpenCreateUser() {
+    this._editingUserId = null;
+    if (this.el.userModalTitle) this.el.userModalTitle.innerHTML = '<i class="fas fa-user-plus"></i> Nuovo Utente';
+    if (this.el.umUsername) this.el.umUsername.value = '';
+    if (this.el.umEmail) this.el.umEmail.value = '';
+    if (this.el.umPassword) this.el.umPassword.value = '';
+    if (this.el.umRole) this.el.umRole.value = 'user';
+    if (this.el.umError) this.el.umError.textContent = '';
+    if (this.el.userModal) this.el.userModal.style.display = '';
+  },
+
+  adminOpenEditUser(userId) {
+    const user = this.state.users.find(u => u.id === userId);
+    if (!user) return;
+    this._editingUserId = userId;
+    if (this.el.userModalTitle) this.el.userModalTitle.innerHTML = '<i class="fas fa-user-pen"></i> Modifica Utente';
+    if (this.el.umUsername) this.el.umUsername.value = user.username;
+    if (this.el.umEmail) this.el.umEmail.value = user.email;
+    if (this.el.umPassword) this.el.umPassword.value = '';
+    if (this.el.umRole) this.el.umRole.value = user.role;
+    if (this.el.umError) this.el.umError.textContent = '';
+    if (this.el.userModal) this.el.userModal.style.display = '';
+  },
+
+  adminSaveUser() {
+    const username = this.el.umUsername.value.trim();
+    const email = this.el.umEmail.value.trim();
+    const password = this.el.umPassword.value.trim();
+    this.el.umError.textContent = '';
+
+    if (!username || !email) {
+      this.el.umError.textContent = 'Username e email obbligatori.';
+      return;
+    }
+    if (username.length < 3) {
+      this.el.umError.textContent = 'Username troppo corto (min 3 caratteri).';
+      return;
+    }
+    if (!email.includes('@')) {
+      this.el.umError.textContent = 'Email non valida.';
+      return;
+    }
+
+    if (this._editingUserId) {
+      // Editing existing user
+      const user = this.state.users.find(u => u.id === this._editingUserId);
+      if (!user) return;
+      // Check username uniqueness (excluding self)
+      const dup = this.state.users.find(u => u.username === username && u.id !== this._editingUserId);
+      if (dup) { this.el.umError.textContent = 'Username già in uso.'; return; }
+      user.username = username;
+      user.email = email;
+      if (password) {
+        if (password.length < 6) { this.el.umError.textContent = 'Password troppo corta (min 6 caratteri).'; return; }
+        user.password = password;
+      }
+      user.role = this.el.umRole.value;
+      this.saveUsers();
+      this.renderAdminUsers();
+      this.toast('Utente aggiornato.', 'success');
+    } else {
+      // Creating new user
+      if (!password || password.length < 6) {
+        this.el.umError.textContent = 'Password obbligatoria (min 6 caratteri).';
+        return;
+      }
+      if (this.state.users.find(u => u.username === username)) {
+        this.el.umError.textContent = 'Username già in uso.';
+        return;
+      }
+      const newUser = {
+        id: 'user_' + Date.now(),
+        username,
+        password,
+        email,
+        role: this.el.umRole.value,
+        createdAt: Date.now(),
+        banned: false,
+      };
+      this.state.users.push(newUser);
+      this.saveUsers();
+      this.renderAdminUsers();
+      this.toast('Utente creato!', 'success');
+    }
+    this.adminCloseUserModal();
+  },
+
+  adminCloseUserModal() {
+    this._editingUserId = null;
+    if (this.el.userModal) this.el.userModal.style.display = 'none';
   },
 
   /* ---------- PROFILE ---------- */
