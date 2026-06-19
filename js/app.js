@@ -724,6 +724,7 @@ const APP = {
       originalText: text,
       filtered: hasBad,
       likes: [],
+      dislikes: [],
       createdAt: Date.now(),
       deleted: false,
     };
@@ -759,6 +760,41 @@ const APP = {
     }
     this.saveMessages();
     this.renderMessages();
+  },
+
+  toggleDislike(msgId) {
+    if (!this.state.currentUser) {
+      this.toast('Accedi per mettere dislike ai messaggi!', 'warning');
+      return;
+    }
+    const msg = this.state.messages.find(m => m.id === msgId);
+    if (!msg) return;
+    if (!msg.dislikes) msg.dislikes = [];
+    const uid = this.state.currentUser.id;
+    // Remove from likes if present
+    const li = msg.likes.indexOf(uid);
+    if (li > -1) msg.likes.splice(li, 1);
+    // Toggle dislike
+    const di = msg.dislikes.indexOf(uid);
+    if (di > -1) {
+      msg.dislikes.splice(di, 1);
+    } else {
+      msg.dislikes.push(uid);
+    }
+    this.saveMessages();
+    this.renderMessages();
+  },
+
+  showReactions(msgId, type) {
+    const msg = this.state.messages.find(m => m.id === msgId);
+    if (!msg) return;
+    const ids = type === 'like' ? (msg.likes || []) : (msg.dislikes || []);
+    if (ids.length === 0) { this.toast('Nessuna reazione', 'info'); return; }
+    const names = ids.map(id => {
+      const u = this.state.users.find(x => x.id === id);
+      return u ? u.username : '?';
+    }).join(', ');
+    this.toast(type === 'like' ? '👍 ' + names : '👎 ' + names, 'info');
   },
 
   deleteMessage(msgId) {
@@ -869,15 +905,28 @@ const APP = {
         ? '<span class="msg-badge msg-badge-admin"><i class="fas fa-shield"></i> Admin</span>'
         : '';
 
+      const dislikes = msg.dislikes ? msg.dislikes.length : 0;
+      const disliked = currentUid ? (msg.dislikes || []).includes(currentUid) : false;
+      const likeUsers = (msg.likes || []).map(id => { const u = this.state.users.find(x => x.id === id); return u ? u.username : ''; }).filter(Boolean).join(', ');
+      const dislikeUsers = (msg.dislikes || []).map(id => { const u = this.state.users.find(x => x.id === id); return u ? u.username : ''; }).filter(Boolean).join(', ');
+
       const deleteBtn = (isAdmin || isOwn)
         ? `<button class="msg-delete-btn" onclick="APP.deleteMessage('${msg.id}')" title="Elimina"><i class="fas fa-trash-can"></i></button>`
         : '';
 
       const likeBtn = currentUid
-        ? `<button class="msg-like-btn ${liked ? 'liked' : ''}" onclick="APP.toggleLike('${msg.id}')">
-             <i class="fa${liked ? 's' : 'r'} fa-heart"></i> ${likes > 0 ? likes : ''}
+        ? `<button class="msg-react-btn ${liked ? 'liked' : ''}" onclick="APP.toggleLike('${msg.id}')" title="${likeUsers || 'Metti like'}">
+             <i class="fa${liked ? 's' : 'r'} fa-thumbs-up"></i>
+             <span class="msg-react-count" onclick="event.stopPropagation();APP.showReactions('${msg.id}','like')">${likes > 0 ? likes : ''}</span>
            </button>`
-        : `<span class="msg-like-btn" style="cursor:default"><i class="fa-regular fa-heart"></i> ${likes > 0 ? likes : ''}</span>`;
+        : `<span class="msg-react-btn" style="cursor:default"><i class="fa-regular fa-thumbs-up"></i> ${likes > 0 ? likes : ''}</span>`;
+
+      const dislikeBtn = currentUid
+        ? `<button class="msg-react-btn ${disliked ? 'disliked' : ''}" onclick="APP.toggleDislike('${msg.id}')" title="${dislikeUsers || 'Metti dislike'}">
+             <i class="fa${disliked ? 's' : 'r'} fa-thumbs-down"></i>
+             <span class="msg-react-count" onclick="event.stopPropagation();APP.showReactions('${msg.id}','dislike')">${dislikes > 0 ? dislikes : ''}</span>
+           </button>`
+        : `<span class="msg-react-btn" style="cursor:default"><i class="fa-regular fa-thumbs-down"></i> ${dislikes > 0 ? dislikes : ''}</span>`;
 
       let displayText = msg.text;
       if (msg.filtered) {
@@ -903,6 +952,7 @@ const APP = {
           <div class="msg-body">${displayText}</div>
           <div class="msg-footer">
             ${likeBtn}
+            ${dislikeBtn}
             ${deleteBtn}
           </div>
         </div>`;
@@ -970,7 +1020,7 @@ const APP = {
               <strong>${msg.author}:</strong> ${msg.text}
               ${isFiltered ? '<span class="msg-badge msg-badge-filtered" style="font-size:10px;margin-left:6px;">Filtrato</span>' : ''}
             </div>
-            <div class="admin-msg-meta">${time} · <i class="fa-regular fa-heart"></i> ${msg.likes.length} like</div>
+            <div class="admin-msg-meta">${time} · <i class="fa-regular fa-thumbs-up"></i> ${(msg.likes||[]).length} <i class="fa-regular fa-thumbs-down"></i> ${(msg.dislikes||[]).length}</div>
           </div>
           <div class="admin-msg-actions">
             <button class="btn btn-danger btn-sm" onclick="APP.adminDeleteMsg('${msg.id}')"><i class="fas fa-trash"></i></button>

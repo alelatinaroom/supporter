@@ -460,14 +460,19 @@ textarea { resize: vertical; min-height: 60px; }
   display: flex; align-items: center; gap: 16px; margin-top: 12px; padding-top: 10px;
   border-top: 1px solid var(--card-border);
 }
-.msg-like-btn {
+.msg-react-btn {
   background: none; border: none; color: var(--text-muted); cursor: pointer;
-  font-size: 13px; display: flex; align-items: center; gap: 5px; transition: color 0.2s;
-  font-family: var(--font);
+  font-size: 13px; display: inline-flex; align-items: center; gap: 5px; transition: color 0.2s;
+  font-family: var(--font); padding: 0;
 }
-.msg-like-btn:hover { color: var(--accent3); }
-.msg-like-btn.liked { color: var(--accent3); }
-.msg-like-btn.liked i { font-weight: 900; }
+.msg-react-btn:hover { color: var(--accent); }
+.msg-react-btn.liked { color: var(--accent2); }
+.msg-react-btn.disliked { color: var(--accent3); }
+.msg-react-count {
+  cursor: pointer; font-size: 11px; color: var(--text-muted);
+  padding: 0 2px; border-radius: 3px;
+}
+.msg-react-count:hover { background: var(--glass); color: var(--text); }
 .msg-delete-btn {
   background: none; border: none; color: var(--text-muted); cursor: pointer;
   font-size: 13px; margin-left: auto; transition: color 0.2s;
