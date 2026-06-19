@@ -935,7 +935,7 @@ const APP = {
       const avatarDisplay = u.avatar
         ? '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
         : u.username.charAt(0).toUpperCase();
-      const pmBtn = currentUid && currentUid !== u.id && u.role !== 'admin'
+      const pmBtn = currentUid && currentUid !== u.id
         ? '<button class="btn btn-ghost btn-sm" onclick="APP.openConversation(\'' + u.id + '\')" style="margin-top:8px;width:100%"><i class="fas fa-envelope"></i> Messaggia</button>'
         : '';
       return `
@@ -1570,6 +1570,8 @@ const APP = {
     const other = this.state.users.find(x => x.id === otherUserId);
     if (!other) return;
 
+    // Navigate to messages page first (in case we're on Members page)
+    this.navigateTo('messages');
     this.state.pmRecipient = other;
     this.el.pmInbox.style.display = 'none';
     this.el.pmConversation.style.display = '';
