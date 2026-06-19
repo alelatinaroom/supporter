@@ -80,6 +80,7 @@ const APP = {
     redirectAfterLogin: null,
     radio: JSON.parse(localStorage.getItem('alelatina_radio')) || { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [] },
     articles: JSON.parse(localStorage.getItem('alelatina_articles')) || [],
+    matches: JSON.parse(localStorage.getItem('alelatina_matches')) || [],
     _editingArticleId: null,
   },
 
@@ -234,6 +235,26 @@ const APP = {
       artCancelBtn: $('artCancelBtn'),
       artSaveBtn: $('artSaveBtn'),
       sidebarEditorBtn: $('sidebarEditorBtn'),
+      pagellePage: $('pagellePage'),
+      pagelleMatchList: $('pagelleMatchList'),
+      matchPage: $('matchPage'),
+      matchPageTitle: $('matchPageTitle'),
+      matchContent: $('matchContent'),
+      matchBackBtn: $('matchBackBtn'),
+      adminPagelle: $('adminPagelle'),
+      adminMatchCount: $('adminMatchCount'),
+      adminMatchList: $('adminMatchList'),
+      adminAddMatchBtn: $('adminAddMatchBtn'),
+      matchModal: $('matchModal'),
+      matchModalTitle: $('matchModalTitle'),
+      matchModalClose: $('matchModalClose'),
+      mmOpponent: $('mmOpponent'),
+      mmDate: $('mmDate'),
+      mmResult: $('mmResult'),
+      mmPlayers: $('mmPlayers'),
+      mmError: $('mmError'),
+      mmCancelBtn: $('mmCancelBtn'),
+      mmSaveBtn: $('mmSaveBtn'),
     };
   },
 
@@ -307,6 +328,9 @@ const APP = {
         } else if (tab.dataset.atab === 'radio') {
           this.el.adminRadio.classList.add('active');
           this.renderAdminRadio();
+        } else if (tab.dataset.atab === 'pagelle') {
+          this.el.adminPagelle.classList.add('active');
+          this.renderAdminMatches();
         }
       });
     });
@@ -358,6 +382,20 @@ const APP = {
     // Article save / cancel
     if (this.el.artSaveBtn) this.el.artSaveBtn.addEventListener('click', () => this.saveArticle());
     if (this.el.artCancelBtn) this.el.artCancelBtn.addEventListener('click', () => this.cancelArticle());
+
+    // Match back button
+    if (this.el.matchBackBtn) this.el.matchBackBtn.addEventListener('click', () => this.navigateTo('pagelle'));
+
+    // Admin match management
+    if (this.el.adminAddMatchBtn) this.el.adminAddMatchBtn.addEventListener('click', () => this.adminOpenAddMatch());
+
+    // Match modal
+    if (this.el.matchModalClose) this.el.matchModalClose.addEventListener('click', () => this.adminCloseMatchModal());
+    if (this.el.mmCancelBtn) this.el.mmCancelBtn.addEventListener('click', () => this.adminCloseMatchModal());
+    if (this.el.mmSaveBtn) this.el.mmSaveBtn.addEventListener('click', () => this.adminSaveMatch());
+    if (this.el.matchModal) this.el.matchModal.addEventListener('click', e => {
+      if (e.target === this.el.matchModal) this.adminCloseMatchModal();
+    });
 
     // Radio play/stop
     if (this.el.radioPlayBtn) this.el.radioPlayBtn.addEventListener('click', () => this.radioPlay());
@@ -633,7 +671,7 @@ const APP = {
 
   navigateTo(page) {
     // Hide all pages
-    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage'];
+    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'pagellePage', 'matchPage'];
     pages.forEach(p => {
       if (this.el[p]) this.el[p].style.display = 'none';
     });
@@ -689,6 +727,13 @@ const APP = {
         } else {
           this.navigateTo('guestbook');
         }
+        break;
+      case 'pagelle':
+        this.el.pagellePage.style.display = '';
+        this.renderPagelleList();
+        break;
+      case 'match':
+        this.el.matchPage.style.display = '';
         break;
       case 'profile':
         if (!this.state.currentUser) { this.navigateTo('guestbook'); return; }
@@ -1730,6 +1775,262 @@ const APP = {
 
   saveArticles() {
     localStorage.setItem('alelatina_articles', JSON.stringify(this.state.articles));
+  },
+
+  /* ---------- PAGELLE ---------- */
+  renderPagelleList() {
+    const container = this.el.pagelleMatchList;
+    if (!container) return;
+    const matches = [...this.state.matches].sort((a, b) => b.createdAt - a.createdAt);
+
+    if (matches.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-futbol"></i><p>Nessuna partita ancora. La prima pagella arriverà presto!</p></div>';
+      return;
+    }
+
+    container.innerHTML = matches.map(m => {
+      const dateStr = m.date ? new Date(m.date + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+      const playerCount = m.players ? m.players.length : 0;
+      const totalVotes = m.players ? m.players.reduce((sum, p) => sum + (p.ratings ? Object.keys(p.ratings).length : 0), 0) : 0;
+
+      // Calculate top & flop
+      const withAvg = (m.players || []).map(p => {
+        const ratings = p.ratings ? Object.values(p.ratings) : [];
+        const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+        return { ...p, avg, voteCount: ratings.length };
+      }).filter(p => p.voteCount >= 1);
+
+      let topHtml = '', flopHtml = '';
+      if (withAvg.length > 0) {
+        const top = withAvg.reduce((a, b) => a.avg > b.avg ? a : b);
+        const flop = withAvg.reduce((a, b) => a.avg < b.avg ? a : b);
+        topHtml = '<div class="pagelle-tf-item top"><span class="pagelle-tf-label top-label"><i class="fas fa-crown"></i> Top</span><span class="pagelle-tf-name">' + this.escapeHtml(top.name) + '</span><span class="pagelle-tf-score top-score">' + top.avg.toFixed(1) + '</span></div>';
+        flopHtml = '<div class="pagelle-tf-item flop"><span class="pagelle-tf-label flop-label"><i class="fas fa-poop"></i> Flop</span><span class="pagelle-tf-name">' + this.escapeHtml(flop.name) + '</span><span class="pagelle-tf-score flop-score">' + flop.avg.toFixed(1) + '</span></div>';
+      }
+
+      return '<div class="pagelle-match-card" onclick="APP.openMatch(\'' + m.id + '\')">' +
+        '<div class="pagelle-match-header">' +
+          '<div class="pagelle-match-opponent">' + this.escapeHtml(m.opponent) + '</div>' +
+          (m.result ? '<div class="pagelle-match-result">' + this.escapeHtml(m.result) + '</div>' : '') +
+        '</div>' +
+        '<div class="pagelle-match-meta">' + dateStr + ' \u00B7 ' + playerCount + ' giocatori \u00B7 ' + totalVotes + ' voti</div>' +
+        (topHtml || flopHtml ? '<div class="pagelle-match-topflop">' + topHtml + flopHtml + '</div>' : '<div style="font-size:12px;color:var(--text-muted);font-style:italic">Ancora nessun voto</div>') +
+      '</div>';
+    }).join('');
+  },
+
+  openMatch(matchId) {
+    const m = this.state.matches.find(x => x.id === matchId);
+    if (!m) return;
+    this.navigateTo('match');
+    const container = this.el.matchContent;
+    if (!container) return;
+    if (this.el.matchPageTitle) this.el.matchPageTitle.innerHTML = '<i class="fas fa-futbol"></i> ' + this.escapeHtml(m.opponent);
+
+    const dateStr = m.date ? new Date(m.date + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const isLoggedIn = !!this.state.currentUser;
+    const currentUid = this.state.currentUser ? this.state.currentUser.id : null;
+    const isClosed = m.closed;
+
+    const players = (m.players || []).map(p => {
+      const ratings = p.ratings ? Object.values(p.ratings) : [];
+      const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+      const voteCount = ratings.length;
+      const userVote = currentUid && p.ratings ? p.ratings[currentUid] : null;
+
+      // Build star buttons
+      let starsHtml = '';
+      if (isLoggedIn && !isClosed) {
+        for (let s = 1; s <= 10; s++) {
+          const active = userVote === s ? 'voted' : '';
+          starsHtml += '<button class="match-star-btn ' + active + '" onclick="APP.votePlayer(\'' + m.id + '\',\'' + p.id + '\',' + s + ')">' + (s <= userVote ? '\u2605' : '\u2606') + '</button>';
+        }
+      } else if (isClosed) {
+        starsHtml = '<span class="match-closed-msg">Votazione chiusa</span>';
+      } else {
+        starsHtml = '<span style="font-size:11px;color:var(--text-muted)">Accedi per votare</span>';
+      }
+
+      const avgClass = voteCount >= 3 ? (avg >= 7 ? 'top-avg' : avg <= 5 ? 'flop-avg' : '') : '';
+
+      return '<div class="match-player-card">' +
+        '<div class="match-player-number">' + p.number + '</div>' +
+        '<div class="match-player-info">' +
+          '<div class="match-player-name">' + this.escapeHtml(p.name) + '</div>' +
+          '<div class="match-player-role">' + this.getRoleLabel(p.position) + '</div>' +
+        '</div>' +
+        '<div class="match-player-votes">' +
+          '<div class="match-player-avg ' + avgClass + '">' + (voteCount > 0 ? avg.toFixed(1) : '-') + '</div>' +
+          '<div class="match-player-count">' + voteCount + ' voti</div>' +
+        '</div>' +
+        '<div class="match-player-stars">' + starsHtml + '</div>' +
+      '</div>';
+    }).join('');
+
+    container.innerHTML =
+      '<div class="match-info">' +
+        '<div class="match-info-item"><span class="match-info-label">Data</span><span class="match-info-value">' + dateStr + '</span></div>' +
+        (m.result ? '<div class="match-info-item"><span class="match-info-label">Risultato</span><span class="match-info-value">' + this.escapeHtml(m.result) + '</span></div>' : '') +
+        '<div class="match-info-item"><span class="match-info-label">Voti totali</span><span class="match-info-value">' + players.reduce((sum, p) => sum + 1, 0) + '</span></div>' +
+        (isClosed ? '<div class="match-info-item"><span class="match-info-label">Stato</span><span class="match-info-value" style="color:var(--accent3)">Chiusa</span></div>' : '') +
+      '</div>' +
+      '<div class="match-player-list">' + players + '</div>';
+  },
+
+  votePlayer(matchId, playerId, score) {
+    if (!this.state.currentUser) {
+      this.toast('Accedi per votare!', 'warning');
+      return;
+    }
+    const m = this.state.matches.find(x => x.id === matchId);
+    if (!m) return;
+    if (m.closed) { this.toast('Votazione chiusa per questa partita.', 'warning'); return; }
+    const p = m.players.find(x => x.id === playerId);
+    if (!p) return;
+    if (!p.ratings) p.ratings = {};
+    const uid = this.state.currentUser.id;
+    // Toggle: if same score, remove vote
+    if (p.ratings[uid] === score) {
+      delete p.ratings[uid];
+      this.toast('Voto rimosso!', 'info');
+    } else {
+      p.ratings[uid] = score;
+      this.toast('Voto registrato: ' + score + '/10', 'success');
+    }
+    this.saveMatches();
+    this.openMatch(matchId);
+  },
+
+  getRoleLabel(pos) {
+    const labels = { P: 'Portiere', D: 'Difensore', C: 'Centrocampista', A: 'Attaccante' };
+    return labels[pos] || pos || 'Giocatore';
+  },
+
+  /* ---------- ADMIN: MATCHES ---------- */
+  renderAdminMatches() {
+    const matches = this.state.matches;
+    if (this.el.adminMatchCount) this.el.adminMatchCount.textContent = matches.length + ' partite';
+    const container = this.el.adminMatchList;
+    if (!container) return;
+
+    if (matches.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-futbol"></i><p>Nessuna partita.</p></div>';
+      return;
+    }
+
+    container.innerHTML = [...matches].sort((a, b) => b.createdAt - a.createdAt).map(m => {
+      const dateStr = m.date || '?';
+      return '<div class="admin-msg-item">' +
+        '<div class="admin-msg-info">' +
+          '<div class="admin-msg-text"><strong>' + this.escapeHtml(m.opponent) + '</strong> ' + (m.result ? '\u00B7 ' + this.escapeHtml(m.result) : '') + ' ' + (m.closed ? '<span style="color:var(--accent3);font-size:11px">[Chiusa]</span>' : '') + '</div>' +
+          '<div class="admin-msg-meta">' + dateStr + ' \u00B7 ' + (m.players ? m.players.length : 0) + ' giocatori</div>' +
+        '</div>' +
+        '<div class="admin-msg-actions">' +
+          '<button class="btn btn-ghost btn-sm" onclick="APP.adminToggleMatchClose(\'' + m.id + '\')" title="' + (m.closed ? 'Riapri' : 'Chiudi') + ' votazioni"><i class="fas ' + (m.closed ? 'fa-lock-open' : 'fa-lock') + '"></i></button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditMatch(\'' + m.id + '\')"><i class="fas fa-pen"></i></button>' +
+          '<button class="btn btn-danger btn-sm" onclick="APP.adminDeleteMatch(\'' + m.id + '\')"><i class="fas fa-trash"></i></button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  },
+
+  adminOpenAddMatch() {
+    this._editingMatchId = null;
+    if (this.el.matchModalTitle) this.el.matchModalTitle.innerHTML = '<i class="fas fa-futbol"></i> Nuova Partita';
+    if (this.el.mmOpponent) this.el.mmOpponent.value = '';
+    if (this.el.mmDate) this.el.mmDate.value = new Date().toISOString().slice(0, 10);
+    if (this.el.mmResult) this.el.mmResult.value = '';
+    if (this.el.mmPlayers) this.el.mmPlayers.value = '';
+    if (this.el.mmError) this.el.mmError.textContent = '';
+    if (this.el.matchModal) this.el.matchModal.style.display = '';
+  },
+
+  adminOpenEditMatch(matchId) {
+    const m = this.state.matches.find(x => x.id === matchId);
+    if (!m) return;
+    this._editingMatchId = matchId;
+    if (this.el.matchModalTitle) this.el.matchModalTitle.innerHTML = '<i class="fas fa-futbol"></i> Modifica Partita';
+    if (this.el.mmOpponent) this.el.mmOpponent.value = m.opponent || '';
+    if (this.el.mmDate) this.el.mmDate.value = m.date || '';
+    if (this.el.mmResult) this.el.mmResult.value = m.result || '';
+    if (this.el.mmPlayers) this.el.mmPlayers.value = (m.players || []).map(p => p.number + '.' + p.name + '.' + (p.position || '')).join('\n');
+    if (this.el.mmError) this.el.mmError.textContent = '';
+    if (this.el.matchModal) this.el.matchModal.style.display = '';
+  },
+
+  adminSaveMatch() {
+    const opponent = this.el.mmOpponent.value.trim();
+    const date = this.el.mmDate.value;
+    const result = this.el.mmResult.value.trim();
+    const playersRaw = this.el.mmPlayers.value.trim();
+    if (this.el.mmError) this.el.mmError.textContent = '';
+    if (!opponent) { if (this.el.mmError) this.el.mmError.textContent = 'Inserisci l\'avversario.'; return; }
+    if (!playersRaw) { if (this.el.mmError) this.el.mmError.textContent = 'Inserisci almeno un giocatore.'; return; }
+
+    const players = playersRaw.split('\n').filter(line => line.trim()).map(line => {
+      const parts = line.split('.');
+      return {
+        id: 'pl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        number: parts[0] ? parts[0].trim() : '?',
+        name: parts[1] ? parts[1].trim() : '?',
+        position: parts[2] ? parts[2].trim().toUpperCase() : 'C',
+        ratings: {},
+      };
+    });
+
+    if (this._editingMatchId) {
+      const m = this.state.matches.find(x => x.id === this._editingMatchId);
+      if (!m) return;
+      // Preserve existing ratings for players with same name
+      const oldRatings = {};
+      (m.players || []).forEach(p => { if (p.ratings) oldRatings[p.name] = p.ratings; });
+      players.forEach(p => { if (oldRatings[p.name]) p.ratings = oldRatings[p.name]; });
+      m.opponent = opponent;
+      m.date = date;
+      m.result = result;
+      m.players = players;
+    } else {
+      this.state.matches.push({
+        id: 'match_' + Date.now(),
+        opponent,
+        date,
+        result,
+        players,
+        createdAt: Date.now(),
+        closed: false,
+      });
+    }
+    this._editingMatchId = null;
+    this.saveMatches();
+    this.adminCloseMatchModal();
+    this.renderAdminMatches();
+    this.toast('Partita salvata!', 'success');
+  },
+
+  adminCloseMatchModal() {
+    this._editingMatchId = null;
+    if (this.el.matchModal) this.el.matchModal.style.display = 'none';
+  },
+
+  adminDeleteMatch(matchId) {
+    if (!confirm('Eliminare questa partita e tutti i voti?')) return;
+    this.state.matches = this.state.matches.filter(m => m.id !== matchId);
+    this.saveMatches();
+    this.renderAdminMatches();
+    this.toast('Partita eliminata.', 'info');
+  },
+
+  adminToggleMatchClose(matchId) {
+    const m = this.state.matches.find(x => x.id === matchId);
+    if (!m) return;
+    m.closed = !m.closed;
+    this.saveMatches();
+    this.renderAdminMatches();
+    this.toast(m.closed ? 'Votazione chiusa.' : 'Votazione riaperta.', 'info');
+  },
+
+  saveMatches() {
+    localStorage.setItem('alelatina_matches', JSON.stringify(this.state.matches));
   },
 
   /* ---------- PROFILE ---------- */
