@@ -1,0 +1,327 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AleLatina Supporter Rooms</title>
+<link rel="stylesheet" href="css/style.css?v=9">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- SPLASH SCREEN -->
+  <div id="splashScreen" class="splash-screen">
+    <div class="splash-bg"></div>
+    <div class="splash-content">
+      <div class="splash-badge">
+        <img src="images/logo_white.png" alt="AleLatina" class="logo-img-splash" width="80" height="80" style="display:block">
+      </div>
+      <h1 class="splash-title">AleLatina</h1>
+      <p class="splash-subtitle">Supporter Rooms</p>
+      <div class="splash-loader"><span></span></div>
+      <p class="splash-motto">#ForzaLatina</p>
+    </div>
+  </div>
+
+  <!-- TOP BAR -->
+  <header id="topBar" class="top-bar" style="display:none">
+    <div class="top-bar-inner">
+      <button class="top-menu-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+      <div class="top-logo">
+        <img src="images/logo_white.png" alt="AleLatina" class="logo-img-top" width="28" height="28" style="display:block">
+        <span>AleLatina <small>Supporter Rooms</small></span>
+      </div>
+      <div class="top-user" id="topUser">
+        <span class="top-username" id="topUsername">User</span>
+        <div class="top-avatar" id="topAvatar">U</div>
+        <button class="top-logout-btn" id="topLogoutBtn" title="Esci"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+      <div class="top-auth" id="topAuth" style="display:none">
+        <button class="top-auth-btn" id="topLoginBtn">Accedi</button>
+        <button class="top-auth-btn top-auth-reg" id="topRegisterBtn">Registrati</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar" class="sidebar" style="display:none">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <img src="images/logo_white.png" alt="AleLatina" class="logo-img-side" width="24" height="24" style="display:block">
+        <span>AleLatina</span>
+      </div>
+      <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sidebar-user" id="sidebarUser">
+      <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+      <div>
+        <div class="sidebar-username" id="sidebarUsername">User</div>
+        <div class="sidebar-role" id="sidebarRole">Tifoso</div>
+      </div>
+    </div>
+    <div class="sidebar-menu">
+      <a class="sidebar-item" data-page="home"><i class="fas fa-home"></i> Home</a>
+      <a class="sidebar-item" data-page="guestbook"><i class="fas fa-comments"></i> Il Muro</a>
+      <a class="sidebar-item" data-page="members"><i class="fas fa-users"></i> Membri</a>
+      <a class="sidebar-item" data-page="rules"><i class="fas fa-scale-balanced"></i> Regole</a>
+      <a class="sidebar-item" data-page="profile"><i class="fas fa-user-gear"></i> Profilo</a>
+      <a class="sidebar-item" data-page="messages" id="sidebarMessagesBtn"><i class="fas fa-envelope"></i> Messaggi <span id="sidebarMsgBadge" class="sidebar-badge" style="display:none">0</span></a>
+      <a class="sidebar-item admin-only" data-page="admin" id="sidebarAdminBtn" style="display:none"><i class="fas fa-shield"></i> Pannello Admin</a>
+    </div>
+    <div class="sidebar-footer" id="sidebarFooter">
+      <a class="sidebar-item sidebar-login-item" id="sidebarLoginBtn" style="display:none"><i class="fas fa-right-to-bracket"></i> Accedi</a>
+      <a class="sidebar-item" id="logoutBtn" style="display:none"><i class="fas fa-right-from-bracket"></i> Esci</a>
+    </div>
+  </nav>
+
+  <!-- OVERLAY -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <!-- PAGE: HOME -->
+  <main id="homePage" class="page home-page">
+    <div class="home-bg"></div>
+    <div class="home-container">
+      <div class="home-badge">
+        <img src="images/logo_white.png" alt="AleLatina" class="logo-img-home" width="80" height="80" style="display:block">
+      </div>
+      <h1 class="home-title">AleLatina</h1>
+      <p class="home-subtitle">SUPPORTERS ROOM</p>
+      <p class="home-tagline">Commenti, Passione e Cuore Nerazzurro</p>
+      <div class="home-cards">
+        <div class="home-card home-card-guest" onclick="APP.enterAsGuest()">
+          <div class="home-card-icon"><i class="fas fa-eye"></i></div>
+          <h3>Solo Visualizzazione</h3>
+          <p>Leggi i messaggi dei tifosi senza registrarti</p>
+          <span class="home-card-btn">Entra come Ospite <i class="fas fa-arrow-right"></i></span>
+        </div>
+        <div class="home-card home-card-user" onclick="APP.enterAsUser()">
+          <div class="home-card-icon"><i class="fas fa-comment"></i></div>
+          <h3>Partecipa ai Dibattiti</h3>
+          <p>Accedi o registrati per scrivere e interagire con la comunità</p>
+          <span class="home-card-btn">Accedi / Registrati <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </div>
+      <p class="home-footer">#ForzaLatina</p>
+    </div>
+  </main>
+
+  <!-- PAGE: AUTH (LOGIN/REGISTER) -->
+  <main id="authPage" class="page auth-page">
+    <div class="auth-bg">
+      <div class="auth-bg-pattern"></div>
+    </div>
+    <div class="auth-container">
+      <div class="auth-brand">
+        <div class="auth-shield">
+          <img src="images/logo_white.png" alt="AleLatina" class="logo-img-auth" width="52" height="52" style="display:block">
+        </div>
+        <h1 class="auth-title">AleLatina</h1>
+        <p class="auth-subtitle">Supporter Rooms</p>
+        <p class="auth-desc">Il guestbook dei veri tifosi nerazzurri</p>
+      </div>
+      <div class="auth-box" id="authBox">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-form="login">Accedi</button>
+          <button class="auth-tab" data-form="register">Registrati</button>
+        </div>
+        <div id="loginForm" class="auth-form active">
+          <div class="form-group">
+            <label><i class="fas fa-user"></i> Username</label>
+            <input type="text" id="loginUsername" placeholder="Inserisci username" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-lock"></i> Password</label>
+            <input type="password" id="loginPassword" placeholder="Inserisci password">
+          </div>
+          <button class="btn btn-primary btn-block" id="loginBtn">Accedi <i class="fas fa-arrow-right"></i></button>
+          <p id="loginError" class="form-error"></p>
+        </div>
+        <div id="registerForm" class="auth-form">
+          <div class="form-group">
+            <label><i class="fas fa-user"></i> Username</label>
+            <input type="text" id="regUsername" placeholder="Scegli uno username" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-envelope"></i> Email</label>
+            <input type="email" id="regEmail" placeholder="Inserisci la tua email">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-lock"></i> Password</label>
+            <input type="password" id="regPassword" placeholder="Scegli una password (min 6 caratteri)">
+          </div>
+          <button class="btn btn-primary btn-block" id="registerBtn">Registrati <i class="fas fa-user-plus"></i></button>
+          <p id="regError" class="form-error"></p>
+        </div>
+      </div>
+      <div class="auth-stadium">
+        <i class="fas fa-futbol"></i>
+        <span>#ForzaLatina</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- PAGE: GUESTBOOK -->
+  <main id="guestbookPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-comments"></i> Il Muro di AleLatina</h2>
+      <p>Lascia un messaggio ai tuoi compagni tifosi!</p>
+    </div>
+    <div class="gb-new" id="gbNewPost"></div>
+    <div class="gb-filters">
+      <button class="gb-filter active" data-filter="all">Tutti</button>
+      <button class="gb-filter" data-filter="latest">Più recenti</button>
+      <button class="gb-filter" data-filter="popular">Più like</button>
+    </div>
+    <div id="gbMessages" class="gb-messages">
+      <div class="gb-empty">
+        <i class="fas fa-message"></i>
+        <p>Nessun messaggio ancora. Sii il primo a scrivere!</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- PAGE: MEMBERS -->
+  <main id="membersPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-users"></i> Membri</h2>
+      <p>I tifosi della comunità AleLatina</p>
+    </div>
+    <div class="members-search">
+      <i class="fas fa-search"></i>
+      <input type="text" id="membersSearch" placeholder="Cerca un tifoso...">
+    </div>
+    <div id="membersList" class="members-list"></div>
+  </main>
+
+  <!-- PAGE: RULES -->
+  <main id="rulesPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-scale-balanced"></i> Regole della Stanza</h2>
+      <p>Le regole per mantenere il rispetto tra tifosi</p>
+    </div>
+    <div class="rules-content">
+      <div class="rule-card">
+        <div class="rule-icon"><i class="fas fa-heart"></i></div>
+        <h3>Rispetto</h3>
+        <p>Rispetta sempre gli altri tifosi. Nessun insulto personale o discriminazione.</p>
+      </div>
+      <div class="rule-card">
+        <div class="rule-icon"><i class="fas fa-ban"></i></div>
+        <h3>Niente volgarità</h3>
+        <p>È vietato l'uso di parole volgari, bestemmie e linguaggio offensivo. Il sistema filtra automaticamente i contenuti.</p>
+      </div>
+      <div class="rule-card">
+        <div class="rule-icon"><i class="fas fa-flag"></i></div>
+        <h3>Niente spam</h3>
+        <p>Non pubblicare messaggi ripetitivi o pubblicitari.</p>
+      </div>
+      <div class="rule-card">
+        <div class="rule-icon"><i class="fas fa-shield"></i></div>
+        <h3>Segnala</h3>
+        <p>Se vedi un contenuto inappropriato, contatta l'amministratore.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- PAGE: ADMIN PANEL -->
+  <main id="adminPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-shield"></i> Pannello Amministrazione</h2>
+      <p>Gestisci utenti e messaggi della comunità</p>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-atab="messages"><i class="fas fa-comment"></i> Messaggi</button>
+      <button class="admin-tab" data-atab="users"><i class="fas fa-users-gear"></i> Utenti</button>
+    </div>
+    <div id="adminMessages" class="admin-section active">
+      <div class="admin-toolbar">
+        <span id="adminMsgCount">0 messaggi</span>
+        <button class="btn btn-danger btn-sm" id="adminClearFiltered"><i class="fas fa-broom"></i> Elimina filtrati</button>
+      </div>
+      <div id="adminMsgList" class="admin-msg-list"></div>
+    </div>
+    <div id="adminUsers" class="admin-section">
+      <div class="admin-toolbar">
+        <span id="adminUserCount">0 utenti</span>
+      </div>
+      <div id="adminUserList" class="admin-user-list"></div>
+    </div>
+  </main>
+
+  <!-- PAGE: PROFILE -->
+  <main id="profilePage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-user-gear"></i> Il Mio Profilo</h2>
+      <p>Gestisci la tua immagine e le tue informazioni</p>
+    </div>
+    <div class="profile-card">
+      <div class="profile-avatar-section">
+        <div class="profile-avatar" id="profileAvatar">U</div>
+        <div class="profile-avatar-overlay" id="profileAvatarOverlay">
+          <i class="fas fa-camera"></i>
+          <span>Cambia foto</span>
+        </div>
+        <input type="file" id="profileAvatarInput" accept="image/*" style="display:none">
+      </div>
+      <div class="profile-info">
+        <div class="profile-info-row">
+          <label>Username</label>
+          <span id="profileUsername">-</span>
+        </div>
+        <div class="profile-info-row">
+          <label>Email</label>
+          <span id="profileEmail">-</span>
+        </div>
+        <div class="profile-info-row">
+          <label>Ruolo</label>
+          <span id="profileRole">-</span>
+        </div>
+        <div class="profile-info-row">
+          <label>Membro dal</label>
+          <span id="profileJoined">-</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-primary" id="profileSaveBtn"><i class="fas fa-floppy-disk"></i> Salva</button>
+        <button class="btn btn-ghost" id="profileRemoveBtn"><i class="fas fa-trash-can"></i> Rimuovi foto</button>
+      </div>
+      <p id="profileStatus" class="form-error"></p>
+    </div>
+  </main>
+
+  <!-- PAGE: PRIVATE MESSAGES -->
+  <main id="messagesPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-envelope"></i> Messaggi Privati</h2>
+      <p>Scrivi in privato agli altri tifosi</p>
+    </div>
+
+    <!-- Inbox View -->
+    <div id="pmInbox">
+      <div id="pmConversations" class="pm-conversations"></div>
+    </div>
+
+    <!-- Conversation View -->
+    <div id="pmConversation" style="display:none">
+      <button class="btn btn-ghost btn-sm pm-back-btn" id="pmBackBtn"><i class="fas fa-arrow-left"></i> Indietro</button>
+      <div class="pm-conv-header" id="pmConvHeader"></div>
+      <div class="pm-conv-messages" id="pmConvMessages"></div>
+      <div class="pm-conv-form">
+        <textarea id="pmMessageInput" rows="2" placeholder="Scrivi un messaggio privato..."></textarea>
+        <button class="btn btn-primary btn-sm" id="pmSendBtn"><i class="fas fa-paper-plane"></i> Invia</button>
+      </div>
+      <p id="pmError" class="form-error"></p>
+    </div>
+  </main>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div id="toastContainer" class="toast-container"></div>
+
+</div>
+
+<script src="js/app.js?v=7"></script>
+</body>
+</html>
