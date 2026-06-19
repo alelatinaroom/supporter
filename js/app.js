@@ -78,6 +78,7 @@ const APP = {
     currentFilter: 'all',
     sidebarOpen: false,
     redirectAfterLogin: null,
+    radio: JSON.parse(localStorage.getItem('alelatina_radio')) || { streamUrl: '', streamName: 'AleLatina Radio', podcasts: [] },
   },
 
   /* ---------- DOM REFS ---------- */
@@ -144,6 +145,7 @@ const APP = {
       adminTabs: qsa('.admin-tab'),
       adminMessages: $('adminMessages'),
       adminUsers: $('adminUsers'),
+      adminRadio: $('adminRadio'),
       adminMsgList: $('adminMsgList'),
       adminUserList: $('adminUserList'),
       adminMsgCount: $('adminMsgCount'),
@@ -185,6 +187,29 @@ const APP = {
       pmMessageInput: $('pmMessageInput'),
       pmSendBtn: $('pmSendBtn'),
       pmError: $('pmError'),
+      radioPage: $('radioPage'),
+      radioAudio: $('radioAudio'),
+      radioPlayBtn: $('radioPlayBtn'),
+      radioStopBtn: $('radioStopBtn'),
+      radioStreamName: $('radioStreamName'),
+      radioPodcastList: $('radioPodcastList'),
+      radioConfigInfo: $('radioConfigInfo'),
+      sidebarRadioBadge: $('sidebarRadioBadge'),
+      adminStreamUrl: $('adminStreamUrl'),
+      adminStreamName: $('adminStreamName'),
+      adminSaveStreamBtn: $('adminSaveStreamBtn'),
+      adminAddPodcastBtn: $('adminAddPodcastBtn'),
+      adminPodcastList: $('adminPodcastList'),
+      podcastModal: $('podcastModal'),
+      podcastModalTitle: $('podcastModalTitle'),
+      podcastModalClose: $('podcastModalClose'),
+      pmTitle: $('pmTitle'),
+      pmDescription: $('pmDescription'),
+      pmAudioUrl: $('pmAudioUrl'),
+      pmImageUrl: $('pmImageUrl'),
+      pmCancelBtn: $('pmCancelBtn'),
+      pmSaveBtn: $('pmSaveBtn'),
+      pmPodcastError: $('pmPodcastError'),
     };
   },
 
@@ -252,9 +277,12 @@ const APP = {
         if (tab.dataset.atab === 'messages') {
           this.el.adminMessages.classList.add('active');
           this.renderAdminMessages();
-        } else {
+        } else if (tab.dataset.atab === 'users') {
           this.el.adminUsers.classList.add('active');
           this.renderAdminUsers();
+        } else if (tab.dataset.atab === 'radio') {
+          this.el.adminRadio.classList.add('active');
+          this.renderAdminRadio();
         }
       });
     });
@@ -280,6 +308,22 @@ const APP = {
         if (e.target === this.el.userModal) this.adminCloseUserModal();
       });
     }
+
+    // Radio play/stop
+    if (this.el.radioPlayBtn) this.el.radioPlayBtn.addEventListener('click', () => this.radioPlay());
+    if (this.el.radioStopBtn) this.el.radioStopBtn.addEventListener('click', () => this.radioStop());
+
+    // Admin radio
+    if (this.el.adminSaveStreamBtn) this.el.adminSaveStreamBtn.addEventListener('click', () => this.adminSaveRadioConfig());
+    if (this.el.adminAddPodcastBtn) this.el.adminAddPodcastBtn.addEventListener('click', () => this.adminOpenAddPodcast());
+
+    // Podcast modal
+    if (this.el.podcastModalClose) this.el.podcastModalClose.addEventListener('click', () => this.adminClosePodcastModal());
+    if (this.el.pmCancelBtn) this.el.pmCancelBtn.addEventListener('click', () => this.adminClosePodcastModal());
+    if (this.el.pmSaveBtn) this.el.pmSaveBtn.addEventListener('click', () => this.adminSavePodcast());
+    if (this.el.podcastModal) this.el.podcastModal.addEventListener('click', e => {
+      if (e.target === this.el.podcastModal) this.adminClosePodcastModal();
+    });
 
     // Profile
     if (this.el.profileAvatarOverlay) {
@@ -524,13 +568,16 @@ const APP = {
     // Update unread badge
     this.updateMsgBadge();
 
+    // Update radio LIVE badge
+    this.updateRadioBadge();
+
     // Navigate to default page
     this.navigateTo('guestbook');
   },
 
   navigateTo(page) {
     // Hide all pages
-    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage'];
+    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage'];
     pages.forEach(p => {
       if (this.el[p]) this.el[p].style.display = 'none';
     });
@@ -567,6 +614,14 @@ const APP = {
           this.el.adminPage.style.display = '';
           this.renderAdminMessages();
           this.renderAdminUsers();
+        }
+        break;
+      case 'radio':
+        if (this.state.currentUser) {
+          this.el.radioPage.style.display = '';
+          this.renderRadioPage();
+        } else {
+          this.navigateTo('guestbook');
         }
         break;
       case 'profile':
@@ -1099,6 +1154,232 @@ const APP = {
   adminCloseUserModal() {
     this._editingUserId = null;
     if (this.el.userModal) this.el.userModal.style.display = 'none';
+  },
+
+  /* ---------- RADIO ---------- */
+  radioPlay() {
+    const streamUrl = this.state.radio.streamUrl;
+    if (!streamUrl) {
+      this.toast('Nessuna diretta configurata.', 'warning');
+      return;
+    }
+    if (this.el.radioAudio) {
+      this.el.radioAudio.src = streamUrl;
+      this.el.radioAudio.play().catch(() => {
+        this.toast('Errore durante la riproduzione.', 'error');
+      });
+    }
+  },
+
+  radioStop() {
+    if (this.el.radioAudio) {
+      this.el.radioAudio.pause();
+      this.el.radioAudio.src = '';
+    }
+  },
+
+  updateRadioBadge() {
+    const badge = this.el.sidebarRadioBadge;
+    if (!badge) return;
+    if (this.state.radio.streamUrl) {
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
+  },
+
+  renderRadioPage() {
+    const radio = this.state.radio;
+    if (this.el.radioStreamName) {
+      this.el.radioStreamName.textContent = radio.streamName || 'AleLatina Radio';
+    }
+
+    // Show/hide config info
+    const configInfo = this.el.radioConfigInfo;
+    const playerCard = document.querySelector('.radio-player-card');
+    if (configInfo && playerCard) {
+      if (radio.streamUrl) {
+        configInfo.style.display = 'none';
+        playerCard.style.display = '';
+      } else {
+        configInfo.style.display = '';
+        playerCard.style.display = 'none';
+      }
+    }
+
+    this.renderPodcastList();
+  },
+
+  renderPodcastList() {
+    const container = this.el.radioPodcastList;
+    if (!container) return;
+    const podcasts = this.state.radio.podcasts || [];
+
+    if (podcasts.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-podcast"></i><p>Nessuna puntata disponibile.</p></div>';
+      return;
+    }
+
+    container.innerHTML = podcasts.map(p => {
+      const coverHtml = p.imageUrl
+        ? '<img src="' + p.imageUrl + '" alt="' + this.escapeHtml(p.title) + '">'
+        : '<i class="fas fa-microphone"></i>';
+      const desc = p.description ? '<div class="radio-podcast-desc">' + this.escapeHtml(p.description) + '</div>' : '';
+      const time = p.createdAt ? this.formatTime(p.createdAt) : '';
+      const metaHtml = time ? '<div class="radio-podcast-meta">' + time + '</div>' : '';
+      return '<div class="radio-podcast-card">' +
+        '<div class="radio-podcast-cover">' + coverHtml + '</div>' +
+        '<div class="radio-podcast-info">' +
+          '<div class="radio-podcast-title">' + this.escapeHtml(p.title) + '</div>' +
+          desc +
+          metaHtml +
+          '<button class="radio-podcast-play" onclick="APP.radioPlayPodcast(\'' + p.id + '\')"><i class="fas fa-play"></i> Ascolta</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  },
+
+  radioPlayPodcast(podId) {
+    const pod = this.state.radio.podcasts.find(p => p.id === podId);
+    if (!pod || !pod.audioUrl) return;
+    if (this.el.radioAudio) {
+      this.el.radioAudio.src = pod.audioUrl;
+      this.el.radioAudio.play().catch(() => {
+        this.toast('Errore durante la riproduzione.', 'error');
+      });
+    }
+  },
+
+  adminSaveRadioConfig() {
+    const url = this.el.adminStreamUrl.value.trim();
+    const name = this.el.adminStreamName.value.trim();
+    this.state.radio.streamUrl = url;
+    if (name) this.state.radio.streamName = name;
+    this.saveRadio();
+    this.updateRadioBadge();
+    this.renderRadioPage();
+    this.toast('Configurazione radio salvata!', 'success');
+  },
+
+  renderAdminRadio() {
+    const radio = this.state.radio;
+    if (this.el.adminStreamUrl) this.el.adminStreamUrl.value = radio.streamUrl || '';
+    if (this.el.adminStreamName) this.el.adminStreamName.value = radio.streamName || 'AleLatina Radio';
+    this.renderAdminPodcastList();
+  },
+
+  renderAdminPodcastList() {
+    const container = this.el.adminPodcastList;
+    if (!container) return;
+    const podcasts = this.state.radio.podcasts || [];
+
+    if (podcasts.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-podcast"></i><p>Nessuna puntata.</p></div>';
+      return;
+    }
+
+    container.innerHTML = podcasts.map(p => {
+      const time = p.createdAt ? this.formatTime(p.createdAt) : '';
+      return '<div class="admin-msg-item">' +
+        '<div class="admin-msg-info">' +
+          '<div class="admin-msg-text"><strong>' + this.escapeHtml(p.title) + '</strong></div>' +
+          '<div class="admin-msg-meta">' + time + '</div>' +
+        '</div>' +
+        '<div class="admin-msg-actions">' +
+          '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditPodcast(\'' + p.id + '\')"><i class="fas fa-pen"></i></button>' +
+          '<button class="btn btn-danger btn-sm" onclick="APP.adminDeletePodcast(\'' + p.id + '\')"><i class="fas fa-trash"></i></button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  },
+
+  adminOpenAddPodcast() {
+    this._editingPodcastId = null;
+    if (this.el.podcastModalTitle) this.el.podcastModalTitle.innerHTML = '<i class="fas fa-podcast"></i> Nuova Puntata';
+    if (this.el.pmTitle) this.el.pmTitle.value = '';
+    if (this.el.pmDescription) this.el.pmDescription.value = '';
+    if (this.el.pmAudioUrl) this.el.pmAudioUrl.value = '';
+    if (this.el.pmImageUrl) this.el.pmImageUrl.value = '';
+    if (this.el.pmPodcastError) this.el.pmPodcastError.textContent = '';
+    if (this.el.podcastModal) this.el.podcastModal.style.display = '';
+  },
+
+  adminOpenEditPodcast(podId) {
+    const pod = this.state.radio.podcasts.find(p => p.id === podId);
+    if (!pod) return;
+    this._editingPodcastId = podId;
+    if (this.el.podcastModalTitle) this.el.podcastModalTitle.innerHTML = '<i class="fas fa-podcast"></i> Modifica Puntata';
+    if (this.el.pmTitle) this.el.pmTitle.value = pod.title || '';
+    if (this.el.pmDescription) this.el.pmDescription.value = pod.description || '';
+    if (this.el.pmAudioUrl) this.el.pmAudioUrl.value = pod.audioUrl || '';
+    if (this.el.pmImageUrl) this.el.pmImageUrl.value = pod.imageUrl || '';
+    if (this.el.pmPodcastError) this.el.pmPodcastError.textContent = '';
+    if (this.el.podcastModal) this.el.podcastModal.style.display = '';
+  },
+
+  adminSavePodcast() {
+    const title = this.el.pmTitle.value.trim();
+    const description = this.el.pmDescription.value.trim();
+    const audioUrl = this.el.pmAudioUrl.value.trim();
+    const imageUrl = this.el.pmImageUrl.value.trim();
+    const errorEl = this.el.pmPodcastError;
+    if (errorEl) errorEl.textContent = '';
+
+    if (!title) {
+      if (errorEl) errorEl.textContent = 'Il titolo è obbligatorio.';
+      return;
+    }
+    if (!audioUrl) {
+      if (errorEl) errorEl.textContent = "L'URL audio è obbligatorio.";
+      return;
+    }
+
+    if (this._editingPodcastId) {
+      const pod = this.state.radio.podcasts.find(p => p.id === this._editingPodcastId);
+      if (!pod) return;
+      pod.title = title;
+      pod.description = description;
+      pod.audioUrl = audioUrl;
+      pod.imageUrl = imageUrl;
+      this.saveRadio();
+      this.adminClosePodcastModal();
+      this.renderAdminPodcastList();
+      this.renderPodcastList();
+      this.toast('Puntata aggiornata!', 'success');
+    } else {
+      const pod = {
+        id: 'pod_' + Date.now(),
+        title,
+        description,
+        audioUrl,
+        imageUrl,
+        createdAt: Date.now(),
+      };
+      this.state.radio.podcasts.push(pod);
+      this.saveRadio();
+      this.adminClosePodcastModal();
+      this.renderAdminPodcastList();
+      this.renderPodcastList();
+      this.toast('Puntata aggiunta!', 'success');
+    }
+  },
+
+  adminClosePodcastModal() {
+    this._editingPodcastId = null;
+    if (this.el.podcastModal) this.el.podcastModal.style.display = 'none';
+  },
+
+  adminDeletePodcast(podId) {
+    if (!confirm('Eliminare questa puntata?')) return;
+    this.state.radio.podcasts = this.state.radio.podcasts.filter(p => p.id !== podId);
+    this.saveRadio();
+    this.renderAdminPodcastList();
+    this.renderPodcastList();
+    this.toast('Puntata eliminata.', 'info');
+  },
+
+  saveRadio() {
+    localStorage.setItem('alelatina_radio', JSON.stringify(this.state.radio));
   },
 
   /* ---------- PROFILE ---------- */
