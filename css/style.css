@@ -331,11 +331,14 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .home-cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-top: 36px;
 }
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+  .home-cards { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 400px) {
   .home-cards { grid-template-columns: 1fr; }
 }
 .home-card {
