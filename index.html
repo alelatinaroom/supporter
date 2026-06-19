@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AleLatina Supporter Rooms</title>
-<link rel="stylesheet" href="css/style.css?v=14">
+<link rel="stylesheet" href="css/style.css?v=15">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -70,6 +70,8 @@
       <a class="sidebar-item" data-page="profile"><i class="fas fa-user-gear"></i> Profilo</a>
       <a class="sidebar-item" data-page="messages" id="sidebarMessagesBtn"><i class="fas fa-envelope"></i> Messaggi <span id="sidebarMsgBadge" class="sidebar-badge" style="display:none">0</span></a>
       <a class="sidebar-item" data-page="radio"><i class="fas fa-microphone"></i> Radio <span id="sidebarRadioBadge" class="sidebar-badge radio-live" style="display:none">LIVE</span></a>
+      <a class="sidebar-item" data-page="editorials"><i class="fas fa-newspaper"></i> Editoriali</a>
+      <a class="sidebar-item editor-only" data-page="editorPanel" id="sidebarEditorBtn" style="display:none"><i class="fas fa-pen-fancy"></i> Scrivi Articolo</a>
       <a class="sidebar-item admin-only" data-page="admin" id="sidebarAdminBtn" style="display:none"><i class="fas fa-shield"></i> Pannello Admin</a>
     </div>
     <div class="sidebar-footer" id="sidebarFooter">
@@ -263,6 +265,65 @@
     </div>
   </main>
 
+  <!-- PAGE: EDITORIALS -->
+  <main id="editorialsPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-newspaper"></i> Editoriali</h2>
+      <p>Analisi, commenti e storie firmate dalla comunità nerazzurra</p>
+    </div>
+    <div id="editorialsList" class="editorials-list"></div>
+  </main>
+
+  <!-- PAGE: ARTICLE VIEW -->
+  <main id="articlePage" class="page content-page" style="display:none">
+    <div class="article-container">
+      <button class="btn btn-ghost btn-sm" id="articleBackBtn" style="margin-bottom:16px"><i class="fas fa-arrow-left"></i> Torna agli editoriali</button>
+      <div id="articleContent" class="article-content"></div>
+    </div>
+  </main>
+
+  <!-- PAGE: EDITOR PANEL (write/edit article) -->
+  <main id="editorPanelPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-pen-fancy"></i> <span id="editorPanelTitle">Nuovo Articolo</span></h2>
+      <p>Scrivi il tuo editoriale per la comunità</p>
+    </div>
+    <div class="editor-panel">
+      <div class="form-group">
+        <label>Titolo</label>
+        <input type="text" id="artTitle" class="form-input" placeholder="Titolo dell'editoriale" maxlength="120">
+      </div>
+      <div class="form-group">
+        <label>Sottotitolo</label>
+        <input type="text" id="artSubtitle" class="form-input" placeholder="Un breve sottotitolo" maxlength="200">
+      </div>
+      <div class="form-group">
+        <label>URL Copertina (opzionale)</label>
+        <input type="text" id="artCover" class="form-input" placeholder="https://example.com/copertina.jpg">
+      </div>
+      <div class="form-group">
+        <label>Contenuto</label>
+        <div class="editor-toolbar">
+          <button type="button" class="editor-tb-btn" data-tag="b" title="Grassetto"><i class="fas fa-bold"></i></button>
+          <button type="button" class="editor-tb-btn" data-tag="i" title="Corsivo"><i class="fas fa-italic"></i></button>
+          <button type="button" class="editor-tb-btn" data-tag="u" title="Sottolineato"><i class="fas fa-underline"></i></button>
+          <button type="button" class="editor-tb-btn" data-wrap="h3" title="Titolo"><i class="fas fa-heading"></i></button>
+          <button type="button" class="editor-tb-btn" data-wrap="p" title="Paragrafo"><i class="fas fa-paragraph"></i></button>
+          <button type="button" class="editor-tb-btn" data-wrap="blockquote" title="Citazione"><i class="fas fa-quote-right"></i></button>
+          <span class="editor-tb-sep"></span>
+          <button type="button" class="editor-tb-btn" id="artPreviewBtn" title="Anteprima"><i class="fas fa-eye"></i> Anteprima</button>
+        </div>
+        <textarea id="artContent" class="form-input editor-textarea" rows="16" placeholder="Scrivi il tuo articolo... Puoi usare tag HTML come &lt;b&gt;, &lt;i&gt;, &lt;h3&gt;, &lt;blockquote&gt;..."></textarea>
+        <div id="artPreview" class="article-preview" style="display:none"></div>
+      </div>
+      <p id="artError" class="form-error"></p>
+      <div class="editor-actions">
+        <button class="btn btn-ghost" id="artCancelBtn">Annulla</button>
+        <button class="btn btn-primary" id="artSaveBtn"><i class="fas fa-save"></i> Pubblica</button>
+      </div>
+    </div>
+  </main>
+
   <!-- PAGE: ADMIN PANEL -->
   <main id="adminPage" class="page content-page" style="display:none">
     <div class="page-header">
@@ -334,6 +395,7 @@
           <label>Ruolo</label>
           <select id="umRole" class="form-input">
             <option value="user">Tifoso</option>
+            <option value="editor">Editor</option>
             <option value="admin">Amministratore</option>
           </select>
         </div>
@@ -450,6 +512,6 @@
 
 </div>
 
-<script src="js/app.js?v=14"></script>
+<script src="js/app.js?v=15"></script>
 </body>
 </html>

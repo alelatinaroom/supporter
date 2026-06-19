@@ -79,6 +79,8 @@ const APP = {
     sidebarOpen: false,
     redirectAfterLogin: null,
     radio: JSON.parse(localStorage.getItem('alelatina_radio')) || { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [] },
+    articles: JSON.parse(localStorage.getItem('alelatina_articles')) || [],
+    _editingArticleId: null,
   },
 
   /* ---------- DOM REFS ---------- */
@@ -215,6 +217,23 @@ const APP = {
       pmCancelBtn: $('pmCancelBtn'),
       pmSaveBtn: $('pmSaveBtn'),
       pmPodcastError: $('pmPodcastError'),
+      editorialsPage: $('editorialsPage'),
+      editorialsList: $('editorialsList'),
+      articlePage: $('articlePage'),
+      articleContent: $('articleContent'),
+      articleBackBtn: $('articleBackBtn'),
+      editorPanelPage: $('editorPanelPage'),
+      editorPanelTitle: $('editorPanelTitle'),
+      artTitle: $('artTitle'),
+      artSubtitle: $('artSubtitle'),
+      artCover: $('artCover'),
+      artContent: $('artContent'),
+      artPreview: $('artPreview'),
+      artPreviewBtn: $('artPreviewBtn'),
+      artError: $('artError'),
+      artCancelBtn: $('artCancelBtn'),
+      artSaveBtn: $('artSaveBtn'),
+      sidebarEditorBtn: $('sidebarEditorBtn'),
     };
   },
 
@@ -313,6 +332,32 @@ const APP = {
         if (e.target === this.el.userModal) this.adminCloseUserModal();
       });
     }
+
+    // Article back button
+    if (this.el.articleBackBtn) this.el.articleBackBtn.addEventListener('click', () => this.navigateTo('editorials'));
+
+    // Editor toolbar buttons
+    document.querySelectorAll('.editor-tb-btn[data-tag]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.tag;
+        this.wrapSelection(tag);
+      });
+    });
+    document.querySelectorAll('.editor-tb-btn[data-wrap]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.wrap;
+        this.wrapLine(tag);
+      });
+    });
+
+    // Article preview toggle
+    if (this.el.artPreviewBtn) {
+      this.el.artPreviewBtn.addEventListener('click', () => this.toggleArticlePreview());
+    }
+
+    // Article save / cancel
+    if (this.el.artSaveBtn) this.el.artSaveBtn.addEventListener('click', () => this.saveArticle());
+    if (this.el.artCancelBtn) this.el.artCancelBtn.addEventListener('click', () => this.cancelArticle());
 
     // Radio play/stop
     if (this.el.radioPlayBtn) this.el.radioPlayBtn.addEventListener('click', () => this.radioPlay());
@@ -512,6 +557,7 @@ const APP = {
     if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.style.display = '';
     if (this.el.logoutBtn) this.el.logoutBtn.style.display = 'none';
     if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = 'none';
+    if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = 'none';
 
     this.navigateTo('guestbook');
   },
@@ -565,9 +611,10 @@ const APP = {
       }
     }
     if (this.el.sidebarUsername) this.el.sidebarUsername.textContent = u.username;
-    if (this.el.sidebarRole) this.el.sidebarRole.textContent = u.role === 'admin' ? 'Amministratore' : 'Tifoso';
+    if (this.el.sidebarRole) this.el.sidebarRole.textContent = u.role === 'admin' ? 'Amministratore' : u.role === 'editor' ? 'Editor' : 'Tifoso';
 
-    // Admin button visibility
+    // Editor & Admin button visibility
+    if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = (u.role === 'editor' || u.role === 'admin') ? '' : 'none';
     if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = u.role === 'admin' ? '' : 'none';
 
     // Update unread badge
@@ -582,7 +629,7 @@ const APP = {
 
   navigateTo(page) {
     // Hide all pages
-    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage'];
+    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage'];
     pages.forEach(p => {
       if (this.el[p]) this.el[p].style.display = 'none';
     });
@@ -625,6 +672,28 @@ const APP = {
         if (this.state.currentUser) {
           this.el.radioPage.style.display = '';
           this.renderRadioPage();
+        } else {
+          this.navigateTo('guestbook');
+        }
+        break;
+      case 'editorials':
+        if (this.state.currentUser) {
+          this.el.editorialsPage.style.display = '';
+          this.renderEditorials();
+        } else {
+          this.navigateTo('guestbook');
+        }
+        break;
+      case 'article':
+        if (this.state.currentUser) {
+          this.el.articlePage.style.display = '';
+        } else {
+          this.navigateTo('guestbook');
+        }
+        break;
+      case 'editorPanel':
+        if (this.state.currentUser && (this.state.currentUser.role === 'editor' || this.state.currentUser.role === 'admin')) {
+          this.el.editorPanelPage.style.display = '';
         } else {
           this.navigateTo('guestbook');
         }
@@ -981,6 +1050,8 @@ const APP = {
       const joinDate = new Date(u.createdAt).toLocaleDateString('it-IT');
       const roleBadge = u.role === 'admin'
         ? '<span class="member-role-badge member-role-admin"><i class="fas fa-shield"></i> Admin</span>'
+        : u.role === 'editor'
+        ? '<span class="member-role-badge member-role-editor"><i class="fas fa-pen-fancy"></i> Editor</span>'
         : '<span class="member-role-badge member-role-user">Tifoso</span>';
       const avatarDisplay = u.avatar
         ? '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
@@ -1044,24 +1115,24 @@ const APP = {
       const isAdminUser = u.role === 'admin';
 
       let actions = '';
-      if (!isSelf && !isAdminUser) {
+      if (isSelf) {
+        actions = '<span style="font-size:11px;color:var(--text-muted)">Sei tu</span>';
+      } else if (isAdminUser) {
+        actions = '<span style="font-size:11px;color:var(--accent2)"><i class="fas fa-shield"></i> Admin</span>';
+      } else {
         actions = `
           <button class="btn btn-ghost btn-sm" onclick="APP.adminToggleBan('${u.id}')">
             <i class="fas ${banned ? 'fa-check-circle' : 'fa-ban'}"></i> ${banned ? 'Sbanna' : 'Banna'}
           </button>
           <button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditUser('${u.id}')"><i class="fas fa-pen"></i></button>
           <button class="btn btn-danger btn-sm" onclick="APP.adminDeleteUser('${u.id}')"><i class="fas fa-user-slash"></i></button>`;
-      } else if (isSelf) {
-        actions = '<span style="font-size:11px;color:var(--text-muted)">Sei tu</span>';
-      } else if (isAdminUser) {
-        actions = '<span style="font-size:11px;color:var(--accent2)"><i class="fas fa-shield"></i> Admin</span>';
       }
 
       return `
         <div class="admin-user-item" style="${banned ? 'opacity:0.5' : ''}">
           <div class="admin-user-avatar" style="background:${color}">${u.username.charAt(0).toUpperCase()}</div>
           <div class="admin-user-info">
-            <div class="admin-user-name">${u.username} ${banned ? '<span style="color:var(--accent3);font-size:11px;">[BANNATO]</span>' : ''} ${isAdminUser ? '<span style="color:var(--accent2);font-size:11px;"><i class="fas fa-shield"></i></span>' : ''}</div>
+            <div class="admin-user-name">${u.username} ${banned ? '<span style="color:var(--accent3);font-size:11px;">[BANNATO]</span>' : ''} ${u.role === 'admin' ? '<span style="color:var(--accent2);font-size:11px;"><i class="fas fa-shield"></i></span>' : u.role === 'editor' ? '<span style="color:var(--accent);font-size:11px;"><i class="fas fa-pen-fancy"></i></span>' : ''}</div>
             <div class="admin-user-email">${u.email} · Iscritto ${joinDate}</div>
           </div>
           <div class="admin-user-actions">${actions}</div>
@@ -1466,6 +1537,207 @@ const APP = {
 
   saveRadio() {
     localStorage.setItem('alelatina_radio', JSON.stringify(this.state.radio));
+  },
+
+  /* ---------- ARTICLES (EDITORIALS) ---------- */
+  renderEditorials() {
+    const container = this.el.editorialsList;
+    if (!container) return;
+    const articles = this.state.articles.sort((a, b) => b.createdAt - a.createdAt);
+
+    if (articles.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-newspaper"></i><p>Nessun editoriale ancora. Gli editor stanno scrivendo...</p></div>';
+      return;
+    }
+
+    const currentUid = this.state.currentUser ? this.state.currentUser.id : null;
+    const isAdmin = this.state.currentUser ? this.state.currentUser.role === 'admin' : false;
+    const isEditor = this.state.currentUser ? this.state.currentUser.role === 'editor' : false;
+
+    container.innerHTML = articles.map(a => {
+      const time = this.formatTime(a.createdAt);
+      const coverHtml = a.coverImage
+        ? '<img src="' + a.coverImage + '" alt="">'
+        : '<i class="fas fa-newspaper"></i>';
+      const authorUser = this.state.users.find(u => u.id === a.authorId);
+      const avatarDisplay = authorUser && authorUser.avatar
+        ? '<img src="' + authorUser.avatar + '" alt="">'
+        : a.authorName.charAt(0).toUpperCase();
+      const avatarColor = this.stringToColor(a.authorName);
+      const canEdit = isAdmin || (isEditor && currentUid === a.authorId);
+      const editBtn = canEdit
+        ? '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();APP.openEditor(\'' + a.id + '\')" style="font-size:11px;margin-left:auto"><i class="fas fa-pen"></i></button>'
+        : '';
+      const delBtn = isAdmin
+        ? '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();APP.deleteArticle(\'' + a.id + '\')" style="font-size:11px"><i class="fas fa-trash"></i></button>'
+        : '';
+
+      return '<div class="editorial-card" onclick="APP.openArticle(\'' + a.id + '\')">' +
+        '<div class="editorial-card-cover">' + coverHtml + '<div class="editorial-card-cover-overlay"></div></div>' +
+        '<div class="editorial-card-body">' +
+          '<div class="editorial-card-title">' + this.escapeHtml(a.title) + '</div>' +
+          (a.subtitle ? '<div class="editorial-card-subtitle">' + this.escapeHtml(a.subtitle) + '</div>' : '') +
+          '<div class="editorial-card-meta">' +
+            '<div class="editorial-card-author">' +
+              '<div class="editorial-card-avatar" style="background:' + avatarColor + '">' + avatarDisplay + '</div>' +
+              '<span>' + this.escapeHtml(a.authorName) + '</span>' +
+            '</div>' +
+            '<span>·</span>' +
+            '<span>' + time + '</span>' +
+            (canEdit || isAdmin ? '<span style="margin-left:auto;display:flex;gap:4px">' + editBtn + delBtn + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  },
+
+  openArticle(articleId) {
+    const a = this.state.articles.find(x => x.id === articleId);
+    if (!a) return;
+    this.navigateTo('article');
+    const container = this.el.articleContent;
+    if (!container) return;
+
+    const coverHtml = a.coverImage
+      ? '<img src="' + a.coverImage + '" alt="" class="article-cover">'
+      : '';
+    const time = this.formatTime(a.createdAt);
+    const authorUser = this.state.users.find(u => u.id === a.authorId);
+    const avatarDisplay = authorUser && authorUser.avatar
+      ? '<img src="' + authorUser.avatar + '" alt="" style="width:24px;height:24px;object-fit:cover;border-radius:50%">'
+      : a.authorName.charAt(0).toUpperCase();
+    const avatarColor = this.stringToColor(a.authorName);
+
+    container.innerHTML =
+      coverHtml +
+      '<div class="article-header">' +
+        '<h1 class="article-title">' + this.escapeHtml(a.title) + '</h1>' +
+        (a.subtitle ? '<p class="article-subtitle">' + this.escapeHtml(a.subtitle) + '</p>' : '') +
+        '<div class="article-meta">' +
+          '<div class="editorial-card-avatar" style="background:' + avatarColor + ';width:24px;height:24px;font-size:11px">' + avatarDisplay + '</div>' +
+          '<span>' + this.escapeHtml(a.authorName) + '</span>' +
+          '<span>·</span>' +
+          '<span>' + time + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="article-body">' + a.content + '</div>';
+  },
+
+  openEditor(articleId) {
+    this._editingArticleId = articleId || null;
+    const isNew = !articleId;
+    if (this.el.editorPanelTitle) {
+      this.el.editorPanelTitle.textContent = isNew ? 'Nuovo Articolo' : 'Modifica Articolo';
+    }
+    if (isNew) {
+      if (this.el.artTitle) this.el.artTitle.value = '';
+      if (this.el.artSubtitle) this.el.artSubtitle.value = '';
+      if (this.el.artCover) this.el.artCover.value = '';
+      if (this.el.artContent) this.el.artContent.value = '';
+      if (this.el.artPreview) this.el.artPreview.style.display = 'none';
+    } else {
+      const a = this.state.articles.find(x => x.id === articleId);
+      if (!a) return;
+      if (this.el.artTitle) this.el.artTitle.value = a.title;
+      if (this.el.artSubtitle) this.el.artSubtitle.value = a.subtitle || '';
+      if (this.el.artCover) this.el.artCover.value = a.coverImage || '';
+      if (this.el.artContent) this.el.artContent.value = a.content;
+      if (this.el.artPreview) this.el.artPreview.style.display = 'none';
+    }
+    if (this.el.artError) this.el.artError.textContent = '';
+    this.navigateTo('editorPanel');
+  },
+
+  saveArticle() {
+    const title = this.el.artTitle.value.trim();
+    const subtitle = this.el.artSubtitle.value.trim();
+    const coverImage = this.el.artCover.value.trim();
+    const content = this.el.artContent.value.trim();
+    if (this.el.artError) this.el.artError.textContent = '';
+
+    if (!title) { if (this.el.artError) this.el.artError.textContent = 'Il titolo è obbligatorio.'; return; }
+    if (!content) { if (this.el.artError) this.el.artError.textContent = 'Il contenuto è obbligatorio.'; return; }
+
+    if (this._editingArticleId) {
+      const a = this.state.articles.find(x => x.id === this._editingArticleId);
+      if (!a) return;
+      a.title = title;
+      a.subtitle = subtitle;
+      a.coverImage = coverImage;
+      a.content = content;
+      a.updatedAt = Date.now();
+    } else {
+      this.state.articles.push({
+        id: 'art_' + Date.now(),
+        title,
+        subtitle,
+        coverImage,
+        content,
+        authorId: this.state.currentUser.id,
+        authorName: this.state.currentUser.username,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+    }
+    this._editingArticleId = null;
+    this.saveArticles();
+    this.toast('Articolo pubblicato!', 'success');
+    this.navigateTo('editorials');
+    this.renderEditorials();
+  },
+
+  cancelArticle() {
+    this._editingArticleId = null;
+    this.navigateTo('editorials');
+  },
+
+  deleteArticle(articleId) {
+    if (!confirm('Eliminare questo articolo?')) return;
+    this.state.articles = this.state.articles.filter(a => a.id !== articleId);
+    this.saveArticles();
+    this.renderEditorials();
+    this.toast('Articolo eliminato.', 'info');
+  },
+
+  toggleArticlePreview() {
+    const preview = this.el.artPreview;
+    const textarea = this.el.artContent;
+    if (!preview || !textarea) return;
+    if (preview.style.display === 'none') {
+      preview.style.display = '';
+      preview.innerHTML = '<div class="article-body">' + textarea.value + '</div>';
+    } else {
+      preview.style.display = 'none';
+    }
+  },
+
+  wrapSelection(tag) {
+    const ta = this.el.artContent;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) return;
+    const selected = ta.value.substring(start, end);
+    const before = ta.value.substring(0, start);
+    const after = ta.value.substring(end);
+    ta.value = before + '<' + tag + '>' + selected + '</' + tag + '>' + after;
+    this.el.artPreview.style.display = 'none';
+  },
+
+  wrapLine(tag) {
+    const ta = this.el.artContent;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end) || 'testo';
+    const before = ta.value.substring(0, start);
+    const after = ta.value.substring(end);
+    ta.value = before + '<' + tag + '>' + selected + '</' + tag + '>' + after + '\n\n';
+    this.el.artPreview.style.display = 'none';
+  },
+
+  saveArticles() {
+    localStorage.setItem('alelatina_articles', JSON.stringify(this.state.articles));
   },
 
   /* ---------- PROFILE ---------- */
