@@ -1726,7 +1726,8 @@ const APP = {
         lastSenderId: uid,
       }, { merge: true });
       input.value = '';
-      this.openConversation(partnerId);
+      const container = this.el.pmConvMessages;
+      if (container) container.scrollTop = container.scrollHeight;
     } catch (e) {
       if (this.el.pmError) this.el.pmError.textContent = 'Errore durante l\'invio.';
     }
