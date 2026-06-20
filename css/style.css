@@ -19,6 +19,24 @@
   --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+[data-theme="light"] {
+  --primary: #f0f4ff;
+  --primary-light: #ffffff;
+  --secondary: #c8d8f0;
+  --accent: #2563eb;
+  --accent2: #d97706;
+  --accent3: #dc2626;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --card-border: rgba(37, 99, 235, 0.15);
+  --glass: rgba(0,0,0,0.04);
+  --shadow: 0 8px 32px rgba(0,0,0,0.1);
+  --bg-gradient: radial-gradient(ellipse at 20% 50%, #dce6f5 0%, var(--primary) 70%);
+  --overlay-bg: rgba(0,0,0,0.4);
+  --home-bg-overlay: rgba(255,255,255,0.75);
+}
+
 html, body {
   height: 100%;
   font-family: var(--font);
@@ -27,7 +45,7 @@ html, body {
   overflow-x: hidden;
 }
 
-body { background: radial-gradient(ellipse at 20% 50%, #0f2040 0%, #0a1628 70%); }
+body { background: var(--bg-gradient, radial-gradient(ellipse at 20% 50%, #0f2040 0%, var(--primary) 70%)); }
 
 #app {
   position: relative;
@@ -318,7 +336,7 @@ textarea { resize: vertical; min-height: 60px; }
   content: ''; position: absolute; inset: 0;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  background: rgba(0,0,0,0.55);
+  background: var(--home-bg-overlay, rgba(0,0,0,0.55));
 }
 .home-container {
   position: relative; z-index: 1; text-align: center;
@@ -652,7 +670,7 @@ textarea { resize: vertical; min-height: 60px; }
 .gb-cancel-btn:hover { color: var(--accent3) !important; }
 .gb-edit-textarea {
   width: 100%; box-sizing: border-box; resize: vertical; min-height: 60px;
-  background: var(--input-bg); color: var(--text); border: 1px solid var(--card-border);
+  background: var(--glass); color: var(--text); border: 1px solid var(--card-border);
   border-radius: var(--radius-xs); padding: 8px; font-family: var(--font); font-size: 14px;
 }
 .gb-msg-actions { gap: 2px; flex-wrap: wrap; }
@@ -1355,7 +1373,7 @@ textarea { resize: vertical; min-height: 60px; }
    ============================== */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 9999;
-  background: rgba(0,0,0,0.7);
+  background: var(--overlay-bg, rgba(0,0,0,0.7));
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
 }
@@ -1392,14 +1410,36 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .form-input {
   width: 100%; padding: 10px 14px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--glass);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius-xs);
   color: var(--text); font-size: 14px;
   outline: none; transition: border-color 0.2s;
 }
 .form-input:focus { border-color: var(--accent); }
 .form-input option { background: var(--primary-light); color: var(--text); }
+
+/* ==============================
+   PROFILE
+   ============================== */
+.profile-divider { height: 1px; background: var(--card-border); margin: 20px 0; }
+.profile-section-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.profile-theme-section { margin-bottom: 18px; }
+.theme-toggle { display: flex; gap: 6px; }
+.theme-btn {
+  flex: 1; padding: 10px; border: 1px solid var(--card-border); border-radius: var(--radius-xs);
+  background: var(--glass); color: var(--text-muted); cursor: pointer; font-family: var(--font);
+  font-size: 13px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.theme-btn:hover { border-color: var(--accent); color: var(--text); }
+.theme-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.accent-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+.accent-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent;
+  cursor: pointer; transition: all 0.2s; padding: 0;
+}
+.accent-btn:hover { transform: scale(1.15); }
+.accent-btn.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--primary); }
 
 /* ==============================
    RADIO

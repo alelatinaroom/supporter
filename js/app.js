@@ -90,6 +90,7 @@ const APP = {
 
   init() {
     this.cacheDOM();
+    this.applyTheme();
     this.bindEvents();
     this.initAuth();
     this.showSplash();
@@ -255,6 +256,9 @@ const APP = {
       profileSaveBtn: $('profileSaveBtn'),
       profileRemoveBtn: $('profileRemoveBtn'),
       profileStatus: $('profileStatus'),
+      themeDarkBtn: $('themeDarkBtn'),
+      themeLightBtn: $('themeLightBtn'),
+      accentPicker: $('accentPicker'),
       messagesPage: $('messagesPage'),
       pmInbox: $('pmInbox'),
       pmConversations: $('pmConversations'),
@@ -359,6 +363,12 @@ const APP = {
       if (e.target === this.el.podcastModal) this.adminClosePodcastModal();
     });
     if (this.el.profileAvatarOverlay) this.el.profileAvatarOverlay.addEventListener('click', () => this.el.profileAvatarInput.click());
+    if (this.el.themeDarkBtn) this.el.themeDarkBtn.addEventListener('click', () => this.setTheme('dark'));
+    if (this.el.themeLightBtn) this.el.themeLightBtn.addEventListener('click', () => this.setTheme('light'));
+    if (this.el.accentPicker) this.el.accentPicker.addEventListener('click', e => {
+      const btn = e.target.closest('.accent-btn');
+      if (btn) this.setAccentColor(btn.dataset.color);
+    });
     if (this.el.profileAvatarInput) this.el.profileAvatarInput.addEventListener('change', e => this.handleAvatarUpload(e));
     if (this.el.profileSaveBtn) this.el.profileSaveBtn.addEventListener('click', () => this.saveProfile());
     if (this.el.profileRemoveBtn) this.el.profileRemoveBtn.addEventListener('click', () => this.removeAvatar());
@@ -658,6 +668,32 @@ const APP = {
   enterAsGuest() { this.state.redirectAfterLogin = null; this.navigateTo('guestbook'); },
   enterAsUser() { this.showAuth(); },
   enterAsGuestPage(page) { this.state.redirectAfterLogin = null; this.navigateTo(page); },
+
+  /* ---------- THEME ---------- */
+  applyTheme() {
+    const saved = localStorage.getItem('alelatina_theme') || 'dark';
+    const accent = localStorage.getItem('alelatina_accent') || '#4da6ff';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.documentElement.style.setProperty('--accent', accent);
+    const darkBtn = this.el.themeDarkBtn, lightBtn = this.el.themeLightBtn;
+    if (darkBtn) darkBtn.classList.toggle('active', saved === 'dark');
+    if (lightBtn) lightBtn.classList.toggle('active', saved === 'light');
+    if (this.el.accentPicker) {
+      this.el.accentPicker.querySelectorAll('.accent-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.color === accent);
+      });
+    }
+  },
+
+  setTheme(theme) {
+    localStorage.setItem('alelatina_theme', theme);
+    this.applyTheme();
+  },
+
+  setAccentColor(color) {
+    localStorage.setItem('alelatina_accent', color);
+    this.applyTheme();
+  },
 
   /* ---------- TOAST ---------- */
   toast(msg, type) {
