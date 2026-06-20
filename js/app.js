@@ -397,6 +397,11 @@ const APP = {
   afterLogin() {
     const u = this.state.currentUser;
     if (!u) return;
+    if (u.banned) {
+      auth.signOut();
+      this.toast('Account sospeso. Contatta l\'amministratore.', 'error');
+      return;
+    }
     if (this.el.topUsername) this.el.topUsername.textContent = u.username;
     if (this.el.topAvatar) {
       if (u.avatar) { this.el.topAvatar.innerHTML = '<img src="' + u.avatar + '" alt="">'; }
@@ -1480,12 +1485,14 @@ const APP = {
     }
     const roleMap = { admin: 'Admin', editor: 'Editor', user: 'Tifoso' };
     container.innerHTML = users.map(u => {
-      return '<div class="admin-msg-item">' +
+      const banBtn = u.role !== 'admin' ? '<button class="btn btn-sm ' + (u.banned ? 'btn-ghost' : 'btn-danger') + '" onclick="APP.adminToggleBanUser(\'' + u.id + '\')" title="' + (u.banned ? 'Riattiva' : 'Sospendi') + '"><i class="fas ' + (u.banned ? 'fa-check' : 'fa-ban') + '"></i></button>' : '';
+      return '<div class="admin-msg-item' + (u.banned ? ' admin-msg-banned' : '') + '">' +
         '<div class="admin-msg-info">' +
-        '<div class="admin-msg-text"><strong>' + this.escapeHtml(u.username) + '</strong> \u00B7 ' + (roleMap[u.role] || u.role) + ' \u00B7 ' + this.escapeHtml(u.email) + '</div>' +
+        '<div class="admin-msg-text"><strong>' + this.escapeHtml(u.username) + '</strong> \u00B7 ' + (roleMap[u.role] || u.role) + (u.banned ? ' <span style="color:var(--accent3);font-size:11px">[Sospeso]</span>' : '') + ' \u00B7 ' + this.escapeHtml(u.email) + '</div>' +
         '<div class="admin-msg-meta">Iscritto dal ' + (u.createdAt ? new Date(u.createdAt).toLocaleDateString('it-IT') : '?') + '</div>' +
         '</div>' +
         '<div class="admin-msg-actions">' +
+        banBtn +
         '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditUser(\'' + u.id + '\')"><i class="fas fa-pen"></i></button>' +
         (u.role !== 'admin' ? '<button class="btn btn-danger btn-sm" onclick="APP.adminDeleteUser(\'' + u.id + '\')"><i class="fas fa-trash"></i></button>' : '') +
         '</div></div>';
@@ -1563,6 +1570,17 @@ const APP = {
       await db.collection('users').doc(userId).delete();
       this.renderAdminUsers();
       this.toast('Utente eliminato.', 'info');
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  async adminToggleBanUser(userId) {
+    try {
+      const doc = await db.collection('users').doc(userId).get();
+      if (!doc.exists) return;
+      const banned = !doc.data().banned;
+      await db.collection('users').doc(userId).update({ banned });
+      this.renderAdminUsers();
+      this.toast(banned ? 'Utente sospeso.' : 'Utente riattivato.', 'info');
     } catch (e) { this.toast('Errore.', 'error'); }
   },
 

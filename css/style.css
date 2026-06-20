@@ -799,6 +799,7 @@ textarea { resize: vertical; min-height: 60px; }
   transition: border-color 0.2s;
 }
 .admin-msg-item:hover { border-color: rgba(77,166,255,0.25); }
+.admin-msg-banned { opacity: 0.6; }
 .admin-msg-info { flex: 1; }
 .admin-msg-text { font-size: 13px; margin-bottom: 4px; word-wrap: break-word; }
 .admin-msg-meta { font-size: 11px; color: var(--text-muted); }
