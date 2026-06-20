@@ -74,6 +74,8 @@ const APP = {
     allMessages: [],
     messagesPage: 1,
     messagesPerPage: 15,
+    avatarCache: {},
+    _fetchedAuthors: {},
   },
 
   el: {},
@@ -706,7 +708,7 @@ const APP = {
     }
   },
 
-  renderMessages() {
+  async renderMessages() {
     if (!this.el.gbMessages) return;
     const container = this.el.gbMessages;
     const messages = this.state.allMessages;
@@ -723,11 +725,25 @@ const APP = {
     this.state.messagesPage = page;
     const start = (page - 1) * this.state.messagesPerPage;
     const pageMessages = filtered.slice(start, start + this.state.messagesPerPage);
+    const authorIds = [...new Set(pageMessages.filter(m => m.authorId).map(m => m.authorId))];
+    const needsFetch = authorIds.filter(id => id && !(id in this.state._fetchedAuthors));
+    if (needsFetch.length > 0) {
+      try {
+        await Promise.all(needsFetch.map(async id => {
+          const doc = await db.collection('users').doc(id).get();
+          if (doc.exists) {
+            const data = doc.data();
+            if (data.avatar) this.state.avatarCache[id] = data.avatar;
+          }
+          this.state._fetchedAuthors[id] = true;
+        }));
+      } catch (e) { /* ignore fetch errors */ }
+    }
     container.innerHTML = pageMessages.map(m => {
       const time = m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '';
       const isOwner = this.state.currentUser && this.state.currentUser.id === m.authorId;
       const cu = this.state.currentUser;
-      const avatarUrl = (cu && isOwner && cu.avatar) ? cu.avatar : (m.authorAvatar || '');
+      const avatarUrl = (cu && isOwner && cu.avatar) ? cu.avatar : (this.state.avatarCache[m.authorId] || m.authorAvatar || '');
       return '<div class="gb-message" data-id="' + m.id + '">' +
         '<div class="gb-msg-user">' +
         '<div class="gb-msg-avatar">' + (avatarUrl ? '<img src="' + avatarUrl + '" alt="">' : (m.authorName ? m.authorName.charAt(0).toUpperCase() : '?')) + '</div>' +
@@ -1607,9 +1623,12 @@ const APP = {
     if (this._newAvatar) {
       try {
         await db.collection('users').doc(u.id).update({ avatar: this._newAvatar });
+        this.state.avatarCache[u.id] = this._newAvatar;
+        delete this.state._fetchedAuthors[u.id];
         u.avatar = this._newAvatar;
         this._newAvatar = null;
         this.afterLogin();
+        this.renderMessages();
         this.toast('Foto profilo aggiornata!', 'success');
       } catch (e) { console.error('Save avatar error:', e); this.toast('Errore: ' + e.message, 'error'); }
     } else {
