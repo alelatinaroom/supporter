@@ -1276,6 +1276,7 @@ textarea { resize: vertical; min-height: 60px; }
 .match-player-info {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 .match-player-name {
   font-weight: 600;
@@ -1799,4 +1800,8 @@ body.has-mini-player { padding-bottom: 56px; }
   .radio-actions { justify-content: center; }
   .radio-schedule-card { flex-wrap: wrap; gap: 8px; }
   .radio-podcast-card { flex-direction: column; }
+  .match-player-card { flex-wrap: wrap; }
+  .match-player-votes { flex-wrap: wrap; }
+  .match-player-avg { font-size: 18px; min-width: 28px; }
+  .match-star-btn { font-size: 20px; }
 }
