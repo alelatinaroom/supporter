@@ -645,6 +645,17 @@ textarea { resize: vertical; min-height: 60px; }
 .gb-like-btn:nth-of-type(2):hover { color: var(--accent3); }
 .gb-del-btn { margin-left: auto; }
 .gb-del-btn:hover { color: var(--accent3) !important; }
+.gb-msg-actions { gap: 2px; flex-wrap: wrap; }
+.gb-reaction {
+  background: none; border: none; cursor: pointer; font-size: 15px;
+  padding: 4px 8px; border-radius: var(--radius-xs);
+  transition: all 0.2s; font-family: var(--font);
+  display: inline-flex; align-items: center; gap: 3px;
+  color: var(--text-muted); line-height: 1;
+}
+.gb-reaction span { font-size: 12px; font-weight: 600; }
+.gb-reaction:hover { background: var(--glass); transform: scale(1.1); }
+.gb-reaction.active { color: var(--accent); background: rgba(77,166,255,0.1); }
 
 /* ==============================
    PAGINATION

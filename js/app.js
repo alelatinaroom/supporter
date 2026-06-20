@@ -53,6 +53,14 @@ const APP = {
     'bestemmia', 'bestemmiare', 'bestemmiatore',
     'dio', 'ges\u00f9', 'cristo', 'madonna',
   ],
+  REACTIONS: [
+    { type: 'like', emoji: '\uD83D\uDC4D', label: 'Mi piace' },
+    { type: 'love', emoji: '\u2764\uFE0F', label: 'Amore' },
+    { type: 'laugh', emoji: '\uD83D\uDE02', label: 'Risata' },
+    { type: 'wow', emoji: '\uD83D\uDE2E', label: 'Wow' },
+    { type: 'sad', emoji: '\uD83D\uDE22', label: 'Triste' },
+    { type: 'angry', emoji: '\uD83D\uDE21', label: 'Arrabbiato' },
+  ],
   religiousWords: ['dio', 'ges\u00f9', 'cristo', 'madonna', 'gesu', 'crist'],
   blasfemoPrefixes: ['porco', 'porca', 'cane', 'bestia', 'maiale', 'schifoso', 'infame', 'merda', 'bastardo', 'puttana', 'troia', 'zoccola', 'ladro', 'bono', 'bon'],
   blasfemoSuffixes: ['porco', 'porca', 'cane', 'bestia', 'maiale', 'schifoso', 'infame', 'merda', 'bastardo', 'puttana', 'troia', 'zoccola', 'ladro'],
@@ -735,7 +743,11 @@ const APP = {
     }
     const filter = this.state.currentFilter || 'all';
     let filtered = messages;
-    if (filter === 'popular') filtered = [...messages].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    if (filter === 'popular') filtered = [...messages].sort((a, b) => {
+      const aTotal = a.reactions ? Object.values(a.reactions).reduce((s, v) => s + v, 0) : (a.likes || 0);
+      const bTotal = b.reactions ? Object.values(b.reactions).reduce((s, v) => s + v, 0) : (b.likes || 0);
+      return bTotal - aTotal;
+    });
     const totalPages = Math.ceil(filtered.length / this.state.messagesPerPage) || 1;
     const page = Math.min(this.state.messagesPage, totalPages);
     this.state.messagesPage = page;
@@ -769,8 +781,7 @@ const APP = {
         '</div></div>' +
         '<div class="gb-msg-text">' + this.escapeHtml(m.text) + '</div>' +
         '<div class="gb-msg-actions">' +
-        '<button class="gb-like-btn" onclick="APP.toggleLike(\'' + m.id + '\')"><i class="fas fa-thumbs-up"></i> <span>' + (m.likes || 0) + '</span></button>' +
-        '<button class="gb-like-btn" onclick="APP.toggleDislike(\'' + m.id + '\')"><i class="fas fa-thumbs-down"></i> <span>' + (m.dislikes || 0) + '</span></button>' +
+        this.renderReactions(m) +
         (isOwner || (this.state.currentUser && this.state.currentUser.role === 'admin') ? '<button class="gb-like-btn gb-del-btn" onclick="APP.deleteMessage(\'' + m.id + '\')"><i class="fas fa-trash"></i></button>' : '') +
         '</div></div>';
     }).join('');
@@ -790,6 +801,42 @@ const APP = {
     html += '<button class="gb-page-btn" onclick="APP.goToPage(' + (page + 1) + ')"' + (page >= totalPages ? ' disabled' : '') + '><i class="fas fa-chevron-right"></i></button>';
     html += '</div>';
     container.innerHTML = html;
+  },
+
+  renderReactions(m) {
+    const reactions = m.reactions || {};
+    const userReact = (this.state.currentUser && m.userReactions && m.userReactions[this.state.currentUser.id]) || null;
+    return this.REACTIONS.map(r => {
+      const count = reactions[r.type] || 0;
+      const active = userReact === r.type ? ' active' : '';
+      return '<button class="gb-reaction' + active + '" onclick="APP.toggleReaction(\'' + r.type + '\',\'' + m.id + '\')" title="' + r.label + '">' +
+        r.emoji + ' <span>' + count + '</span></button>';
+    }).join('');
+  },
+
+  async toggleReaction(type, messageId) {
+    if (!this.state.currentUser) { this.toast('Accedi per reagire!', 'warning'); return; }
+    const uid = this.state.currentUser.id;
+    try {
+      const doc = await db.collection('messages').doc(messageId).get();
+      if (!doc.exists) return;
+      const data = doc.data();
+      const reactions = data.reactions || {};
+      const userReactions = data.userReactions || {};
+      const oldType = userReactions[uid] || null;
+      if (oldType === type) {
+        reactions[type] = Math.max(0, (reactions[type] || 0) - 1);
+        delete userReactions[uid];
+      } else {
+        if (oldType) {
+          reactions[oldType] = Math.max(0, (reactions[oldType] || 0) - 1);
+        }
+        reactions[type] = (reactions[type] || 0) + 1;
+        userReactions[uid] = type;
+      }
+      if (reactions[type] <= 0) delete reactions[type];
+      await db.collection('messages').doc(messageId).update({ reactions, userReactions });
+    } catch (e) { this.toast('Errore.', 'error'); }
   },
 
   goToPage(page) {
@@ -812,10 +859,8 @@ const APP = {
         authorId: this.state.currentUser.id,
         authorName: this.state.currentUser.username,
         authorAvatar: this.state.currentUser.avatar || '',
-        likes: 0,
-        dislikes: 0,
-        likedBy: [],
-        dislikedBy: [],
+        reactions: {},
+        userReactions: {},
         createdAt: Date.now(),
       });
       input.value = '';
@@ -825,49 +870,7 @@ const APP = {
     }
   },
 
-  async toggleLike(messageId) {
-    if (!this.state.currentUser) { this.toast('Accedi per votare!', 'warning'); return; }
-    const uid = this.state.currentUser.id;
-    try {
-      const doc = await db.collection('messages').doc(messageId).get();
-      if (!doc.exists) return;
-      const data = doc.data();
-      const likedBy = data.likedBy || [];
-      const dislikedBy = data.dislikedBy || [];
-      if (likedBy.includes(uid)) {
-        await db.collection('messages').doc(messageId).update({ likes: (data.likes || 1) - 1, likedBy: firebase.firestore.FieldValue.arrayRemove(uid) });
-      } else {
-        const updates = { likes: (data.likes || 0) + 1, likedBy: firebase.firestore.FieldValue.arrayUnion(uid) };
-        if (dislikedBy.includes(uid)) {
-          updates.dislikes = (data.dislikes || 1) - 1;
-          updates.dislikedBy = firebase.firestore.FieldValue.arrayRemove(uid);
-        }
-        await db.collection('messages').doc(messageId).update(updates);
-      }
-    } catch (e) { this.toast('Errore.', 'error'); }
-  },
-
-  async toggleDislike(messageId) {
-    if (!this.state.currentUser) { this.toast('Accedi per votare!', 'warning'); return; }
-    const uid = this.state.currentUser.id;
-    try {
-      const doc = await db.collection('messages').doc(messageId).get();
-      if (!doc.exists) return;
-      const data = doc.data();
-      const dislikedBy = data.dislikedBy || [];
-      const likedBy = data.likedBy || [];
-      if (dislikedBy.includes(uid)) {
-        await db.collection('messages').doc(messageId).update({ dislikes: (data.dislikes || 1) - 1, dislikedBy: firebase.firestore.FieldValue.arrayRemove(uid) });
-      } else {
-        const updates = { dislikes: (data.dislikes || 0) + 1, dislikedBy: firebase.firestore.FieldValue.arrayUnion(uid) };
-        if (likedBy.includes(uid)) {
-          updates.likes = (data.likes || 1) - 1;
-          updates.likedBy = firebase.firestore.FieldValue.arrayRemove(uid);
-        }
-        await db.collection('messages').doc(messageId).update(updates);
-      }
-    } catch (e) { this.toast('Errore.', 'error'); }
-  },
+  // replaced by toggleReaction
 
   async deleteMessage(messageId) {
     if (!this.state.currentUser) return;
