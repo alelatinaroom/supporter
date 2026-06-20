@@ -1,12 +1,5 @@
-/* ==============================
-   AleLatina Supporter Rooms - App
-   ============================== */
-
 const APP = {
-
-  /* ---------- BAD WORDS FILTER ---------- */
   badWords: [
-    // Volgarità italiane
     'cazzo', 'cazzata', 'cazzone', 'cazzimma', 'cazzuto', 'cazzaro',
     'coglione', 'coglioni', 'coglionata', 'coglionazzo',
     'stronzo', 'stronza', 'stronzata', 'stronzate', 'stronzino',
@@ -43,56 +36,47 @@ const APP = {
     'incazzato', 'incazzarsi', 'incazzatura',
     'rompicazzo', 'rompicoglioni',
     'testa di cazzo', 'testa di minchia',
-    // Inglese volgare
     'fuck', 'fucking', 'fucker', 'fuckers', 'fucked',
     'shit', 'bullshit', 'motherfucker',
     'asshole', 'bitch',
-    // Blasfemia / bestemmie
     'dio bestia', 'dio porco', 'dio cane', 'dio maiale',
     'dio schifoso', 'dio infame', 'dio merda', 'dio bastardo',
     'cristo bestia', 'cristo porco', 'cristo cane',
     'madonna puttana', 'madonna troia', 'madonna zoccola',
     'madonna bastarda', 'madonna porca',
-    'gesù porco', 'gesù bestia', 'gesù cane',
+    'ges\u00f9 porco', 'ges\u00f9 bestia', 'ges\u00f9 cane',
     'sangue di dio', 'sangue di cristo', 'sangue della madonna',
     'santiddio',
-    'porco dio', 'porco cristo', 'porco gesù', 'porca madonna',
+    'porco dio', 'porco cristo', 'porco ges\u00f9', 'porca madonna',
     'porca puttana', 'porco il dio', 'porco quel dio',
     'dio bono', 'dio bon', 'dio ladro',
     'bestemmia', 'bestemmiare', 'bestemmiatore',
-    'dio', 'gesù', 'cristo', 'madonna',  // solo se in contesto blasfemo
+    'dio', 'ges\u00f9', 'cristo', 'madonna',
   ],
-
-  /* ---------- PROFANITY CONTEXT CHECK ---------- */
-  // Parole religiose che sono OK da sole ma blasfeme in certi contesti
-  religiousWords: ['dio', 'gesù', 'cristo', 'madonna', 'gesu', 'crist'],
+  religiousWords: ['dio', 'ges\u00f9', 'cristo', 'madonna', 'gesu', 'crist'],
   blasfemoPrefixes: ['porco', 'porca', 'cane', 'bestia', 'maiale', 'schifoso', 'infame', 'merda', 'bastardo', 'puttana', 'troia', 'zoccola', 'ladro', 'bono', 'bon'],
   blasfemoSuffixes: ['porco', 'porca', 'cane', 'bestia', 'maiale', 'schifoso', 'infame', 'merda', 'bastardo', 'puttana', 'troia', 'zoccola', 'ladro'],
 
-  /* ---------- STATE ---------- */
   state: {
-    users: JSON.parse(localStorage.getItem('alelatina_users')) || [],
-    messages: JSON.parse(localStorage.getItem('alelatina_messages')) || [],
-    privateMessages: JSON.parse(localStorage.getItem('alelatina_pms')) || [],
     currentUser: null,
-    currentFilter: 'all',
     sidebarOpen: false,
     redirectAfterLogin: null,
-    radio: JSON.parse(localStorage.getItem('alelatina_radio')) || { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [] },
-    articles: JSON.parse(localStorage.getItem('alelatina_articles')) || [],
-    matches: JSON.parse(localStorage.getItem('alelatina_matches')) || [],
+    messagesUnsub: null,
+    chatsUnsub: null,
     _editingArticleId: null,
+    _editingMatchId: null,
+    _editingUserId: null,
+    _editingPodcastId: null,
+    _editingChatPartnerId: null,
+    radioData: null,
   },
 
-  /* ---------- DOM REFS ---------- */
   el: {},
 
-  /* ---------- INIT ---------- */
   init() {
-    sessionStorage.removeItem('alelatina_session');
     this.cacheDOM();
     this.bindEvents();
-    this.seedAdmin();
+    this.initAuth();
     this.showSplash();
   },
 
@@ -137,87 +121,40 @@ const APP = {
       authTabs: qsa('.auth-tab'),
       gbMessageInput: $('gbMessageInput'),
       gbPostBtn: $('gbPostBtn'),
-      gbPostError: $('gbPostError'),
-      gbCharCount: $('gbCharCount'),
       gbNewPost: $('gbNewPost'),
       gbMessages: $('gbMessages'),
-      gbNewAvatar: $('gbNewAvatar'),
       gbFilters: qsa('.gb-filter'),
+      updateCharCount: $('updateCharCount'),
       membersSearch: $('membersSearch'),
       membersList: $('membersList'),
+      sidebarItems: qsa('.sidebar-item'),
       adminTabs: qsa('.admin-tab'),
       adminMessages: $('adminMessages'),
-      adminUsers: $('adminUsers'),
-      adminRadio: $('adminRadio'),
       adminMsgList: $('adminMsgList'),
-      adminUserList: $('adminUserList'),
       adminMsgCount: $('adminMsgCount'),
-      adminUserCount: $('adminUserCount'),
       adminClearFiltered: $('adminClearFiltered'),
+      adminUsers: $('adminUsers'),
+      adminUserList: $('adminUserList'),
+      adminUserCount: $('adminUserCount'),
       adminAddUserBtn: $('adminAddUserBtn'),
-      userModal: $('userModal'),
-      userModalTitle: $('userModalTitle'),
-      userModalClose: $('userModalClose'),
-      umUsername: $('umUsername'),
-      umEmail: $('umEmail'),
-      umPassword: $('umPassword'),
-      umRole: $('umRole'),
-      umError: $('umError'),
-      umCancelBtn: $('umCancelBtn'),
-      umSaveBtn: $('umSaveBtn'),
-      toastContainer: $('toastContainer'),
-      sidebarItems: qsa('.sidebar-item[data-page]'),
-      sidebarMsgBadge: $('sidebarMsgBadge'),
-      homePage: $('homePage'),
-      profilePage: $('profilePage'),
-      profileAvatar: $('profileAvatar'),
-      profileAvatarOverlay: $('profileAvatarOverlay'),
-      profileAvatarInput: $('profileAvatarInput'),
-      profileUsername: $('profileUsername'),
-      profileEmail: $('profileEmail'),
-      profileRole: $('profileRole'),
-      profileJoined: $('profileJoined'),
-      profileSaveBtn: $('profileSaveBtn'),
-      profileRemoveBtn: $('profileRemoveBtn'),
-      profileStatus: $('profileStatus'),
-      messagesPage: $('messagesPage'),
-      pmInbox: $('pmInbox'),
-      pmConversation: $('pmConversation'),
-      pmConversations: $('pmConversations'),
-      pmBackBtn: $('pmBackBtn'),
-      pmConvHeader: $('pmConvHeader'),
-      pmConvMessages: $('pmConvMessages'),
-      pmMessageInput: $('pmMessageInput'),
-      pmSendBtn: $('pmSendBtn'),
-      pmError: $('pmError'),
-      radioPage: $('radioPage'),
-      radioAudio: $('radioAudio'),
-      radioMixlrEmbed: $('radioMixlrEmbed'),
-      radioDirectPlayer: $('radioDirectPlayer'),
-      radioActions: $('radioActions'),
-      mixlrIframe: $('mixlrIframe'),
-      radioPlayBtn: $('radioPlayBtn'),
-      radioStopBtn: $('radioStopBtn'),
-      radioStreamName: $('radioStreamName'),
-      radioPodcastList: $('radioPodcastList'),
-      radioConfigInfo: $('radioConfigInfo'),
-      sidebarRadioBadge: $('sidebarRadioBadge'),
+      adminRadio: $('adminRadio'),
+      adminMixlrUser: $('adminMixlrUser'),
       adminStreamUrl: $('adminStreamUrl'),
       adminStreamName: $('adminStreamName'),
-      adminMixlrUser: $('adminMixlrUser'),
       adminSaveStreamBtn: $('adminSaveStreamBtn'),
       adminAddPodcastBtn: $('adminAddPodcastBtn'),
       adminPodcastList: $('adminPodcastList'),
-      podcastModal: $('podcastModal'),
-      podcastModalTitle: $('podcastModalTitle'),
-      podcastModalClose: $('podcastModalClose'),
-      pmTitle: $('pmTitle'),
-      pmDescription: $('pmDescription'),
-      pmAudioUrl: $('pmAudioUrl'),
-      pmImageUrl: $('pmImageUrl'),
-      pmCancelBtn: $('pmCancelBtn'),
-      pmSaveBtn: $('pmSaveBtn'),
-      pmPodcastError: $('pmPodcastError'),
+      radioPage: $('radioPage'),
+      radioMixlrEmbed: $('radioMixlrEmbed'),
+      mixlrIframe: $('mixlrIframe'),
+      radioDirectPlayer: $('radioDirectPlayer'),
+      radioAudio: $('radioAudio'),
+      radioStreamName: $('radioStreamName'),
+      radioPlayBtn: $('radioPlayBtn'),
+      radioStopBtn: $('radioStopBtn'),
+      radioConfigInfo: $('radioConfigInfo'),
+      radioPodcastList: $('radioPodcastList'),
+      sidebarRadioBadge: $('sidebarRadioBadge'),
       editorialsPage: $('editorialsPage'),
       editorialsList: $('editorialsList'),
       articlePage: $('articlePage'),
@@ -255,24 +192,61 @@ const APP = {
       mmError: $('mmError'),
       mmCancelBtn: $('mmCancelBtn'),
       mmSaveBtn: $('mmSaveBtn'),
+      userModal: $('userModal'),
+      userModalTitle: $('userModalTitle'),
+      userModalClose: $('userModalClose'),
+      umUsername: $('umUsername'),
+      umEmail: $('umEmail'),
+      umPassword: $('umPassword'),
+      umRole: $('umRole'),
+      umError: $('umError'),
+      umCancelBtn: $('umCancelBtn'),
+      umSaveBtn: $('umSaveBtn'),
+      podcastModal: $('podcastModal'),
+      podcastModalTitle: $('podcastModalTitle'),
+      podcastModalClose: $('podcastModalClose'),
+      pmTitle: $('pmTitle'),
+      pmDescription: $('pmDescription'),
+      pmAudioUrl: $('pmAudioUrl'),
+      pmImageUrl: $('pmImageUrl'),
+      pmPodcastError: $('pmPodcastError'),
+      pmCancelBtn: $('pmCancelBtn'),
+      pmSaveBtn: $('pmSaveBtn'),
+      profilePage: $('profilePage'),
+      profileAvatar: $('profileAvatar'),
+      profileAvatarOverlay: $('profileAvatarOverlay'),
+      profileAvatarInput: $('profileAvatarInput'),
+      profileUsername: $('profileUsername'),
+      profileEmail: $('profileEmail'),
+      profileRole: $('profileRole'),
+      profileJoined: $('profileJoined'),
+      profileSaveBtn: $('profileSaveBtn'),
+      profileRemoveBtn: $('profileRemoveBtn'),
+      profileStatus: $('profileStatus'),
+      messagesPage: $('messagesPage'),
+      pmInbox: $('pmInbox'),
+      pmConversations: $('pmConversations'),
+      pmConversation: $('pmConversation'),
+      pmBackBtn: $('pmBackBtn'),
+      pmConvHeader: $('pmConvHeader'),
+      pmConvMessages: $('pmConvMessages'),
+      pmMessageInput: $('pmMessageInput'),
+      pmSendBtn: $('pmSendBtn'),
+      pmError: $('pmError'),
+      sidebarMsgBadge: $('sidebarMsgBadge'),
+      sidebarMessagesBtn: $('sidebarMessagesBtn'),
+      toastContainer: $('toastContainer'),
     };
   },
 
   bindEvents() {
-    // Auth tabs
     this.el.authTabs.forEach(tab => {
       tab.addEventListener('click', () => this.switchAuthTab(tab.dataset.form));
     });
-
-    // Login & Register
     this.el.loginBtn.addEventListener('click', () => this.login());
     this.el.loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') this.login(); });
     this.el.registerBtn.addEventListener('click', () => this.register());
     this.el.regPassword.addEventListener('keydown', e => { if (e.key === 'Enter') this.register(); });
-
-    // Message posting: events bound dynamically in renderGuestbookUI
-
-    // Filters
     this.el.gbFilters.forEach(f => {
       f.addEventListener('click', () => {
         this.el.gbFilters.forEach(x => x.classList.remove('active'));
@@ -281,39 +255,22 @@ const APP = {
         this.renderMessages();
       });
     });
-
-    // Members search
     this.el.membersSearch.addEventListener('input', () => this.renderMembers());
-
-    // Sidebar
     this.el.menuToggle.addEventListener('click', () => this.toggleSidebar());
     this.el.sidebarClose.addEventListener('click', () => this.closeSidebar());
     this.el.sidebarOverlay.addEventListener('click', () => this.closeSidebar());
-
-    // Navigation items
     this.el.sidebarItems.forEach(item => {
       item.addEventListener('click', () => {
-        this.navigateTo(item.dataset.page);
         this.closeSidebar();
+        const page = item.dataset.page;
+        if (page) this.navigateTo(page);
       });
     });
-
-    // Top bar auth buttons (safe: elements might not exist in cached HTML)
     if (this.el.topLoginBtn) this.el.topLoginBtn.addEventListener('click', () => this.showAuth());
-    if (this.el.topRegisterBtn) this.el.topRegisterBtn.addEventListener('click', () => {
-      this.showAuth();
-      this.switchAuthTab('register');
-    });
-    if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.addEventListener('click', () => {
-      this.showAuth();
-      this.closeSidebar();
-    });
-
-    // Logout buttons
+    if (this.el.topRegisterBtn) this.el.topRegisterBtn.addEventListener('click', () => { this.showAuth(); this.switchAuthTab('register'); });
+    if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.addEventListener('click', () => { this.closeSidebar(); this.showAuth(); });
     this.el.logoutBtn.addEventListener('click', () => this.logout());
     if (this.el.topLogoutBtn) this.el.topLogoutBtn.addEventListener('click', () => this.logout());
-
-    // Admin tabs
     this.el.adminTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         this.el.adminTabs.forEach(x => x.classList.remove('active'));
@@ -334,367 +291,183 @@ const APP = {
         }
       });
     });
-
-    // Admin clear filtered
     this.el.adminClearFiltered.addEventListener('click', () => this.adminClearFiltered());
-
-    // Admin add/edit user
-    if (this.el.adminAddUserBtn) {
-      this.el.adminAddUserBtn.addEventListener('click', () => this.adminOpenCreateUser());
-    }
-    if (this.el.userModalClose) {
-      this.el.userModalClose.addEventListener('click', () => this.adminCloseUserModal());
-    }
-    if (this.el.umCancelBtn) {
-      this.el.umCancelBtn.addEventListener('click', () => this.adminCloseUserModal());
-    }
-    if (this.el.umSaveBtn) {
-      this.el.umSaveBtn.addEventListener('click', () => this.adminSaveUser());
-    }
-    if (this.el.userModal) {
-      this.el.userModal.addEventListener('click', e => {
-        if (e.target === this.el.userModal) this.adminCloseUserModal();
-      });
-    }
-
-    // Article back button
+    if (this.el.adminAddUserBtn) this.el.adminAddUserBtn.addEventListener('click', () => this.adminOpenCreateUser());
+    if (this.el.userModalClose) this.el.userModalClose.addEventListener('click', () => this.adminCloseUserModal());
+    if (this.el.umCancelBtn) this.el.umCancelBtn.addEventListener('click', () => this.adminCloseUserModal());
+    if (this.el.umSaveBtn) this.el.umSaveBtn.addEventListener('click', () => this.adminSaveUser());
+    if (this.el.userModal) this.el.userModal.addEventListener('click', e => {
+      if (e.target === this.el.userModal) this.adminCloseUserModal();
+    });
     if (this.el.articleBackBtn) this.el.articleBackBtn.addEventListener('click', () => this.navigateTo('editorials'));
-
-    // Editor toolbar buttons
-    document.querySelectorAll('.editor-tb-btn[data-tag]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tag = btn.dataset.tag;
-        this.wrapSelection(tag);
-      });
-    });
-    document.querySelectorAll('.editor-tb-btn[data-wrap]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tag = btn.dataset.wrap;
-        this.wrapLine(tag);
-      });
-    });
-
-    // Article preview toggle
-    if (this.el.artPreviewBtn) {
-      this.el.artPreviewBtn.addEventListener('click', () => this.toggleArticlePreview());
-    }
-
-    // Article save / cancel
+    if (this.el.artPreviewBtn) this.el.artPreviewBtn.addEventListener('click', () => this.toggleArticlePreview());
     if (this.el.artSaveBtn) this.el.artSaveBtn.addEventListener('click', () => this.saveArticle());
     if (this.el.artCancelBtn) this.el.artCancelBtn.addEventListener('click', () => this.cancelArticle());
-
-    // Match back button
     if (this.el.matchBackBtn) this.el.matchBackBtn.addEventListener('click', () => this.navigateTo('pagelle'));
-
-    // Admin match management
     if (this.el.adminAddMatchBtn) this.el.adminAddMatchBtn.addEventListener('click', () => this.adminOpenAddMatch());
-
-    // Match modal
     if (this.el.matchModalClose) this.el.matchModalClose.addEventListener('click', () => this.adminCloseMatchModal());
     if (this.el.mmCancelBtn) this.el.mmCancelBtn.addEventListener('click', () => this.adminCloseMatchModal());
     if (this.el.mmSaveBtn) this.el.mmSaveBtn.addEventListener('click', () => this.adminSaveMatch());
     if (this.el.matchModal) this.el.matchModal.addEventListener('click', e => {
       if (e.target === this.el.matchModal) this.adminCloseMatchModal();
     });
-
-    // Radio play/stop
     if (this.el.radioPlayBtn) this.el.radioPlayBtn.addEventListener('click', () => this.radioPlay());
     if (this.el.radioStopBtn) this.el.radioStopBtn.addEventListener('click', () => this.radioStop());
-
-    // Admin radio
     if (this.el.adminSaveStreamBtn) this.el.adminSaveStreamBtn.addEventListener('click', () => this.adminSaveRadioConfig());
     if (this.el.adminAddPodcastBtn) this.el.adminAddPodcastBtn.addEventListener('click', () => this.adminOpenAddPodcast());
-
-    // Podcast modal
     if (this.el.podcastModalClose) this.el.podcastModalClose.addEventListener('click', () => this.adminClosePodcastModal());
     if (this.el.pmCancelBtn) this.el.pmCancelBtn.addEventListener('click', () => this.adminClosePodcastModal());
     if (this.el.pmSaveBtn) this.el.pmSaveBtn.addEventListener('click', () => this.adminSavePodcast());
     if (this.el.podcastModal) this.el.podcastModal.addEventListener('click', e => {
       if (e.target === this.el.podcastModal) this.adminClosePodcastModal();
     });
+    if (this.el.profileAvatarOverlay) this.el.profileAvatarOverlay.addEventListener('click', () => this.el.profileAvatarInput.click());
+    if (this.el.profileAvatarInput) this.el.profileAvatarInput.addEventListener('change', e => this.handleAvatarUpload(e));
+    if (this.el.profileSaveBtn) this.el.profileSaveBtn.addEventListener('click', () => this.saveProfile());
+    if (this.el.profileRemoveBtn) this.el.profileRemoveBtn.addEventListener('click', () => this.removeAvatar());
+    if (this.el.pmBackBtn) this.el.pmBackBtn.addEventListener('click', () => this.showInbox());
+    if (this.el.pmSendBtn) this.el.pmSendBtn.addEventListener('click', () => this.sendPrivateMessage());
+    if (this.el.pmMessageInput) this.el.pmMessageInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendPrivateMessage(); }
+    });
+  },
 
-    // Profile
-    if (this.el.profileAvatarOverlay) {
-      this.el.profileAvatarOverlay.addEventListener('click', () => this.el.profileAvatarInput.click());
-    }
-    if (this.el.profileAvatarInput) {
-      this.el.profileAvatarInput.addEventListener('change', e => this.handleAvatarUpload(e));
-    }
-    if (this.el.profileSaveBtn) {
-      this.el.profileSaveBtn.addEventListener('click', () => this.saveProfile());
-    }
-    if (this.el.profileRemoveBtn) {
-      this.el.profileRemoveBtn.addEventListener('click', () => this.removeAvatar());
-    }
+  initAuth() {
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        try {
+          const doc = await db.collection('users').doc(user.uid).get();
+          if (doc.exists) {
+            this.state.currentUser = { id: user.uid, ...doc.data() };
+          } else {
+            this.state.currentUser = { id: user.uid, username: user.email.split('@')[0], email: user.email, role: 'user', avatar: '', createdAt: Date.now() };
+            await db.collection('users').doc(user.uid).set(this.state.currentUser);
+          }
+          this.afterLogin();
+        } catch (e) {
+          console.error('Auth error:', e);
+          this.state.currentUser = null;
+          this.afterLogout();
+        }
+      } else {
+        this.state.currentUser = null;
+        this.afterLogout();
+      }
+    });
+  },
 
-    // Private messages
-    if (this.el.pmBackBtn) {
-      this.el.pmBackBtn.addEventListener('click', () => this.showInbox());
-    }
-    if (this.el.pmSendBtn) {
-      this.el.pmSendBtn.addEventListener('click', () => this.sendPrivateMessage());
-    }
-    if (this.el.pmMessageInput) {
-      this.el.pmMessageInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && e.ctrlKey) this.sendPrivateMessage();
-      });
+  afterLogin() {
+    const u = this.state.currentUser;
+    if (!u) return;
+    if (this.el.topUsername) this.el.topUsername.textContent = u.username;
+    if (this.el.topAvatar) this.el.topAvatar.textContent = u.username.charAt(0).toUpperCase();
+    if (this.el.topAuth) this.el.topAuth.style.display = 'none';
+    if (this.el.topUser) this.el.topUser.style.display = '';
+    if (this.el.sidebarUsername) this.el.sidebarUsername.textContent = u.username;
+    if (this.el.sidebarAvatar) this.el.sidebarAvatar.textContent = u.username.charAt(0).toUpperCase();
+    const roleMap = { admin: 'Amministratore', editor: 'Editor', user: 'Tifoso' };
+    if (this.el.sidebarRole) this.el.sidebarRole.textContent = roleMap[u.role] || 'Tifoso';
+    if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.style.display = 'none';
+    if (this.el.logoutBtn) this.el.logoutBtn.style.display = '';
+    if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = u.role === 'admin' ? '' : 'none';
+    if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = (u.role === 'editor' || u.role === 'admin') ? '' : 'none';
+    this.updateMsgBadge();
+    this.updateRadioBadge();
+    if (this.state.redirectAfterLogin) {
+      this.navigateTo(this.state.redirectAfterLogin);
+      this.state.redirectAfterLogin = null;
+    } else {
+      this.navigateTo('guestbook');
     }
   },
 
-  /* ---------- SPLASH ---------- */
-  showSplash() {
-    setTimeout(() => {
-      this.el.splash.classList.add('hide');
-      setTimeout(() => {
-        this.el.splash.style.display = 'none';
-        this.showHome();
-      }, 800);
-    }, 1800);
-  },
-
-  /* ---------- AUTH ---------- */
-  seedAdmin() {
-    const adminExists = this.state.users.find(u => u.username === 'admin');
-    if (!adminExists) {
-      this.state.users.push({
-        id: 'admin_' + Date.now(),
-        username: 'admin',
-        password: 'AdminLatina2025!',
-        email: 'admin@alelatina.it',
-        role: 'admin',
-        createdAt: Date.now(),
-        banned: false,
-      });
-      this.saveUsers();
-    }
-  },
-
-  switchAuthTab(form) {
-    this.el.authTabs.forEach(t => t.classList.toggle('active', t.dataset.form === form));
-    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-    document.getElementById(form + 'Form').classList.add('active');
-    this.el.loginError.textContent = '';
-    this.el.regError.textContent = '';
-  },
-
-  login() {
-    const username = this.el.loginUsername.value.trim();
-    const password = this.el.loginPassword.value.trim();
-    this.el.loginError.textContent = '';
-
-    if (!username || !password) {
-      this.el.loginError.textContent = 'Inserisci username e password.';
-      return;
-    }
-
-    const user = this.state.users.find(u => u.username === username);
-    if (!user) {
-      this.el.loginError.textContent = 'Utente non trovato.';
-      return;
-    }
-    if (user.banned) {
-      this.el.loginError.textContent = 'Il tuo account è stato sospeso.';
-      return;
-    }
-    if (user.password !== password) {
-      this.el.loginError.textContent = 'Password errata.';
-      return;
-    }
-
-    this.state.currentUser = user;
-    this.showApp();
-    this.toast('Benvenuto, ' + user.username + '!', 'success');
-    this.el.loginUsername.value = '';
-    this.el.loginPassword.value = '';
-  },
-
-  register() {
-    const username = this.el.regUsername.value.trim();
-    const email = this.el.regEmail.value.trim();
-    const password = this.el.regPassword.value.trim();
-    this.el.regError.textContent = '';
-
-    if (!username || !email || !password) {
-      this.el.regError.textContent = 'Compila tutti i campi.';
-      return;
-    }
-    if (username.length < 3) {
-      this.el.regError.textContent = 'Username troppo corto (min 3 caratteri).';
-      return;
-    }
-    if (password.length < 6) {
-      this.el.regError.textContent = 'Password troppo corta (min 6 caratteri).';
-      return;
-    }
-    if (!email.includes('@')) {
-      this.el.regError.textContent = 'Email non valida.';
-      return;
-    }
-    if (this.state.users.find(u => u.username === username)) {
-      this.el.regError.textContent = 'Username già in uso.';
-      return;
-    }
-
-    const user = {
-      id: 'user_' + Date.now(),
-      username,
-      password,
-      email,
-      role: 'user',
-      createdAt: Date.now(),
-      banned: false,
-    };
-
-    this.state.users.push(user);
-    this.saveUsers();
-
-    this.state.currentUser = user;
-    this.showApp();
-    this.toast('Registrazione completata! Benvenuto ' + username + '!', 'success');
-    this.el.regUsername.value = '';
-    this.el.regEmail.value = '';
-    this.el.regPassword.value = '';
-  },
-
-  logout() {
-    this.state.currentUser = null;
-    this.closeSidebar();
-    this.showHome();
-    this.toast('Arrivederci! #ForzaLatina', 'info');
-  },
-
-  /* ---------- APP UI ---------- */
-  showHome() {
-    if (!this.el.homePage) {
-      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a1628;color:#e8edf5;font-family:sans-serif;text-align:center;padding:40px"><div><h2 style="color:#4da6ff">AleLatina Supporter Rooms</h2><p style="margin:20px 0;color:#8899b4">La pagina è stata aggiornata. Per favore fai <strong>Ctrl+F5</strong> per ricaricare.</p><button onclick="location.reload(true)" style="padding:10px 24px;background:#4da6ff;border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer">Ricarica pagina</button></div></div>';
-      return;
-    }
-    this.state.currentUser = null;
-    this.el.authPage.style.display = 'none';
-    this.el.topBar.style.display = 'none';
-    this.el.sidebar.style.display = 'none';
-    this.el.guestbookPage.style.display = 'none';
-    this.el.membersPage.style.display = 'none';
-    this.el.rulesPage.style.display = 'none';
-    this.el.adminPage.style.display = 'none';
-    this.el.profilePage.style.display = 'none';
-    this.el.messagesPage.style.display = 'none';
-    this.el.homePage.style.display = '';
-  },
-
-  enterAsGuest() {
-    this.enterAsGuestPage('guestbook');
-  },
-
-  enterAsGuestPage(page) {
-    this.state.currentUser = null;
-    this.el.homePage.style.display = 'none';
-    this.el.topBar.style.display = '';
-    this.el.sidebar.style.display = '';
-
-    if (this.el.topUser) this.el.topUser.style.display = 'none';
+  afterLogout() {
+    this.stopMessagesListener();
+    this.stopChatsListener();
+    if (this.el.topUsername) this.el.topUsername.textContent = 'User';
+    if (this.el.topAvatar) this.el.topAvatar.textContent = 'U';
     if (this.el.topAuth) this.el.topAuth.style.display = '';
-
-    if (this.el.sidebarUser) this.el.sidebarUser.style.display = 'none';
+    if (this.el.topUser) this.el.topUser.style.display = 'none';
+    if (this.el.sidebarUsername) this.el.sidebarUsername.textContent = 'User';
+    if (this.el.sidebarAvatar) this.el.sidebarAvatar.textContent = 'U';
+    if (this.el.sidebarRole) this.el.sidebarRole.textContent = 'Tifoso';
     if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.style.display = '';
     if (this.el.logoutBtn) this.el.logoutBtn.style.display = 'none';
     if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = 'none';
     if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = 'none';
-
-    this.navigateTo(page);
+    if (this.el.sidebarMsgBadge) this.el.sidebarMsgBadge.style.display = 'none';
+    this.navigateTo('home');
   },
 
-  enterAsUser() {
-    this.showAuth();
+  switchAuthTab(tab) {
+    this.el.authTabs.forEach(t => t.classList.toggle('active', t.dataset.form === tab));
+    document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+    document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+    if (this.el.loginError) this.el.loginError.textContent = '';
+    if (this.el.regError) this.el.regError.textContent = '';
   },
 
-  showAuth() {
-    this.el.homePage.style.display = 'none';
-    this.el.authPage.style.display = '';
-    this.el.guestbookPage.style.display = 'none';
-    this.el.membersPage.style.display = 'none';
-    this.el.rulesPage.style.display = 'none';
-    this.el.adminPage.style.display = 'none';
-    this.el.profilePage.style.display = 'none';
-    this.el.messagesPage.style.display = 'none';
-    this.el.topBar.style.display = 'none';
-    this.el.sidebar.style.display = 'none';
-  },
-
-  showApp() {
-    this.el.homePage.style.display = 'none';
-    this.el.authPage.style.display = 'none';
-    this.el.topBar.style.display = '';
-    this.el.sidebar.style.display = '';
-
-    // Show user info
-    if (this.el.topUser) this.el.topUser.style.display = '';
-    if (this.el.topAuth) this.el.topAuth.style.display = 'none';
-    if (this.el.sidebarUser) this.el.sidebarUser.style.display = '';
-    if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.style.display = 'none';
-    if (this.el.logoutBtn) this.el.logoutBtn.style.display = '';
-
-    // Update user info in UI
-    const u = this.state.currentUser;
-    const initial = u.username.charAt(0).toUpperCase();
-    if (this.el.topUsername) this.el.topUsername.textContent = u.username;
-    if (this.el.topAvatar) {
-      if (u.avatar) {
-        this.el.topAvatar.innerHTML = '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-      } else {
-        this.el.topAvatar.textContent = initial;
-      }
+  async login() {
+    const username = this.el.loginUsername.value.trim();
+    const password = this.el.loginPassword.value.trim();
+    if (this.el.loginError) this.el.loginError.textContent = '';
+    if (!username || !password) { if (this.el.loginError) this.el.loginError.textContent = 'Compila tutti i campi.'; return; }
+    try {
+      const snapshot = await db.collection('users').where('username', '==', username).get();
+      if (snapshot.empty) { if (this.el.loginError) this.el.loginError.textContent = 'Utente non trovato.'; return; }
+      const userData = snapshot.docs[0].data();
+      await auth.signInWithEmailAndPassword(userData.email, password);
+    } catch (e) {
+      if (this.el.loginError) this.el.loginError.textContent = e.code === 'auth/wrong-password' ? 'Password errata.' : e.code === 'auth/user-not-found' ? 'Utente non trovato.' : 'Errore di accesso. Verifica le credenziali.';
     }
-    if (this.el.sidebarAvatar) {
-      if (u.avatar) {
-        this.el.sidebarAvatar.innerHTML = '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-      } else {
-        this.el.sidebarAvatar.textContent = initial;
-      }
+  },
+
+  async register() {
+    const username = this.el.regUsername.value.trim();
+    const email = this.el.regEmail.value.trim();
+    const password = this.el.regPassword.value.trim();
+    if (this.el.regError) this.el.regError.textContent = '';
+    if (!username || !email || !password) { if (this.el.regError) this.el.regError.textContent = 'Compila tutti i campi.'; return; }
+    if (password.length < 6) { if (this.el.regError) this.el.regError.textContent = 'La password deve essere di almeno 6 caratteri.'; return; }
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) { if (this.el.regError) this.el.regError.textContent = 'Username: 3-20 caratteri, solo lettere, numeri e underscore.'; return; }
+    try {
+      const existing = await db.collection('users').where('username', '==', username).get();
+      if (!existing.empty) { if (this.el.regError) this.el.regError.textContent = 'Username gi\u00e0 in uso.'; return; }
+      const existingEmail = await db.collection('users').where('email', '==', email).get();
+      if (!existingEmail.empty) { if (this.el.regError) this.el.regError.textContent = 'Email gi\u00e0 registrata.'; return; }
+      const userCred = await auth.createUserWithEmailAndPassword(email, password);
+      const isFirst = (await db.collection('users').get()).size === 0;
+      await db.collection('users').doc(userCred.user.uid).set({
+        username, email, role: isFirst ? 'admin' : 'user', avatar: '', createdAt: Date.now()
+      });
+      this.toast('Registrato con successo! Bentornato ' + username, 'success');
+    } catch (e) {
+      if (this.el.regError) this.el.regError.textContent = e.code === 'auth/email-already-in-use' ? 'Email gi\u00e0 in uso.' : 'Errore durante la registrazione. Riprova.';
     }
-    if (this.el.sidebarUsername) this.el.sidebarUsername.textContent = u.username;
-    if (this.el.sidebarRole) this.el.sidebarRole.textContent = u.role === 'admin' ? 'Amministratore' : u.role === 'editor' ? 'Editor' : 'Tifoso';
+  },
 
-    // Editor & Admin button visibility
-    if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = (u.role === 'editor' || u.role === 'admin') ? '' : 'none';
-    if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = u.role === 'admin' ? '' : 'none';
-
-    // Update unread badge
-    this.updateMsgBadge();
-
-    // Update radio LIVE badge
-    this.updateRadioBadge();
-
-    // Navigate to default page
-    this.navigateTo('guestbook');
+  async logout() {
+    this.stopMessagesListener();
+    this.stopChatsListener();
+    await auth.signOut();
+    this.toast('Arrivederci!', 'info');
   },
 
   navigateTo(page) {
-    // Hide all pages
     const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'pagellePage', 'matchPage'];
-    pages.forEach(p => {
-      if (this.el[p]) this.el[p].style.display = 'none';
-    });
-
-    // Update sidebar active state
+    pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
     if (this.el.sidebarItems) {
-      this.el.sidebarItems.forEach(i => {
-        i.classList.toggle('active', i.dataset.page === page);
-      });
+      this.el.sidebarItems.forEach(i => { i.classList.toggle('active', i.dataset.page === page); });
     }
-
     switch (page) {
       case 'home':
-        if (this.state.currentUser) {
-          this.navigateTo('guestbook');
-          return;
-        }
+        if (this.state.currentUser) { this.navigateTo('guestbook'); return; }
         this.showHome();
         break;
       case 'guestbook':
         this.el.guestbookPage.style.display = '';
         this.renderGuestbookUI();
-        this.renderMessages();
+        this.startMessagesListener();
         break;
       case 'members':
         this.el.membersPage.style.display = '';
@@ -748,1157 +521,552 @@ const APP = {
     }
   },
 
-  /* ---------- SIDEBAR ---------- */
   toggleSidebar() {
     this.state.sidebarOpen = !this.state.sidebarOpen;
     this.el.sidebar.classList.toggle('open', this.state.sidebarOpen);
     this.el.sidebarOverlay.classList.toggle('show', this.state.sidebarOpen);
   },
 
-  closeSidebar() {
-    this.state.sidebarOpen = false;
-    this.el.sidebar.classList.remove('open');
-    this.el.sidebarOverlay.classList.remove('show');
+  closeSidebar() { this.state.sidebarOpen = false; this.el.sidebar.classList.remove('open'); this.el.sidebarOverlay.classList.remove('show'); },
+
+  /* ---------- SPLASH / HOME / AUTH ---------- */
+  showSplash() {
+    if (this.el.splash) {
+      this.el.splash.style.display = '';
+      setTimeout(() => {
+        this.el.splash.classList.add('fade-out');
+        setTimeout(() => {
+          this.el.splash.style.display = 'none';
+          if (this.el.topBar) this.el.topBar.style.display = '';
+          if (this.el.sidebar) this.el.sidebar.style.display = '';
+          if (this.state.currentUser) {
+            this.navigateTo('guestbook');
+          } else {
+            this.navigateTo('home');
+          }
+        }, 600);
+      }, 1500);
+    }
   },
 
-  /* ---------- BAD WORDS FILTER ---------- */
-  containsBadWords(text) {
+  showHome() {
+    if (this.el.homePage) this.el.homePage.style.display = '';
+  },
+
+  showAuth() {
+    this.state.redirectAfterLogin = this.getCurrentPage();
+    this.navigateTo('home');
+    if (this.el.authPage) this.el.authPage.style.display = '';
+    if (!this.state.currentUser) {
+      this.switchAuthTab('login');
+    }
+  },
+
+  getCurrentPage() {
+    const pages = ['guestbook', 'members', 'rules', 'radio', 'editorials', 'pagelle', 'messages'];
+    for (const p of pages) {
+      if (this.el[p + 'Page'] && this.el[p + 'Page'].style.display !== 'none') return p;
+    }
+    return 'guestbook';
+  },
+
+  enterAsGuest() { this.state.redirectAfterLogin = null; this.navigateTo('guestbook'); },
+  enterAsUser() { this.showAuth(); },
+  enterAsGuestPage(page) { this.state.redirectAfterLogin = null; this.navigateTo(page); },
+
+  /* ---------- TOAST ---------- */
+  toast(msg, type) {
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + (type || 'info');
+    t.innerHTML = msg;
+    this.el.toastContainer.appendChild(t);
+    setTimeout(() => { t.classList.add('toast-fade'); setTimeout(() => t.remove(), 400); }, 3000);
+  },
+
+  /* ---------- HELPERS ---------- */
+  escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  },
+
+  filterBadWords(text) {
+    let filtered = text;
+    for (const w of this.badWords) {
+      const regex = new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
+      filtered = filtered.replace(regex, '***');
+    }
+    return filtered;
+  },
+
+  checkBlasfemo(text) {
     const lower = text.toLowerCase();
-    for (const word of this.badWords) {
-      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp('\\b' + escaped + '\\b', 'i');
-      if (regex.test(lower)) return true;
+    for (const rw of this.religiousWords) {
+      if (lower.includes(rw)) {
+        for (const p of this.blasfemoPrefixes) {
+          if (lower.includes(p + ' ' + rw) || lower.includes(p + rw)) return true;
+        }
+        for (const s of this.blasfemoSuffixes) {
+          if (lower.includes(rw + ' ' + s) || lower.includes(rw + s)) return true;
+        }
+      }
     }
     return false;
   },
 
-  filterBadWords(text) {
-    let result = text;
-    // Replace full blasphemy phrases first
-    const phrases = [
-      'porco dio', 'porco cristo', 'porco gesù', 'porca madonna',
-      'dio porco', 'dio cane', 'dio bestia', 'dio maiale',
-      'dio schifoso', 'dio infame', 'dio merda', 'dio bastardo',
-      'cristo porco', 'cristo cane', 'cristo bestia',
-      'madonna puttana', 'madonna troia', 'madonna zoccola', 'madonna porca',
-      'gesù porco', 'gesù cane', 'gesù bestia',
-      'sangue di dio', 'sangue di cristo', 'sangue della madonna',
-      'porca puttana', 'porca madonna',
-      'dio bono', 'dio bon', 'dio ladro',
-      'dio bestia', 'dio cane',
-    ];
-    for (const phrase of phrases) {
-      const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(escaped, 'gi');
-      result = result.replace(regex, '***');
-    }
-
-    // Replace single bad words
-    for (const word of this.badWords) {
-      if (word.includes(' ')) continue; // already handled as phrase
-      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp('\\b' + escaped + '\\b', 'gi');
-      result = result.replace(regex, '***');
-    }
-
-    return result;
+  /* ---------- GUESTBOOK ---------- */
+  startMessagesListener() {
+    this.stopMessagesListener();
+    this.state.messagesUnsub = db.collection('messages').orderBy('createdAt', 'desc').limit(200).onSnapshot(snapshot => {
+      const messages = [];
+      snapshot.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
+      this.renderMessages(messages);
+    }, err => {
+      console.error('Messages listener error:', err);
+    });
   },
 
-  /* ---------- MESSAGES ---------- */
-  postMessage() {
-    const text = this.el.gbMessageInput.value.trim();
-    this.el.gbPostError.textContent = '';
-
-    if (!text) {
-      this.el.gbPostError.textContent = 'Scrivi un messaggio.';
-      return;
-    }
-    if (text.length > 500) {
-      this.el.gbPostError.textContent = 'Massimo 500 caratteri.';
-      return;
-    }
-
-    const hasBad = this.containsBadWords(text);
-    const filtered = hasBad ? this.filterBadWords(text) : text;
-
-    const message = {
-      id: 'msg_' + Date.now(),
-      userId: this.state.currentUser.id,
-      author: this.state.currentUser.username,
-      authorRole: this.state.currentUser.role,
-      text: filtered,
-      originalText: text,
-      filtered: hasBad,
-      likes: [],
-      dislikes: [],
-      createdAt: Date.now(),
-      deleted: false,
-    };
-
-    this.state.messages.unshift(message);
-    this.saveMessages();
-
-    this.el.gbMessageInput.value = '';
-    this.updateCharCount();
-
-    if (hasBad) {
-      this.toast('Messaggio pubblicato (contenuto filtrato).', 'warning');
-    } else {
-      this.toast('Messaggio pubblicato!', 'success');
-    }
-
-    this.renderMessages();
-  },
-
-  toggleLike(msgId) {
-    if (!this.state.currentUser) {
-      this.toast('Accedi per mettere like ai messaggi!', 'warning');
-      return;
-    }
-    const msg = this.state.messages.find(m => m.id === msgId);
-    if (!msg) return;
-    const uid = this.state.currentUser.id;
-    const idx = msg.likes.indexOf(uid);
-    if (idx > -1) {
-      msg.likes.splice(idx, 1);
-    } else {
-      msg.likes.push(uid);
-    }
-    this.saveMessages();
-    this.renderMessages();
-  },
-
-  toggleDislike(msgId) {
-    if (!this.state.currentUser) {
-      this.toast('Accedi per mettere dislike ai messaggi!', 'warning');
-      return;
-    }
-    const msg = this.state.messages.find(m => m.id === msgId);
-    if (!msg) return;
-    if (!msg.dislikes) msg.dislikes = [];
-    const uid = this.state.currentUser.id;
-    // Remove from likes if present
-    const li = msg.likes.indexOf(uid);
-    if (li > -1) msg.likes.splice(li, 1);
-    // Toggle dislike
-    const di = msg.dislikes.indexOf(uid);
-    if (di > -1) {
-      msg.dislikes.splice(di, 1);
-    } else {
-      msg.dislikes.push(uid);
-    }
-    this.saveMessages();
-    this.renderMessages();
-  },
-
-  showReactions(msgId, type) {
-    const msg = this.state.messages.find(m => m.id === msgId);
-    if (!msg) return;
-    const ids = type === 'like' ? (msg.likes || []) : (msg.dislikes || []);
-    if (ids.length === 0) { this.toast('Nessuna reazione', 'info'); return; }
-    const names = ids.map(id => {
-      const u = this.state.users.find(x => x.id === id);
-      return u ? u.username : '?';
-    }).join(', ');
-    this.toast(type === 'like' ? '👍 ' + names : '👎 ' + names, 'info');
-  },
-
-  deleteMessage(msgId) {
-    if (!this.state.currentUser) return;
-    if (!confirm('Eliminare questo messaggio?')) return;
-    const msg = this.state.messages.find(m => m.id === msgId);
-    if (msg) msg.deleted = true;
-    this.saveMessages();
-    this.renderMessages();
-    this.toast('Messaggio eliminato.', 'info');
+  stopMessagesListener() {
+    if (this.state.messagesUnsub) { this.state.messagesUnsub(); this.state.messagesUnsub = null; }
   },
 
   renderGuestbookUI() {
-    const container = this.el.gbNewPost;
-    if (!container) return;
+    if (!this.el.gbNewPost) return;
     if (this.state.currentUser) {
-      const u = this.state.currentUser;
-      const avatarHtml = u.avatar
-        ? '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
-        : u.username.charAt(0).toUpperCase();
-      container.innerHTML = [
-        '<div class="gb-new-avatar" id="gbNewAvatar">' + avatarHtml + '</div>',
-        '<div class="gb-new-input">',
-          '<textarea id="gbMessageInput" rows="3" placeholder="Scrivi qualcosa ai tuoi nerazzurri... #ForzaLatina"></textarea>',
-          '<div class="gb-new-tools">',
-            '<span class="gb-charcount" id="gbCharCount">0/500</span>',
-            '<button class="btn btn-primary btn-sm" id="gbPostBtn"><i class="fas fa-paper-plane"></i> Invia</button>',
-          '</div>',
-          '<p id="gbPostError" class="form-error"></p>',
-        '</div>'
-      ].join('');
-
-      this.el.gbMessageInput = document.getElementById('gbMessageInput');
+      this.el.gbNewPost.innerHTML =
+        '<div class="gb-post-form">' +
+        '<div class="gb-post-avatar">' + this.escapeHtml(this.state.currentUser.username.charAt(0).toUpperCase()) + '</div>' +
+        '<div class="gb-post-input-wrap">' +
+        '<textarea id="gbMessageInput" class="gb-post-input" placeholder="Scrivi un messaggio sul Muro..." maxlength="500"></textarea>' +
+        '<div class="gb-post-footer">' +
+        '<span id="updateCharCount" class="gb-charcount">0/500</span>' +
+        '<button id="gbPostBtn" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Pubblica</button>' +
+        '</div></div></div>';
       this.el.gbPostBtn = document.getElementById('gbPostBtn');
-      this.el.gbPostError = document.getElementById('gbPostError');
-      this.el.gbCharCount = document.getElementById('gbCharCount');
-      this.el.gbNewAvatar = document.getElementById('gbNewAvatar');
-
-      if (this.el.gbPostBtn) {
-        this.el.gbPostBtn.addEventListener('click', () => this.postMessage());
-      }
+      this.el.gbMessageInput = document.getElementById('gbMessageInput');
+      this.el.updateCharCount = document.getElementById('updateCharCount');
+      if (this.el.gbPostBtn) this.el.gbPostBtn.addEventListener('click', () => this.postMessage());
       if (this.el.gbMessageInput) {
         this.el.gbMessageInput.addEventListener('keydown', e => {
-          if (e.key === 'Enter' && e.ctrlKey) this.postMessage();
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.postMessage(); }
         });
         this.el.gbMessageInput.addEventListener('input', () => this.updateCharCount());
       }
     } else {
-      container.innerHTML = [
-        '<div class="gb-login-prompt">',
-          '<i class="fas fa-lock"></i>',
-          '<h3>Accedi per scrivere</h3>',
-          '<p>Solo i tifosi registrati possono lasciare un messaggio. Registrati subito, è gratuito!</p>',
-          '<button class="btn btn-primary" onclick="APP.showAuth()"><i class="fas fa-right-to-bracket"></i> Accedi / Registrati</button>',
-        '</div>'
-      ].join('');
+      this.el.gbNewPost.innerHTML =
+        '<div class="gb-login-prompt">' +
+        '<i class="fas fa-lock"></i>' +
+        '<p><a href="#" onclick="APP.showAuth();return false">Accedi</a> o <a href="#" onclick="APP.showAuth();return false">registrati</a> per scrivere sul Muro</p>' +
+        '</div>';
     }
+  },
+
+  renderMessages(messages) {
+    if (!this.el.gbMessages) return;
+    const container = this.el.gbMessages;
+    if (!messages || messages.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-message"></i><p>Nessun messaggio ancora. Sii il primo a scrivere!</p></div>';
+      return;
+    }
+    const filter = this.state.currentFilter || 'all';
+    let filtered = messages;
+    if (filter === 'popular') filtered = [...messages].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    container.innerHTML = filtered.map(m => {
+      const time = m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '';
+      const isOwner = this.state.currentUser && this.state.currentUser.id === m.authorId;
+      return '<div class="gb-message" data-id="' + m.id + '">' +
+        '<div class="gb-msg-avatar">' + (m.authorAvatar ? '<img src="' + m.authorAvatar + '" alt="">' : (m.authorName ? m.authorName.charAt(0).toUpperCase() : '?')) + '</div>' +
+        '<div class="gb-msg-body">' +
+        '<div class="gb-msg-header"><strong>' + this.escapeHtml(m.authorName || 'Anonimo') + '</strong> <span>' + time + '</span></div>' +
+        '<div class="gb-msg-text">' + this.escapeHtml(m.text) + '</div>' +
+        '<div class="gb-msg-actions">' +
+        '<button class="gb-like-btn" onclick="APP.toggleLike(\'' + m.id + '\')"><i class="fas fa-thumbs-up"></i> <span>' + (m.likes || 0) + '</span></button>' +
+        '<button class="gb-like-btn" onclick="APP.toggleDislike(\'' + m.id + '\')"><i class="fas fa-thumbs-down"></i> <span>' + (m.dislikes || 0) + '</span></button>' +
+        (isOwner || (this.state.currentUser && this.state.currentUser.role === 'admin') ? '<button class="gb-like-btn" onclick="APP.deleteMessage(\'' + m.id + '\')" style="color:var(--accent3)"><i class="fas fa-trash"></i></button>' : '') +
+        '</div></div></div>';
+    }).join('');
+  },
+
+  async postMessage() {
+    if (!this.state.currentUser) { this.toast('Accedi per scrivere!', 'warning'); return; }
+    const input = this.el.gbMessageInput;
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) { this.toast('Scrivi un messaggio!', 'warning'); return; }
+    if (this.checkBlasfemo(text)) { this.toast('Messaggio blasfemo non consentito.', 'error'); return; }
+    const filtered = this.filterBadWords(text);
+    try {
+      await db.collection('messages').add({
+        text: filtered,
+        authorId: this.state.currentUser.id,
+        authorName: this.state.currentUser.username,
+        authorAvatar: this.state.currentUser.avatar || '',
+        likes: 0,
+        dislikes: 0,
+        likedBy: [],
+        dislikedBy: [],
+        createdAt: Date.now(),
+      });
+      input.value = '';
+      this.updateCharCount();
+    } catch (e) {
+      this.toast('Errore durante l\'invio.', 'error');
+    }
+  },
+
+  async toggleLike(messageId) {
+    if (!this.state.currentUser) { this.toast('Accedi per votare!', 'warning'); return; }
+    const uid = this.state.currentUser.id;
+    try {
+      const doc = await db.collection('messages').doc(messageId).get();
+      if (!doc.exists) return;
+      const data = doc.data();
+      const likedBy = data.likedBy || [];
+      const dislikedBy = data.dislikedBy || [];
+      if (likedBy.includes(uid)) {
+        await db.collection('messages').doc(messageId).update({ likes: (data.likes || 1) - 1, likedBy: firebase.firestore.FieldValue.arrayRemove(uid) });
+      } else {
+        const updates = { likes: (data.likes || 0) + 1, likedBy: firebase.firestore.FieldValue.arrayUnion(uid) };
+        if (dislikedBy.includes(uid)) {
+          updates.dislikes = (data.dislikes || 1) - 1;
+          updates.dislikedBy = firebase.firestore.FieldValue.arrayRemove(uid);
+        }
+        await db.collection('messages').doc(messageId).update(updates);
+      }
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  async toggleDislike(messageId) {
+    if (!this.state.currentUser) { this.toast('Accedi per votare!', 'warning'); return; }
+    const uid = this.state.currentUser.id;
+    try {
+      const doc = await db.collection('messages').doc(messageId).get();
+      if (!doc.exists) return;
+      const data = doc.data();
+      const dislikedBy = data.dislikedBy || [];
+      const likedBy = data.likedBy || [];
+      if (dislikedBy.includes(uid)) {
+        await db.collection('messages').doc(messageId).update({ dislikes: (data.dislikes || 1) - 1, dislikedBy: firebase.firestore.FieldValue.arrayRemove(uid) });
+      } else {
+        const updates = { dislikes: (data.dislikes || 0) + 1, dislikedBy: firebase.firestore.FieldValue.arrayUnion(uid) };
+        if (likedBy.includes(uid)) {
+          updates.likes = (data.likes || 1) - 1;
+          updates.likedBy = firebase.firestore.FieldValue.arrayRemove(uid);
+        }
+        await db.collection('messages').doc(messageId).update(updates);
+      }
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  async deleteMessage(messageId) {
+    if (!this.state.currentUser) return;
+    if (!confirm('Eliminare questo messaggio?')) return;
+    try {
+      await db.collection('messages').doc(messageId).delete();
+    } catch (e) { this.toast('Errore.', 'error'); }
   },
 
   updateCharCount() {
-    const len = this.el.gbMessageInput.value.length;
-    this.el.gbCharCount.textContent = len + '/500';
-    this.el.gbCharCount.style.color = len > 500 ? 'var(--accent3)' : 'var(--text-muted)';
-  },
-
-  /* ---------- RENDER MESSAGES ---------- */
-  renderMessages() {
-    const container = this.el.gbMessages;
-    const filter = this.state.currentFilter;
-
-    let msgs = this.state.messages.filter(m => !m.deleted);
-
-    switch (filter) {
-      case 'latest':
-        msgs = msgs.sort((a, b) => b.createdAt - a.createdAt);
-        break;
-      case 'popular':
-        msgs = msgs.sort((a, b) => b.likes.length - a.likes.length);
-        break;
-      default:
-        msgs = msgs.sort((a, b) => b.createdAt - a.createdAt);
-    }
-
-    if (msgs.length === 0) {
-      container.innerHTML = `
-        <div class="gb-empty">
-          <i class="fas fa-message"></i>
-          <p>Nessun messaggio ancora. Sii il primo a scrivere!</p>
-        </div>`;
-      return;
-    }
-
-    const currentUid = this.state.currentUser ? this.state.currentUser.id : null;
-    const isAdmin = this.state.currentUser ? this.state.currentUser.role === 'admin' : false;
-
-    container.innerHTML = msgs.map(msg => {
-      const time = this.formatTime(msg.createdAt);
-      const likes = msg.likes.length;
-      const liked = currentUid ? msg.likes.includes(currentUid) : false;
-      const authorUser = this.state.users.find(u => u.id === msg.userId);
-      const avatarColor = this.stringToColor(msg.author);
-      const isOwn = currentUid ? msg.userId === currentUid : false;
-
-      const badgeHtml = msg.filtered
-        ? '<span class="msg-badge msg-badge-filtered"><i class="fas fa-filter"></i> Filtrato</span>'
-        : '';
-      const adminBadge = msg.authorRole === 'admin'
-        ? '<span class="msg-badge msg-badge-admin"><i class="fas fa-shield"></i> Admin</span>'
-        : '';
-
-      const dislikes = msg.dislikes ? msg.dislikes.length : 0;
-      const disliked = currentUid ? (msg.dislikes || []).includes(currentUid) : false;
-      const likeUsers = (msg.likes || []).map(id => { const u = this.state.users.find(x => x.id === id); return u ? u.username : ''; }).filter(Boolean).join(', ');
-      const dislikeUsers = (msg.dislikes || []).map(id => { const u = this.state.users.find(x => x.id === id); return u ? u.username : ''; }).filter(Boolean).join(', ');
-
-      const deleteBtn = (isAdmin || isOwn)
-        ? `<button class="msg-delete-btn" onclick="APP.deleteMessage('${msg.id}')" title="Elimina"><i class="fas fa-trash-can"></i></button>`
-        : '';
-
-      const likeBtn = currentUid
-        ? `<button class="msg-react-btn ${liked ? 'liked' : ''}" onclick="APP.toggleLike('${msg.id}')" title="${likeUsers || 'Metti like'}">
-             <i class="fa${liked ? 's' : 'r'} fa-thumbs-up"></i>
-             <span class="msg-react-count" onclick="event.stopPropagation();APP.showReactions('${msg.id}','like')">${likes > 0 ? likes : ''}</span>
-           </button>`
-        : `<span class="msg-react-btn" style="cursor:default"><i class="fa-regular fa-thumbs-up"></i> ${likes > 0 ? likes : ''}</span>`;
-
-      const dislikeBtn = currentUid
-        ? `<button class="msg-react-btn ${disliked ? 'disliked' : ''}" onclick="APP.toggleDislike('${msg.id}')" title="${dislikeUsers || 'Metti dislike'}">
-             <i class="fa${disliked ? 's' : 'r'} fa-thumbs-down"></i>
-             <span class="msg-react-count" onclick="event.stopPropagation();APP.showReactions('${msg.id}','dislike')">${dislikes > 0 ? dislikes : ''}</span>
-           </button>`
-        : `<span class="msg-react-btn" style="cursor:default"><i class="fa-regular fa-thumbs-down"></i> ${dislikes > 0 ? dislikes : ''}</span>`;
-
-      let displayText = msg.text;
-      if (msg.filtered) {
-        displayText = displayText.replace(/\*\*\*/g, '<span class="censored">[censurato]</span>');
-      }
-
-      let avatarDisplay;
-      if (authorUser && authorUser.avatar) {
-        avatarDisplay = '<img src="' + authorUser.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-      } else {
-        avatarDisplay = msg.author.charAt(0).toUpperCase();
-      }
-
-      return `
-        <div class="msg-card">
-          <div class="msg-header">
-            <div class="msg-avatar" style="background:${avatarColor}">${avatarDisplay}</div>
-            <div>
-              <div class="msg-author">${msg.author} ${adminBadge} ${badgeHtml}</div>
-              <div class="msg-time">${time}</div>
-            </div>
-          </div>
-          <div class="msg-body">${displayText}</div>
-          <div class="msg-footer">
-            ${likeBtn}
-            ${dislikeBtn}
-            ${deleteBtn}
-          </div>
-        </div>`;
-    }).join('');
+    const input = this.el.gbMessageInput;
+    const count = this.el.updateCharCount;
+    if (input && count) count.textContent = input.value.length + '/500';
   },
 
   /* ---------- MEMBERS ---------- */
-  renderMembers() {
-    const query = this.el.membersSearch.value.toLowerCase().trim();
-    let users = this.state.users.filter(u => !u.banned);
-    if (query) {
-      users = users.filter(u => u.username.toLowerCase().includes(query));
-    }
-    users.sort((a, b) => a.username.localeCompare(b.username));
-
-    const container = this.el.membersList;
-
-    if (users.length === 0) {
-      container.innerHTML = '<div class="gb-empty"><i class="fas fa-users"></i><p>Nessun utente trovato.</p></div>';
-      return;
-    }
-
-    const currentUid = this.state.currentUser ? this.state.currentUser.id : null;
-    container.innerHTML = users.map(u => {
-      const color = this.stringToColor(u.username);
-      const joinDate = new Date(u.createdAt).toLocaleDateString('it-IT');
-      const roleBadge = u.role === 'admin'
-        ? '<span class="member-role-badge member-role-admin"><i class="fas fa-shield"></i> Admin</span>'
-        : u.role === 'editor'
-        ? '<span class="member-role-badge member-role-editor"><i class="fas fa-pen-fancy"></i> Editor</span>'
-        : '<span class="member-role-badge member-role-user">Tifoso</span>';
-      const avatarDisplay = u.avatar
-        ? '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
-        : u.username.charAt(0).toUpperCase();
-      const pmBtn = currentUid && currentUid !== u.id
-        ? '<button class="btn btn-ghost btn-sm" onclick="APP.openConversation(\'' + u.id + '\')" style="margin-top:8px;width:100%"><i class="fas fa-envelope"></i> Messaggia</button>'
-        : '';
-      return `
-        <div class="member-card">
-          <div class="member-avatar" style="background:${color}">${avatarDisplay}</div>
-          <div class="member-name">${u.username}</div>
-          <div class="member-join">Iscritto il ${joinDate}</div>
-          ${roleBadge}
-          ${pmBtn}
-        </div>`;
-    }).join('');
-  },
-
-  /* ---------- ADMIN ---------- */
-  renderAdminMessages() {
-    const msgs = this.state.messages.filter(m => !m.deleted);
-    this.el.adminMsgCount.textContent = msgs.length + ' messaggi';
-    const container = this.el.adminMsgList;
-
-    if (msgs.length === 0) {
-      container.innerHTML = '<div class="gb-empty"><i class="fas fa-comment"></i><p>Nessun messaggio.</p></div>';
-      return;
-    }
-
-    container.innerHTML = msgs.sort((a, b) => b.createdAt - a.createdAt).map(msg => {
-      const time = this.formatTime(msg.createdAt);
-      const isFiltered = msg.filtered;
-      return `
-        <div class="admin-msg-item">
-          <div class="admin-msg-info">
-            <div class="admin-msg-text">
-              <strong>${msg.author}:</strong> ${msg.text}
-              ${isFiltered ? '<span class="msg-badge msg-badge-filtered" style="font-size:10px;margin-left:6px;">Filtrato</span>' : ''}
-            </div>
-            <div class="admin-msg-meta">${time} · <i class="fa-regular fa-thumbs-up"></i> ${(msg.likes||[]).length} <i class="fa-regular fa-thumbs-down"></i> ${(msg.dislikes||[]).length}</div>
-          </div>
-          <div class="admin-msg-actions">
-            <button class="btn btn-danger btn-sm" onclick="APP.adminDeleteMsg('${msg.id}')"><i class="fas fa-trash"></i></button>
-          </div>
-        </div>`;
-    }).join('');
-  },
-
-  renderAdminUsers() {
-    const users = this.state.users;
-    this.el.adminUserCount.textContent = users.length + ' utenti';
-    const container = this.el.adminUserList;
-
-    const currentId = this.state.currentUser.id;
-
-    container.innerHTML = users.sort((a, b) => a.username.localeCompare(b.username)).map(u => {
-      const color = this.stringToColor(u.username);
-      const banned = u.banned;
-      const joinDate = new Date(u.createdAt).toLocaleDateString('it-IT');
-      const isSelf = u.id === currentId;
-      const isAdminUser = u.role === 'admin';
-
-      let actions = '';
-      if (isSelf) {
-        actions = '<span style="font-size:11px;color:var(--text-muted)">Sei tu</span>';
-      } else if (isAdminUser) {
-        actions = '<span style="font-size:11px;color:var(--accent2)"><i class="fas fa-shield"></i> Admin</span>';
-      } else {
-        actions = `
-          <button class="btn btn-ghost btn-sm" onclick="APP.adminToggleBan('${u.id}')">
-            <i class="fas ${banned ? 'fa-check-circle' : 'fa-ban'}"></i> ${banned ? 'Sbanna' : 'Banna'}
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditUser('${u.id}')"><i class="fas fa-pen"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="APP.adminDeleteUser('${u.id}')"><i class="fas fa-user-slash"></i></button>`;
-      }
-
-      return `
-        <div class="admin-user-item" style="${banned ? 'opacity:0.5' : ''}">
-          <div class="admin-user-avatar" style="background:${color}">${u.username.charAt(0).toUpperCase()}</div>
-          <div class="admin-user-info">
-            <div class="admin-user-name">${u.username} ${banned ? '<span style="color:var(--accent3);font-size:11px;">[BANNATO]</span>' : ''} ${u.role === 'admin' ? '<span style="color:var(--accent2);font-size:11px;"><i class="fas fa-shield"></i></span>' : u.role === 'editor' ? '<span style="color:var(--accent);font-size:11px;"><i class="fas fa-pen-fancy"></i></span>' : ''}</div>
-            <div class="admin-user-email">${u.email} · Iscritto ${joinDate}</div>
-          </div>
-          <div class="admin-user-actions">${actions}</div>
-        </div>`;
-    }).join('');
-  },
-
-  adminDeleteMsg(msgId) {
-    if (!confirm('Eliminare questo messaggio definitivamente?')) return;
-    const msg = this.state.messages.find(m => m.id === msgId);
-    if (msg) msg.deleted = true;
-    this.saveMessages();
-    this.renderAdminMessages();
-    this.renderMessages();
-    this.toast('Messaggio eliminato.', 'info');
-  },
-
-  adminDeleteUser(userId) {
-    if (!confirm('Eliminare questo utente e tutti i suoi messaggi?')) return;
-    // Remove user
-    this.state.users = this.state.users.filter(u => u.id !== userId);
-    // Soft-delete their messages
-    this.state.messages.forEach(m => {
-      if (m.userId === userId) m.deleted = true;
-    });
-    this.saveUsers();
-    this.saveMessages();
-    this.renderAdminUsers();
-    this.renderAdminMessages();
-    this.renderMessages();
-    this.toast('Utente eliminato.', 'info');
-  },
-
-  adminToggleBan(userId) {
-    const user = this.state.users.find(u => u.id === userId);
-    if (!user) return;
-    user.banned = !user.banned;
-    this.saveUsers();
-    this.renderAdminUsers();
-    this.toast(user.banned ? 'Utente bannato.' : 'Utente sbannato.', user.banned ? 'error' : 'success');
-  },
-
-  adminClearFiltered() {
-    const filtered = this.state.messages.filter(m => m.filtered && !m.deleted);
-    if (filtered.length === 0) {
-      this.toast('Nessun messaggio filtrato da eliminare.', 'info');
-      return;
-    }
-    if (!confirm('Eliminare tutti i ' + filtered.length + ' messaggi filtrati?')) return;
-    filtered.forEach(m => m.deleted = true);
-    this.saveMessages();
-    this.renderAdminMessages();
-    this.renderMessages();
-    this.toast(filtered.length + ' messaggi filtrati eliminati.', 'info');
-  },
-
-  /* ---------- ADMIN: USER MANAGEMENT ---------- */
-  adminOpenCreateUser() {
-    this._editingUserId = null;
-    if (this.el.userModalTitle) this.el.userModalTitle.innerHTML = '<i class="fas fa-user-plus"></i> Nuovo Utente';
-    if (this.el.umUsername) this.el.umUsername.value = '';
-    if (this.el.umEmail) this.el.umEmail.value = '';
-    if (this.el.umPassword) this.el.umPassword.value = '';
-    if (this.el.umRole) this.el.umRole.value = 'user';
-    if (this.el.umError) this.el.umError.textContent = '';
-    if (this.el.userModal) this.el.userModal.style.display = '';
-  },
-
-  adminOpenEditUser(userId) {
-    const user = this.state.users.find(u => u.id === userId);
-    if (!user) return;
-    this._editingUserId = userId;
-    if (this.el.userModalTitle) this.el.userModalTitle.innerHTML = '<i class="fas fa-user-pen"></i> Modifica Utente';
-    if (this.el.umUsername) this.el.umUsername.value = user.username;
-    if (this.el.umEmail) this.el.umEmail.value = user.email;
-    if (this.el.umPassword) this.el.umPassword.value = '';
-    if (this.el.umRole) this.el.umRole.value = user.role;
-    if (this.el.umError) this.el.umError.textContent = '';
-    if (this.el.userModal) this.el.userModal.style.display = '';
-  },
-
-  adminSaveUser() {
-    const username = this.el.umUsername.value.trim();
-    const email = this.el.umEmail.value.trim();
-    const password = this.el.umPassword.value.trim();
-    this.el.umError.textContent = '';
-
-    if (!username || !email) {
-      this.el.umError.textContent = 'Username e email obbligatori.';
-      return;
-    }
-    if (username.length < 3) {
-      this.el.umError.textContent = 'Username troppo corto (min 3 caratteri).';
-      return;
-    }
-    if (!email.includes('@')) {
-      this.el.umError.textContent = 'Email non valida.';
-      return;
-    }
-
-    if (this._editingUserId) {
-      // Editing existing user
-      const user = this.state.users.find(u => u.id === this._editingUserId);
-      if (!user) return;
-      // Check username uniqueness (excluding self)
-      const dup = this.state.users.find(u => u.username === username && u.id !== this._editingUserId);
-      if (dup) { this.el.umError.textContent = 'Username già in uso.'; return; }
-      user.username = username;
-      user.email = email;
-      if (password) {
-        if (password.length < 6) { this.el.umError.textContent = 'Password troppo corta (min 6 caratteri).'; return; }
-        user.password = password;
-      }
-      user.role = this.el.umRole.value;
-      this.saveUsers();
-      this.renderAdminUsers();
-      this.toast('Utente aggiornato.', 'success');
-    } else {
-      // Creating new user
-      if (!password || password.length < 6) {
-        this.el.umError.textContent = 'Password obbligatoria (min 6 caratteri).';
+  async renderMembers() {
+    if (!this.el.membersList) return;
+    const query = (this.el.membersSearch ? this.el.membersSearch.value.toLowerCase() : '');
+    try {
+      const snapshot = await db.collection('users').orderBy('username').get();
+      let users = [];
+      snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+      if (query) users = users.filter(u => u.username && u.username.toLowerCase().includes(query));
+      if (users.length === 0) {
+        this.el.membersList.innerHTML = '<div class="gb-empty"><i class="fas fa-users"></i><p>Nessun tifoso trovato.</p></div>';
         return;
       }
-      if (this.state.users.find(u => u.username === username)) {
-        this.el.umError.textContent = 'Username già in uso.';
-        return;
-      }
-      const newUser = {
-        id: 'user_' + Date.now(),
-        username,
-        password,
-        email,
-        role: this.el.umRole.value,
-        createdAt: Date.now(),
-        banned: false,
-      };
-      this.state.users.push(newUser);
-      this.saveUsers();
-      this.renderAdminUsers();
-      this.toast('Utente creato!', 'success');
-    }
-    this.adminCloseUserModal();
-  },
-
-  adminCloseUserModal() {
-    this._editingUserId = null;
-    if (this.el.userModal) this.el.userModal.style.display = 'none';
+      this.el.membersList.innerHTML = users.map(u => {
+        const initial = u.username ? u.username.charAt(0).toUpperCase() : '?';
+        const roleLabel = u.role === 'admin' ? 'Admin' : u.role === 'editor' ? 'Editor' : 'Tifoso';
+        return '<div class="member-card">' +
+          '<div class="member-avatar">' + (u.avatar ? '<img src="' + u.avatar + '" alt="">' : initial) + '</div>' +
+          '<div class="member-info"><div class="member-name">' + this.escapeHtml(u.username || '?') + '</div><div class="member-role">' + roleLabel + '</div></div>' +
+          (this.state.currentUser && u.id !== this.state.currentUser.id ? '<button class="btn btn-ghost btn-sm" onclick="APP.startPrivateChat(\'' + u.id + '\')"><i class="fas fa-envelope"></i></button>' : '') +
+          '</div>';
+      }).join('');
+    } catch (e) { console.error('Members error:', e); }
   },
 
   /* ---------- RADIO ---------- */
+  async renderRadioPage() {
+    try {
+      const doc = await db.collection('radio').doc('config').get();
+      this.state.radioData = doc.exists ? doc.data() : { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [] };
+    } catch (e) {
+      this.state.radioData = { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [] };
+    }
+    const r = this.state.radioData;
+    if (!r) return;
+    if (this.el.radioStreamName) this.el.radioStreamName.textContent = r.streamName || 'AleLatina Radio';
+    const hasLive = r.mixlrUsername || r.streamUrl;
+    if (this.el.radioConfigInfo) this.el.radioConfigInfo.style.display = hasLive ? 'none' : '';
+    if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = r.mixlrUsername ? '' : 'none';
+    if (this.el.mixlrIframe && r.mixlrUsername) this.el.mixlrIframe.src = 'https://mixlr.com/embed/' + encodeURIComponent(r.mixlrUsername);
+    if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = (!r.mixlrUsername && r.streamUrl) ? '' : 'none';
+    if (this.el.radioAudio && r.streamUrl && !r.mixlrUsername) this.el.radioAudio.src = r.streamUrl;
+    this.renderPodcasts();
+    this.updateRadioBadge();
+  },
+
   radioPlay() {
-    const radio = this.state.radio;
-    if (radio.mixlrUsername) {
-      // Mixlr auto-plays in the embed, just reload
-      if (this.el.mixlrIframe) {
-        this.el.mixlrIframe.src = 'https://mixlr.com/embed/player/' + encodeURIComponent(radio.mixlrUsername.trim());
-      }
-      return;
-    }
-    const streamUrl = radio.streamUrl;
-    if (!streamUrl) {
+    const r = this.state.radioData;
+    if (!r) return;
+    if (r.mixlrUsername) {
+      if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = '';
+      if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = 'none';
+    } else if (r.streamUrl) {
+      const audio = this.el.radioAudio;
+      if (audio) { audio.play(); this.toast('Radio in riproduzione!', 'success'); }
+    } else {
       this.toast('Nessuna diretta configurata.', 'warning');
-      return;
-    }
-    if (this.el.radioAudio) {
-      this.el.radioAudio.src = streamUrl;
-      this.el.radioAudio.play().catch(() => {
-        this.toast('Errore durante la riproduzione.', 'error');
-      });
     }
   },
 
   radioStop() {
-    if (this.el.radioAudio) {
-      this.el.radioAudio.pause();
-      this.el.radioAudio.src = '';
-    }
-    // Stop Mixlr: remove the iframe source
-    if (this.el.mixlrIframe) {
-      this.el.mixlrIframe.src = '';
-    }
+    const audio = this.el.radioAudio;
+    if (audio) { audio.pause(); audio.currentTime = 0; }
+    this.toast('Radio fermata.', 'info');
   },
 
   updateRadioBadge() {
-    const badge = this.el.sidebarRadioBadge;
-    if (!badge) return;
-    if (this.state.radio.streamUrl || this.state.radio.mixlrUsername) {
-      badge.style.display = '';
-    } else {
-      badge.style.display = 'none';
+    if (!this.state.radioData || (!this.state.radioData.mixlrUsername && !this.state.radioData.streamUrl)) {
+      if (this.el.sidebarRadioBadge) this.el.sidebarRadioBadge.style.display = 'none';
     }
   },
 
-  renderRadioPage() {
-    const radio = this.state.radio;
-    if (this.el.radioStreamName) {
-      this.el.radioStreamName.textContent = radio.streamName || 'AleLatina Radio';
-    }
-
-    const hasMixlr = radio.mixlrUsername && radio.mixlrUsername.trim();
-    const hasStream = radio.streamUrl && radio.streamUrl.trim();
-    const configInfo = this.el.radioConfigInfo;
-    const playerCard = document.querySelector('.radio-player-card');
-
-    if (hasMixlr || hasStream) {
-      if (configInfo) configInfo.style.display = 'none';
-      if (playerCard) playerCard.style.display = '';
-
-      if (hasMixlr) {
-        // Show Mixlr embed
-        if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = '';
-        if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = 'none';
-        if (this.el.radioActions) this.el.radioActions.style.display = 'none';
-        if (this.el.mixlrIframe) {
-          this.el.mixlrIframe.src = 'https://mixlr.com/embed/player/' + encodeURIComponent(radio.mixlrUsername.trim());
-        }
-      } else {
-        // Show direct audio player
-        if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = 'none';
-        if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = '';
-        if (this.el.radioActions) this.el.radioActions.style.display = '';
-        if (this.el.radioAudio) this.el.radioAudio.src = radio.streamUrl;
-      }
-    } else {
-      if (configInfo) configInfo.style.display = '';
-      if (playerCard) playerCard.style.display = 'none';
-    }
-
-    this.renderPodcastList();
-  },
-
-  renderPodcastList() {
-    const container = this.el.radioPodcastList;
-    if (!container) return;
-    const podcasts = this.state.radio.podcasts || [];
-
+  async renderPodcasts() {
+    if (!this.el.radioPodcastList) return;
+    const podcasts = this.state.radioData && this.state.radioData.podcasts ? this.state.radioData.podcasts : [];
     if (podcasts.length === 0) {
-      container.innerHTML = '<div class="gb-empty"><i class="fas fa-podcast"></i><p>Nessuna puntata disponibile.</p></div>';
+      this.el.radioPodcastList.innerHTML = '<div class="gb-empty"><i class="fas fa-podcast"></i><p>Nessun podcast ancora.</p></div>';
       return;
     }
-
-    container.innerHTML = podcasts.map(p => {
-      const coverHtml = p.imageUrl
-        ? '<img src="' + p.imageUrl + '" alt="' + this.escapeHtml(p.title) + '">'
-        : '<i class="fas fa-microphone"></i>';
-      const desc = p.description ? '<div class="radio-podcast-desc">' + this.escapeHtml(p.description) + '</div>' : '';
-      const time = p.createdAt ? this.formatTime(p.createdAt) : '';
-      const metaHtml = time ? '<div class="radio-podcast-meta">' + time + '</div>' : '';
+    this.el.radioPodcastList.innerHTML = [...podcasts].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).map(p => {
       return '<div class="radio-podcast-card">' +
-        '<div class="radio-podcast-cover">' + coverHtml + '</div>' +
-        '<div class="radio-podcast-info">' +
-          '<div class="radio-podcast-title">' + this.escapeHtml(p.title) + '</div>' +
-          desc +
-          metaHtml +
-          '<button class="radio-podcast-play" onclick="APP.radioPlayPodcast(\'' + p.id + '\')"><i class="fas fa-play"></i> Ascolta</button>' +
-        '</div>' +
-      '</div>';
+        (p.imageUrl ? '<img src="' + p.imageUrl + '" alt="" class="radio-podcast-img">' : '<div class="radio-podcast-img radio-podcast-img-placeholder"><i class="fas fa-podcast"></i></div>') +
+        '<div class="radio-podcast-info"><div class="radio-podcast-title">' + this.escapeHtml(p.title || '') + '</div>' +
+        (p.description ? '<div class="radio-podcast-desc">' + this.escapeHtml(p.description) + '</div>' : '') +
+        (p.audioUrl ? '<audio controls style="width:100%;margin-top:8px"><source src="' + p.audioUrl + '"></audio>' : '') +
+        '</div></div>';
     }).join('');
   },
 
-  radioPlayPodcast(podId) {
-    const pod = this.state.radio.podcasts.find(p => p.id === podId);
-    if (!pod || !pod.audioUrl) return;
-    if (this.el.radioAudio) {
-      this.el.radioAudio.src = pod.audioUrl;
-      this.el.radioAudio.play().catch(() => {
-        this.toast('Errore durante la riproduzione.', 'error');
-      });
-    }
+  /* ---------- EDITORIALS ---------- */
+  async renderEditorials() {
+    if (!this.el.editorialsList) return;
+    try {
+      const snapshot = await db.collection('articles').orderBy('createdAt', 'desc').get();
+      const articles = [];
+      snapshot.forEach(doc => articles.push({ id: doc.id, ...doc.data() }));
+      if (articles.length === 0) {
+        this.el.editorialsList.innerHTML = '<div class="gb-empty"><i class="fas fa-newspaper"></i><p>Nessun editoriale ancora. Il primo arriver\u00e0 presto!</p></div>';
+        return;
+      }
+      this.el.editorialsList.innerHTML = articles.map(a => {
+        const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        return '<div class="article-card" onclick="APP.openArticle(\'' + a.id + '\')">' +
+          (a.cover ? '<img src="' + a.cover + '" alt="" class="article-card-img">' : '<div class="article-card-img article-card-img-placeholder"><i class="fas fa-newspaper"></i></div>') +
+          '<div class="article-card-body"><h3>' + this.escapeHtml(a.title) + '</h3>' +
+          (a.subtitle ? '<p>' + this.escapeHtml(a.subtitle) + '</p>' : '') +
+          '<div class="article-card-meta">' + dateStr + ' \u00B7 ' + this.escapeHtml(a.authorName || 'Anonimo') + '</div></div></div>';
+      }).join('');
+    } catch (e) { console.error('Editorials error:', e); }
   },
 
-  adminSaveRadioConfig() {
-    const url = this.el.adminStreamUrl.value.trim();
-    const name = this.el.adminStreamName.value.trim();
-    const mixlr = this.el.adminMixlrUser.value.trim();
-    this.state.radio.streamUrl = url;
-    this.state.radio.mixlrUsername = mixlr;
-    if (name) this.state.radio.streamName = name;
-    this.saveRadio();
-    this.updateRadioBadge();
-    this.renderRadioPage();
-    this.toast('Configurazione radio salvata!', 'success');
+  async openArticle(articleId) {
+    try {
+      const doc = await db.collection('articles').doc(articleId).get();
+      if (!doc.exists) return;
+      const a = doc.data();
+      this.navigateTo('article');
+      if (this.el.articleContent) {
+        const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        this.el.articleContent.innerHTML =
+          '<div class="article-full-img">' + (a.cover ? '<img src="' + a.cover + '">' : '') + '</div>' +
+          '<h1>' + this.escapeHtml(a.title) + '</h1>' +
+          (a.subtitle ? '<p class="article-full-sub">' + this.escapeHtml(a.subtitle) + '</p>' : '') +
+          '<div class="article-full-meta">' + dateStr + ' \u00B7 ' + this.escapeHtml(a.authorName || 'Anonimo') + '</div>' +
+          '<div class="article-full-body">' + a.content + '</div>';
+      }
+    } catch (e) { this.toast('Errore nel caricamento dell\'articolo.', 'error'); }
   },
 
-  renderAdminRadio() {
-    const radio = this.state.radio;
-    if (this.el.adminStreamUrl) this.el.adminStreamUrl.value = radio.streamUrl || '';
-    if (this.el.adminStreamName) this.el.adminStreamName.value = radio.streamName || 'AleLatina Radio';
-    if (this.el.adminMixlrUser) this.el.adminMixlrUser.value = radio.mixlrUsername || '';
-    this.renderAdminPodcastList();
-  },
-
-  renderAdminPodcastList() {
-    const container = this.el.adminPodcastList;
-    if (!container) return;
-    const podcasts = this.state.radio.podcasts || [];
-
-    if (podcasts.length === 0) {
-      container.innerHTML = '<div class="gb-empty"><i class="fas fa-podcast"></i><p>Nessuna puntata.</p></div>';
-      return;
-    }
-
-    container.innerHTML = podcasts.map(p => {
-      const time = p.createdAt ? this.formatTime(p.createdAt) : '';
-      return '<div class="admin-msg-item">' +
-        '<div class="admin-msg-info">' +
-          '<div class="admin-msg-text"><strong>' + this.escapeHtml(p.title) + '</strong></div>' +
-          '<div class="admin-msg-meta">' + time + '</div>' +
-        '</div>' +
-        '<div class="admin-msg-actions">' +
-          '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditPodcast(\'' + p.id + '\')"><i class="fas fa-pen"></i></button>' +
-          '<button class="btn btn-danger btn-sm" onclick="APP.adminDeletePodcast(\'' + p.id + '\')"><i class="fas fa-trash"></i></button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-  },
-
-  adminOpenAddPodcast() {
-    this._editingPodcastId = null;
-    if (this.el.podcastModalTitle) this.el.podcastModalTitle.innerHTML = '<i class="fas fa-podcast"></i> Nuova Puntata';
-    if (this.el.pmTitle) this.el.pmTitle.value = '';
-    if (this.el.pmDescription) this.el.pmDescription.value = '';
-    if (this.el.pmAudioUrl) this.el.pmAudioUrl.value = '';
-    if (this.el.pmImageUrl) this.el.pmImageUrl.value = '';
-    if (this.el.pmPodcastError) this.el.pmPodcastError.textContent = '';
-    if (this.el.podcastModal) this.el.podcastModal.style.display = '';
-  },
-
-  adminOpenEditPodcast(podId) {
-    const pod = this.state.radio.podcasts.find(p => p.id === podId);
-    if (!pod) return;
-    this._editingPodcastId = podId;
-    if (this.el.podcastModalTitle) this.el.podcastModalTitle.innerHTML = '<i class="fas fa-podcast"></i> Modifica Puntata';
-    if (this.el.pmTitle) this.el.pmTitle.value = pod.title || '';
-    if (this.el.pmDescription) this.el.pmDescription.value = pod.description || '';
-    if (this.el.pmAudioUrl) this.el.pmAudioUrl.value = pod.audioUrl || '';
-    if (this.el.pmImageUrl) this.el.pmImageUrl.value = pod.imageUrl || '';
-    if (this.el.pmPodcastError) this.el.pmPodcastError.textContent = '';
-    if (this.el.podcastModal) this.el.podcastModal.style.display = '';
-  },
-
-  adminSavePodcast() {
-    const title = this.el.pmTitle.value.trim();
-    const description = this.el.pmDescription.value.trim();
-    const audioUrl = this.el.pmAudioUrl.value.trim();
-    const imageUrl = this.el.pmImageUrl.value.trim();
-    const errorEl = this.el.pmPodcastError;
-    if (errorEl) errorEl.textContent = '';
-
-    if (!title) {
-      if (errorEl) errorEl.textContent = 'Il titolo è obbligatorio.';
-      return;
-    }
-    if (!audioUrl) {
-      if (errorEl) errorEl.textContent = "L'URL audio è obbligatorio.";
-      return;
-    }
-
-    if (this._editingPodcastId) {
-      const pod = this.state.radio.podcasts.find(p => p.id === this._editingPodcastId);
-      if (!pod) return;
-      pod.title = title;
-      pod.description = description;
-      pod.audioUrl = audioUrl;
-      pod.imageUrl = imageUrl;
-      this.saveRadio();
-      this.adminClosePodcastModal();
-      this.renderAdminPodcastList();
-      this.renderPodcastList();
-      this.toast('Puntata aggiornata!', 'success');
-    } else {
-      const pod = {
-        id: 'pod_' + Date.now(),
-        title,
-        description,
-        audioUrl,
-        imageUrl,
-        createdAt: Date.now(),
-      };
-      this.state.radio.podcasts.push(pod);
-      this.saveRadio();
-      this.adminClosePodcastModal();
-      this.renderAdminPodcastList();
-      this.renderPodcastList();
-      this.toast('Puntata aggiunta!', 'success');
-    }
-  },
-
-  adminClosePodcastModal() {
-    this._editingPodcastId = null;
-    if (this.el.podcastModal) this.el.podcastModal.style.display = 'none';
-  },
-
-  adminDeletePodcast(podId) {
-    if (!confirm('Eliminare questa puntata?')) return;
-    this.state.radio.podcasts = this.state.radio.podcasts.filter(p => p.id !== podId);
-    this.saveRadio();
-    this.renderAdminPodcastList();
-    this.renderPodcastList();
-    this.toast('Puntata eliminata.', 'info');
-  },
-
-  saveRadio() {
-    localStorage.setItem('alelatina_radio', JSON.stringify(this.state.radio));
-  },
-
-  /* ---------- ARTICLES (EDITORIALS) ---------- */
-  renderEditorials() {
-    const container = this.el.editorialsList;
-    if (!container) return;
-    const articles = this.state.articles.sort((a, b) => b.createdAt - a.createdAt);
-
-    if (articles.length === 0) {
-      container.innerHTML = '<div class="gb-empty"><i class="fas fa-newspaper"></i><p>Nessun editoriale ancora. Gli editor stanno scrivendo...</p></div>';
-      return;
-    }
-
-    const currentUid = this.state.currentUser ? this.state.currentUser.id : null;
-    const isAdmin = this.state.currentUser ? this.state.currentUser.role === 'admin' : false;
-    const isEditor = this.state.currentUser ? this.state.currentUser.role === 'editor' : false;
-
-    container.innerHTML = articles.map(a => {
-      const time = this.formatTime(a.createdAt);
-      const coverHtml = a.coverImage
-        ? '<img src="' + a.coverImage + '" alt="">'
-        : '<i class="fas fa-newspaper"></i>';
-      const authorUser = this.state.users.find(u => u.id === a.authorId);
-      const avatarDisplay = authorUser && authorUser.avatar
-        ? '<img src="' + authorUser.avatar + '" alt="">'
-        : a.authorName.charAt(0).toUpperCase();
-      const avatarColor = this.stringToColor(a.authorName);
-      const canEdit = isAdmin || (isEditor && currentUid === a.authorId);
-      const editBtn = canEdit
-        ? '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();APP.openEditor(\'' + a.id + '\')" style="font-size:11px;margin-left:auto"><i class="fas fa-pen"></i></button>'
-        : '';
-      const delBtn = isAdmin
-        ? '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();APP.deleteArticle(\'' + a.id + '\')" style="font-size:11px"><i class="fas fa-trash"></i></button>'
-        : '';
-
-      return '<div class="editorial-card" onclick="APP.openArticle(\'' + a.id + '\')">' +
-        '<div class="editorial-card-cover">' + coverHtml + '<div class="editorial-card-cover-overlay"></div></div>' +
-        '<div class="editorial-card-body">' +
-          '<div class="editorial-card-title">' + this.escapeHtml(a.title) + '</div>' +
-          (a.subtitle ? '<div class="editorial-card-subtitle">' + this.escapeHtml(a.subtitle) + '</div>' : '') +
-          '<div class="editorial-card-meta">' +
-            '<div class="editorial-card-author">' +
-              '<div class="editorial-card-avatar" style="background:' + avatarColor + '">' + avatarDisplay + '</div>' +
-              '<span>' + this.escapeHtml(a.authorName) + '</span>' +
-            '</div>' +
-            '<span>·</span>' +
-            '<span>' + time + '</span>' +
-            (canEdit || isAdmin ? '<span style="margin-left:auto;display:flex;gap:4px">' + editBtn + delBtn + '</span>' : '') +
-          '</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-  },
-
-  openArticle(articleId) {
-    const a = this.state.articles.find(x => x.id === articleId);
-    if (!a) return;
-    this.navigateTo('article');
-    const container = this.el.articleContent;
-    if (!container) return;
-
-    const coverHtml = a.coverImage
-      ? '<img src="' + a.coverImage + '" alt="" class="article-cover">'
-      : '';
-    const time = this.formatTime(a.createdAt);
-    const authorUser = this.state.users.find(u => u.id === a.authorId);
-    const avatarDisplay = authorUser && authorUser.avatar
-      ? '<img src="' + authorUser.avatar + '" alt="" style="width:24px;height:24px;object-fit:cover;border-radius:50%">'
-      : a.authorName.charAt(0).toUpperCase();
-    const avatarColor = this.stringToColor(a.authorName);
-
-    container.innerHTML =
-      coverHtml +
-      '<div class="article-header">' +
-        '<h1 class="article-title">' + this.escapeHtml(a.title) + '</h1>' +
-        (a.subtitle ? '<p class="article-subtitle">' + this.escapeHtml(a.subtitle) + '</p>' : '') +
-        '<div class="article-meta">' +
-          '<div class="editorial-card-avatar" style="background:' + avatarColor + ';width:24px;height:24px;font-size:11px">' + avatarDisplay + '</div>' +
-          '<span>' + this.escapeHtml(a.authorName) + '</span>' +
-          '<span>·</span>' +
-          '<span>' + time + '</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="article-body">' + a.content + '</div>';
-  },
-
-  openEditor(articleId) {
-    this._editingArticleId = articleId || null;
-    const isNew = !articleId;
-    if (this.el.editorPanelTitle) {
-      this.el.editorPanelTitle.textContent = isNew ? 'Nuovo Articolo' : 'Modifica Articolo';
-    }
-    if (isNew) {
-      if (this.el.artTitle) this.el.artTitle.value = '';
-      if (this.el.artSubtitle) this.el.artSubtitle.value = '';
-      if (this.el.artCover) this.el.artCover.value = '';
-      if (this.el.artContent) this.el.artContent.value = '';
-      if (this.el.artPreview) this.el.artPreview.style.display = 'none';
-    } else {
-      const a = this.state.articles.find(x => x.id === articleId);
-      if (!a) return;
-      if (this.el.artTitle) this.el.artTitle.value = a.title;
-      if (this.el.artSubtitle) this.el.artSubtitle.value = a.subtitle || '';
-      if (this.el.artCover) this.el.artCover.value = a.coverImage || '';
-      if (this.el.artContent) this.el.artContent.value = a.content;
-      if (this.el.artPreview) this.el.artPreview.style.display = 'none';
-    }
-    if (this.el.artError) this.el.artError.textContent = '';
-    this.navigateTo('editorPanel');
-  },
-
-  saveArticle() {
+  async saveArticle() {
     const title = this.el.artTitle.value.trim();
     const subtitle = this.el.artSubtitle.value.trim();
-    const coverImage = this.el.artCover.value.trim();
+    const cover = this.el.artCover.value.trim();
     const content = this.el.artContent.value.trim();
+    if (!this.state.currentUser) return;
     if (this.el.artError) this.el.artError.textContent = '';
-
-    if (!title) { if (this.el.artError) this.el.artError.textContent = 'Il titolo è obbligatorio.'; return; }
-    if (!content) { if (this.el.artError) this.el.artError.textContent = 'Il contenuto è obbligatorio.'; return; }
-
-    if (this._editingArticleId) {
-      const a = this.state.articles.find(x => x.id === this._editingArticleId);
-      if (!a) return;
-      a.title = title;
-      a.subtitle = subtitle;
-      a.coverImage = coverImage;
-      a.content = content;
-      a.updatedAt = Date.now();
-    } else {
-      this.state.articles.push({
-        id: 'art_' + Date.now(),
-        title,
-        subtitle,
-        coverImage,
-        content,
-        authorId: this.state.currentUser.id,
-        authorName: this.state.currentUser.username,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      });
-    }
-    this._editingArticleId = null;
-    this.saveArticles();
-    this.toast('Articolo pubblicato!', 'success');
-    this.navigateTo('editorials');
-    this.renderEditorials();
+    if (!title || !content) { if (this.el.artError) this.el.artError.textContent = 'Titolo e contenuto obbligatori.'; return; }
+    try {
+      if (this.state._editingArticleId) {
+        await db.collection('articles').doc(this.state._editingArticleId).update({ title, subtitle, cover, content });
+      } else {
+        await db.collection('articles').add({
+          title, subtitle, cover, content,
+          authorId: this.state.currentUser.id,
+          authorName: this.state.currentUser.username,
+          createdAt: Date.now(),
+        });
+      }
+      this.state._editingArticleId = null;
+      this.el.artTitle.value = '';
+      this.el.artSubtitle.value = '';
+      this.el.artCover.value = '';
+      this.el.artContent.value = '';
+      this.toast('Articolo pubblicato!', 'success');
+      this.navigateTo('editorials');
+    } catch (e) { if (this.el.artError) this.el.artError.textContent = 'Errore durante il salvataggio.'; }
   },
 
   cancelArticle() {
-    this._editingArticleId = null;
+    if (this.el.artTitle) this.el.artTitle.value = '';
+    if (this.el.artSubtitle) this.el.artSubtitle.value = '';
+    if (this.el.artCover) this.el.artCover.value = '';
+    if (this.el.artContent) this.el.artContent.value = '';
+    if (this.el.artPreview) this.el.artPreview.style.display = 'none';
+    this.state._editingArticleId = null;
     this.navigateTo('editorials');
-  },
-
-  deleteArticle(articleId) {
-    if (!confirm('Eliminare questo articolo?')) return;
-    this.state.articles = this.state.articles.filter(a => a.id !== articleId);
-    this.saveArticles();
-    this.renderEditorials();
-    this.toast('Articolo eliminato.', 'info');
   },
 
   toggleArticlePreview() {
     const preview = this.el.artPreview;
-    const textarea = this.el.artContent;
-    if (!preview || !textarea) return;
+    const content = this.el.artContent;
+    if (!preview || !content) return;
     if (preview.style.display === 'none') {
-      preview.style.display = '';
-      preview.innerHTML = '<div class="article-body">' + textarea.value + '</div>';
+      preview.style.display = 'block';
+      preview.innerHTML = content.value;
     } else {
       preview.style.display = 'none';
     }
   },
 
-  wrapSelection(tag) {
-    const ta = this.el.artContent;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    if (start === end) return;
-    const selected = ta.value.substring(start, end);
-    const before = ta.value.substring(0, start);
-    const after = ta.value.substring(end);
-    ta.value = before + '<' + tag + '>' + selected + '</' + tag + '>' + after;
-    this.el.artPreview.style.display = 'none';
-  },
-
-  wrapLine(tag) {
-    const ta = this.el.artContent;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const selected = ta.value.substring(start, end) || 'testo';
-    const before = ta.value.substring(0, start);
-    const after = ta.value.substring(end);
-    ta.value = before + '<' + tag + '>' + selected + '</' + tag + '>' + after + '\n\n';
-    this.el.artPreview.style.display = 'none';
-  },
-
-  saveArticles() {
-    localStorage.setItem('alelatina_articles', JSON.stringify(this.state.articles));
-  },
-
   /* ---------- PAGELLE ---------- */
-  renderPagelleList() {
+  async renderPagelleList() {
     const container = this.el.pagelleMatchList;
     if (!container) return;
-    const matches = [...this.state.matches].sort((a, b) => b.createdAt - a.createdAt);
-
-    if (matches.length === 0) {
-      container.innerHTML = '<div class="gb-empty"><i class="fas fa-futbol"></i><p>Nessuna partita ancora. La prima pagella arriverà presto!</p></div>';
-      return;
-    }
-
-    container.innerHTML = matches.map(m => {
-      const dateStr = m.date ? new Date(m.date + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-      const playerCount = m.players ? m.players.length : 0;
-      const totalVotes = m.players ? m.players.reduce((sum, p) => sum + (p.ratings ? Object.keys(p.ratings).length : 0), 0) : 0;
-
-      // Calculate top & flop
-      const withAvg = (m.players || []).map(p => {
-        const ratings = p.ratings ? Object.values(p.ratings) : [];
-        const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
-        return { ...p, avg, voteCount: ratings.length };
-      }).filter(p => p.voteCount >= 1);
-
-      let topHtml = '', flopHtml = '';
-      if (withAvg.length > 0) {
-        const top = withAvg.reduce((a, b) => a.avg > b.avg ? a : b);
-        const flop = withAvg.reduce((a, b) => a.avg < b.avg ? a : b);
-        topHtml = '<div class="pagelle-tf-item top"><span class="pagelle-tf-label top-label"><i class="fas fa-crown"></i> Top</span><span class="pagelle-tf-name">' + this.escapeHtml(top.name) + '</span><span class="pagelle-tf-score top-score">' + top.avg.toFixed(1) + '</span></div>';
-        flopHtml = '<div class="pagelle-tf-item flop"><span class="pagelle-tf-label flop-label"><i class="fas fa-poop"></i> Flop</span><span class="pagelle-tf-name">' + this.escapeHtml(flop.name) + '</span><span class="pagelle-tf-score flop-score">' + flop.avg.toFixed(1) + '</span></div>';
+    try {
+      const snapshot = await db.collection('matches').orderBy('createdAt', 'desc').get();
+      const matches = [];
+      snapshot.forEach(doc => matches.push({ id: doc.id, ...doc.data() }));
+      if (matches.length === 0) {
+        container.innerHTML = '<div class="gb-empty"><i class="fas fa-futbol"></i><p>Nessuna partita ancora. La prima pagella arriver\u00e0 presto!</p></div>';
+        return;
       }
-
-      return '<div class="pagelle-match-card" onclick="APP.openMatch(\'' + m.id + '\')">' +
-        '<div class="pagelle-match-header">' +
+      container.innerHTML = matches.map(m => {
+        const dateStr = m.date ? new Date(m.date + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        const playerCount = m.players ? m.players.length : 0;
+        const totalVotes = m.players ? m.players.reduce((sum, p) => sum + (p.ratings ? Object.keys(p.ratings).length : 0), 0) : 0;
+        const withAvg = (m.players || []).map(p => {
+          const ratings = p.ratings ? Object.values(p.ratings) : [];
+          const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+          return { ...p, avg, voteCount: ratings.length };
+        }).filter(p => p.voteCount >= 1);
+        let topHtml = '', flopHtml = '';
+        if (withAvg.length > 0) {
+          const top = withAvg.reduce((a, b) => a.avg > b.avg ? a : b);
+          const flop = withAvg.reduce((a, b) => a.avg < b.avg ? a : b);
+          topHtml = '<div class="pagelle-tf-item top"><span class="pagelle-tf-label top-label"><i class="fas fa-crown"></i> Top</span><span class="pagelle-tf-name">' + this.escapeHtml(top.name) + '</span><span class="pagelle-tf-score top-score">' + top.avg.toFixed(1) + '</span></div>';
+          flopHtml = '<div class="pagelle-tf-item flop"><span class="pagelle-tf-label flop-label"><i class="fas fa-poop"></i> Flop</span><span class="pagelle-tf-name">' + this.escapeHtml(flop.name) + '</span><span class="pagelle-tf-score flop-score">' + flop.avg.toFixed(1) + '</span></div>';
+        }
+        return '<div class="pagelle-match-card" onclick="APP.openMatch(\'' + m.id + '\')">' +
+          '<div class="pagelle-match-header">' +
           '<div class="pagelle-match-opponent">' + this.escapeHtml(m.opponent) + '</div>' +
           (m.result ? '<div class="pagelle-match-result">' + this.escapeHtml(m.result) + '</div>' : '') +
-        '</div>' +
-        '<div class="pagelle-match-meta">' + dateStr + ' \u00B7 ' + playerCount + ' giocatori \u00B7 ' + totalVotes + ' voti</div>' +
-        (topHtml || flopHtml ? '<div class="pagelle-match-topflop">' + topHtml + flopHtml + '</div>' : '<div style="font-size:12px;color:var(--text-muted);font-style:italic">Ancora nessun voto</div>') +
-      '</div>';
-    }).join('');
+          '</div>' +
+          '<div class="pagelle-match-meta">' + dateStr + ' \u00B7 ' + playerCount + ' giocatori \u00B7 ' + totalVotes + ' voti</div>' +
+          (topHtml || flopHtml ? '<div class="pagelle-match-topflop">' + topHtml + flopHtml + '</div>' : '<div style="font-size:12px;color:var(--text-muted);font-style:italic">Ancora nessun voto</div>') +
+          '</div>';
+      }).join('');
+    } catch (e) { console.error('Pagelle error:', e); }
   },
 
-  openMatch(matchId) {
-    const m = this.state.matches.find(x => x.id === matchId);
-    if (!m) return;
-    this.navigateTo('match');
-    const container = this.el.matchContent;
-    if (!container) return;
-    if (this.el.matchPageTitle) this.el.matchPageTitle.innerHTML = '<i class="fas fa-futbol"></i> ' + this.escapeHtml(m.opponent);
-
-    const dateStr = m.date ? new Date(m.date + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-    const isLoggedIn = !!this.state.currentUser;
-    const currentUid = this.state.currentUser ? this.state.currentUser.id : null;
-    const isClosed = m.closed;
-
-    const players = (m.players || []).map(p => {
-      const ratings = p.ratings ? Object.values(p.ratings) : [];
-      const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
-      const voteCount = ratings.length;
-      const userVote = currentUid && p.ratings ? p.ratings[currentUid] : null;
-
-      // Build star buttons
-      let starsHtml = '';
-      if (isLoggedIn && !isClosed) {
-        for (let s = 1; s <= 10; s++) {
-          const active = userVote === s ? 'voted' : '';
-          starsHtml += '<button class="match-star-btn ' + active + '" onclick="APP.votePlayer(\'' + m.id + '\',\'' + p.id + '\',' + s + ')">' + (s <= userVote ? '\u2605' : '\u2606') + '</button>';
+  async openMatch(matchId) {
+    try {
+      const doc = await db.collection('matches').doc(matchId).get();
+      if (!doc.exists) return;
+      const m = { id: doc.id, ...doc.data() };
+      this.navigateTo('match');
+      const container = this.el.matchContent;
+      if (!container) return;
+      if (this.el.matchPageTitle) this.el.matchPageTitle.innerHTML = '<i class="fas fa-futbol"></i> ' + this.escapeHtml(m.opponent);
+      const dateStr = m.date ? new Date(m.date + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+      const isLoggedIn = !!this.state.currentUser;
+      const currentUid = this.state.currentUser ? this.state.currentUser.id : null;
+      const isClosed = m.closed;
+      const players = (m.players || []).map(p => {
+        const ratings = p.ratings ? Object.values(p.ratings) : [];
+        const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+        const voteCount = ratings.length;
+        const userVote = currentUid && p.ratings ? p.ratings[currentUid] : null;
+        let starsHtml = '';
+        if (isLoggedIn && !isClosed) {
+          for (let s = 1; s <= 10; s++) {
+            const active = userVote === s ? 'voted' : '';
+            starsHtml += '<button class="match-star-btn ' + active + '" onclick="APP.votePlayer(\'' + m.id + '\',\'' + p.id + '\',' + s + ')">' + (s <= userVote ? '\u2605' : '\u2606') + '</button>';
+          }
+        } else if (isClosed) {
+          starsHtml = '<span class="match-closed-msg">Votazione chiusa</span>';
+        } else {
+          starsHtml = '<span style="font-size:11px;color:var(--text-muted)">Accedi per votare</span>';
         }
-      } else if (isClosed) {
-        starsHtml = '<span class="match-closed-msg">Votazione chiusa</span>';
-      } else {
-        starsHtml = '<span style="font-size:11px;color:var(--text-muted)">Accedi per votare</span>';
-      }
-
-      const avgClass = voteCount >= 3 ? (avg >= 7 ? 'top-avg' : avg <= 5 ? 'flop-avg' : '') : '';
-
-      return '<div class="match-player-card">' +
-        '<div class="match-player-number">' + p.number + '</div>' +
-        '<div class="match-player-info">' +
+        const avgClass = voteCount >= 3 ? (avg >= 7 ? 'top-avg' : avg <= 5 ? 'flop-avg' : '') : '';
+        return '<div class="match-player-card">' +
+          '<div class="match-player-number">' + p.number + '</div>' +
+          '<div class="match-player-info">' +
           '<div class="match-player-name">' + this.escapeHtml(p.name) + '</div>' +
           '<div class="match-player-role">' + this.getRoleLabel(p.position) + '</div>' +
-        '</div>' +
-        '<div class="match-player-votes">' +
+          '</div>' +
+          '<div class="match-player-votes">' +
           '<div class="match-player-avg ' + avgClass + '">' + (voteCount > 0 ? avg.toFixed(1) : '-') + '</div>' +
           '<div class="match-player-count">' + voteCount + ' voti</div>' +
-        '</div>' +
-        '<div class="match-player-stars">' + starsHtml + '</div>' +
-      '</div>';
-    }).join('');
-
-    container.innerHTML =
-      '<div class="match-info">' +
+          '</div>' +
+          '<div class="match-player-stars">' + starsHtml + '</div>' +
+          '</div>';
+      }).join('');
+      container.innerHTML =
+        '<div class="match-info">' +
         '<div class="match-info-item"><span class="match-info-label">Data</span><span class="match-info-value">' + dateStr + '</span></div>' +
         (m.result ? '<div class="match-info-item"><span class="match-info-label">Risultato</span><span class="match-info-value">' + this.escapeHtml(m.result) + '</span></div>' : '') +
-        '<div class="match-info-item"><span class="match-info-label">Voti totali</span><span class="match-info-value">' + players.reduce((sum, p) => sum + 1, 0) + '</span></div>' +
+        '<div class="match-info-item"><span class="match-info-label">Voti totali</span><span class="match-info-value">' + (m.players ? m.players.reduce((sum, p) => sum + Object.keys(p.ratings || {}).length, 0) : 0) + '</span></div>' +
         (isClosed ? '<div class="match-info-item"><span class="match-info-label">Stato</span><span class="match-info-value" style="color:var(--accent3)">Chiusa</span></div>' : '') +
-      '</div>' +
-      '<div class="match-player-list">' + players + '</div>';
+        '</div>' +
+        '<div class="match-player-list">' + players + '</div>';
+    } catch (e) { console.error('Open match error:', e); }
   },
 
-  votePlayer(matchId, playerId, score) {
-    if (!this.state.currentUser) {
-      this.toast('Accedi per votare!', 'warning');
-      return;
-    }
-    const m = this.state.matches.find(x => x.id === matchId);
-    if (!m) return;
-    if (m.closed) { this.toast('Votazione chiusa per questa partita.', 'warning'); return; }
-    const p = m.players.find(x => x.id === playerId);
-    if (!p) return;
-    if (!p.ratings) p.ratings = {};
-    const uid = this.state.currentUser.id;
-    // Toggle: if same score, remove vote
-    if (p.ratings[uid] === score) {
-      delete p.ratings[uid];
-      this.toast('Voto rimosso!', 'info');
-    } else {
-      p.ratings[uid] = score;
-      this.toast('Voto registrato: ' + score + '/10', 'success');
-    }
-    this.saveMatches();
-    this.openMatch(matchId);
+  async votePlayer(matchId, playerId, score) {
+    if (!this.state.currentUser) { this.toast('Accedi per votare!', 'warning'); return; }
+    try {
+      const doc = await db.collection('matches').doc(matchId).get();
+      if (!doc.exists) return;
+      const m = { id: doc.id, ...doc.data() };
+      if (m.closed) { this.toast('Votazione chiusa per questa partita.', 'warning'); return; }
+      const player = m.players.find(x => x.id === playerId);
+      if (!player) return;
+      if (!player.ratings) player.ratings = {};
+      const uid = this.state.currentUser.id;
+      if (player.ratings[uid] === score) {
+        delete player.ratings[uid];
+        this.toast('Voto rimosso!', 'info');
+      } else {
+        player.ratings[uid] = score;
+        this.toast('Voto registrato: ' + score + '/10', 'success');
+      }
+      await db.collection('matches').doc(matchId).update({ players: m.players });
+      this.openMatch(matchId);
+    } catch (e) { this.toast('Errore durante il voto.', 'error'); }
   },
 
   getRoleLabel(pos) {
@@ -1907,35 +1075,36 @@ const APP = {
   },
 
   /* ---------- ADMIN: MATCHES ---------- */
-  renderAdminMatches() {
-    const matches = this.state.matches;
+  async renderAdminMatches() {
+    const matches = [];
+    try {
+      const snapshot = await db.collection('matches').orderBy('createdAt', 'desc').get();
+      snapshot.forEach(doc => matches.push({ id: doc.id, ...doc.data() }));
+    } catch (e) { console.error(e); }
     if (this.el.adminMatchCount) this.el.adminMatchCount.textContent = matches.length + ' partite';
     const container = this.el.adminMatchList;
     if (!container) return;
-
     if (matches.length === 0) {
       container.innerHTML = '<div class="gb-empty"><i class="fas fa-futbol"></i><p>Nessuna partita.</p></div>';
       return;
     }
-
-    container.innerHTML = [...matches].sort((a, b) => b.createdAt - a.createdAt).map(m => {
+    container.innerHTML = matches.map(m => {
       const dateStr = m.date || '?';
       return '<div class="admin-msg-item">' +
         '<div class="admin-msg-info">' +
-          '<div class="admin-msg-text"><strong>' + this.escapeHtml(m.opponent) + '</strong> ' + (m.result ? '\u00B7 ' + this.escapeHtml(m.result) : '') + ' ' + (m.closed ? '<span style="color:var(--accent3);font-size:11px">[Chiusa]</span>' : '') + '</div>' +
-          '<div class="admin-msg-meta">' + dateStr + ' \u00B7 ' + (m.players ? m.players.length : 0) + ' giocatori</div>' +
+        '<div class="admin-msg-text"><strong>' + this.escapeHtml(m.opponent) + '</strong> ' + (m.result ? '\u00B7 ' + this.escapeHtml(m.result) : '') + ' ' + (m.closed ? '<span style="color:var(--accent3);font-size:11px">[Chiusa]</span>' : '') + '</div>' +
+        '<div class="admin-msg-meta">' + dateStr + ' \u00B7 ' + (m.players ? m.players.length : 0) + ' giocatori</div>' +
         '</div>' +
         '<div class="admin-msg-actions">' +
-          '<button class="btn btn-ghost btn-sm" onclick="APP.adminToggleMatchClose(\'' + m.id + '\')" title="' + (m.closed ? 'Riapri' : 'Chiudi') + ' votazioni"><i class="fas ' + (m.closed ? 'fa-lock-open' : 'fa-lock') + '"></i></button>' +
-          '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditMatch(\'' + m.id + '\')"><i class="fas fa-pen"></i></button>' +
-          '<button class="btn btn-danger btn-sm" onclick="APP.adminDeleteMatch(\'' + m.id + '\')"><i class="fas fa-trash"></i></button>' +
-        '</div>' +
-      '</div>';
+        '<button class="btn btn-ghost btn-sm" onclick="APP.adminToggleMatchClose(\'' + m.id + '\')" title="' + (m.closed ? 'Riapri' : 'Chiudi') + ' votazioni"><i class="fas ' + (m.closed ? 'fa-lock-open' : 'fa-lock') + '"></i></button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditMatch(\'' + m.id + '\')"><i class="fas fa-pen"></i></button>' +
+        '<button class="btn btn-danger btn-sm" onclick="APP.adminDeleteMatch(\'' + m.id + '\')"><i class="fas fa-trash"></i></button>' +
+        '</div></div>';
     }).join('');
   },
 
   adminOpenAddMatch() {
-    this._editingMatchId = null;
+    this.state._editingMatchId = null;
     if (this.el.matchModalTitle) this.el.matchModalTitle.innerHTML = '<i class="fas fa-futbol"></i> Nuova Partita';
     if (this.el.mmOpponent) this.el.mmOpponent.value = '';
     if (this.el.mmDate) this.el.mmDate.value = new Date().toISOString().slice(0, 10);
@@ -1946,91 +1115,362 @@ const APP = {
   },
 
   adminOpenEditMatch(matchId) {
-    const m = this.state.matches.find(x => x.id === matchId);
-    if (!m) return;
-    this._editingMatchId = matchId;
-    if (this.el.matchModalTitle) this.el.matchModalTitle.innerHTML = '<i class="fas fa-futbol"></i> Modifica Partita';
-    if (this.el.mmOpponent) this.el.mmOpponent.value = m.opponent || '';
-    if (this.el.mmDate) this.el.mmDate.value = m.date || '';
-    if (this.el.mmResult) this.el.mmResult.value = m.result || '';
-    if (this.el.mmPlayers) this.el.mmPlayers.value = (m.players || []).map(p => p.number + '.' + p.name + '.' + (p.position || '')).join('\n');
-    if (this.el.mmError) this.el.mmError.textContent = '';
-    if (this.el.matchModal) this.el.matchModal.style.display = '';
+    (async () => {
+      try {
+        const doc = await db.collection('matches').doc(matchId).get();
+        if (!doc.exists) return;
+        const m = doc.data();
+        this.state._editingMatchId = matchId;
+        if (this.el.matchModalTitle) this.el.matchModalTitle.innerHTML = '<i class="fas fa-futbol"></i> Modifica Partita';
+        if (this.el.mmOpponent) this.el.mmOpponent.value = m.opponent || '';
+        if (this.el.mmDate) this.el.mmDate.value = m.date || '';
+        if (this.el.mmResult) this.el.mmResult.value = m.result || '';
+        if (this.el.mmPlayers) this.el.mmPlayers.value = (m.players || []).map(p => p.number + '.' + p.name + '.' + (p.position || '')).join('\n');
+        if (this.el.mmError) this.el.mmError.textContent = '';
+        if (this.el.matchModal) this.el.matchModal.style.display = '';
+      } catch (e) { console.error(e); }
+    })();
   },
 
   adminSaveMatch() {
-    const opponent = this.el.mmOpponent.value.trim();
-    const date = this.el.mmDate.value;
-    const result = this.el.mmResult.value.trim();
-    const playersRaw = this.el.mmPlayers.value.trim();
-    if (this.el.mmError) this.el.mmError.textContent = '';
-    if (!opponent) { if (this.el.mmError) this.el.mmError.textContent = 'Inserisci l\'avversario.'; return; }
-    if (!playersRaw) { if (this.el.mmError) this.el.mmError.textContent = 'Inserisci almeno un giocatore.'; return; }
-
-    const players = playersRaw.split('\n').filter(line => line.trim()).map(line => {
-      const parts = line.split('.');
-      return {
-        id: 'pl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-        number: parts[0] ? parts[0].trim() : '?',
-        name: parts[1] ? parts[1].trim() : '?',
-        position: parts[2] ? parts[2].trim().toUpperCase() : 'C',
-        ratings: {},
-      };
-    });
-
-    if (this._editingMatchId) {
-      const m = this.state.matches.find(x => x.id === this._editingMatchId);
-      if (!m) return;
-      // Preserve existing ratings for players with same name
-      const oldRatings = {};
-      (m.players || []).forEach(p => { if (p.ratings) oldRatings[p.name] = p.ratings; });
-      players.forEach(p => { if (oldRatings[p.name]) p.ratings = oldRatings[p.name]; });
-      m.opponent = opponent;
-      m.date = date;
-      m.result = result;
-      m.players = players;
-    } else {
-      this.state.matches.push({
-        id: 'match_' + Date.now(),
-        opponent,
-        date,
-        result,
-        players,
-        createdAt: Date.now(),
-        closed: false,
+    (async () => {
+      const opponent = this.el.mmOpponent.value.trim();
+      const date = this.el.mmDate.value;
+      const result = this.el.mmResult.value.trim();
+      const playersRaw = this.el.mmPlayers.value.trim();
+      if (this.el.mmError) this.el.mmError.textContent = '';
+      if (!opponent) { if (this.el.mmError) this.el.mmError.textContent = 'Inserisci l\'avversario.'; return; }
+      if (!playersRaw) { if (this.el.mmError) this.el.mmError.textContent = 'Inserisci almeno un giocatore.'; return; }
+      const players = playersRaw.split('\n').filter(line => line.trim()).map(line => {
+        const parts = line.split('.');
+        return {
+          id: 'pl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          number: parts[0] ? parts[0].trim() : '?',
+          name: parts[1] ? parts[1].trim() : '?',
+          position: parts[2] ? parts[2].trim().toUpperCase() : 'C',
+          ratings: {},
+        };
       });
-    }
-    this._editingMatchId = null;
-    this.saveMatches();
-    this.adminCloseMatchModal();
-    this.renderAdminMatches();
-    this.toast('Partita salvata!', 'success');
+      try {
+        if (this.state._editingMatchId) {
+          const doc = await db.collection('matches').doc(this.state._editingMatchId).get();
+          if (!doc.exists) return;
+          const existing = doc.data();
+          const oldRatings = {};
+          (existing.players || []).forEach(p => { if (p.ratings) oldRatings[p.name] = p.ratings; });
+          players.forEach(p => { if (oldRatings[p.name]) p.ratings = oldRatings[p.name]; });
+          await db.collection('matches').doc(this.state._editingMatchId).update({ opponent, date, result, players });
+        } else {
+          await db.collection('matches').add({ opponent, date, result, players, createdAt: Date.now(), closed: false });
+        }
+        this.state._editingMatchId = null;
+        this.adminCloseMatchModal();
+        this.renderAdminMatches();
+        this.toast('Partita salvata!', 'success');
+      } catch (e) { if (this.el.mmError) this.el.mmError.textContent = 'Errore durante il salvataggio.'; }
+    })();
   },
 
   adminCloseMatchModal() {
-    this._editingMatchId = null;
+    this.state._editingMatchId = null;
     if (this.el.matchModal) this.el.matchModal.style.display = 'none';
   },
 
-  adminDeleteMatch(matchId) {
+  async adminDeleteMatch(matchId) {
     if (!confirm('Eliminare questa partita e tutti i voti?')) return;
-    this.state.matches = this.state.matches.filter(m => m.id !== matchId);
-    this.saveMatches();
-    this.renderAdminMatches();
-    this.toast('Partita eliminata.', 'info');
+    try {
+      await db.collection('matches').doc(matchId).delete();
+      this.renderAdminMatches();
+      this.toast('Partita eliminata.', 'info');
+    } catch (e) { this.toast('Errore.', 'error'); }
   },
 
-  adminToggleMatchClose(matchId) {
-    const m = this.state.matches.find(x => x.id === matchId);
-    if (!m) return;
-    m.closed = !m.closed;
-    this.saveMatches();
-    this.renderAdminMatches();
-    this.toast(m.closed ? 'Votazione chiusa.' : 'Votazione riaperta.', 'info');
+  async adminToggleMatchClose(matchId) {
+    try {
+      const doc = await db.collection('matches').doc(matchId).get();
+      if (!doc.exists) return;
+      const closed = !doc.data().closed;
+      await db.collection('matches').doc(matchId).update({ closed });
+      this.renderAdminMatches();
+      this.toast(closed ? 'Votazione chiusa.' : 'Votazione riaperta.', 'info');
+    } catch (e) { this.toast('Errore.', 'error'); }
   },
 
-  saveMatches() {
-    localStorage.setItem('alelatina_matches', JSON.stringify(this.state.matches));
+  /* ---------- ADMIN: USERS ---------- */
+  async renderAdminUsers() {
+    const users = [];
+    try {
+      const snapshot = await db.collection('users').orderBy('username').get();
+      snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+    } catch (e) { console.error(e); }
+    if (this.el.adminUserCount) this.el.adminUserCount.textContent = users.length + ' utenti';
+    const container = this.el.adminUserList;
+    if (!container) return;
+    if (users.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-users"></i><p>Nessun utente.</p></div>';
+      return;
+    }
+    const roleMap = { admin: 'Admin', editor: 'Editor', user: 'Tifoso' };
+    container.innerHTML = users.map(u => {
+      return '<div class="admin-msg-item">' +
+        '<div class="admin-msg-info">' +
+        '<div class="admin-msg-text"><strong>' + this.escapeHtml(u.username) + '</strong> \u00B7 ' + (roleMap[u.role] || u.role) + ' \u00B7 ' + this.escapeHtml(u.email) + '</div>' +
+        '<div class="admin-msg-meta">Iscritto dal ' + (u.createdAt ? new Date(u.createdAt).toLocaleDateString('it-IT') : '?') + '</div>' +
+        '</div>' +
+        '<div class="admin-msg-actions">' +
+        '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditUser(\'' + u.id + '\')"><i class="fas fa-pen"></i></button>' +
+        (u.role !== 'admin' ? '<button class="btn btn-danger btn-sm" onclick="APP.adminDeleteUser(\'' + u.id + '\')"><i class="fas fa-trash"></i></button>' : '') +
+        '</div></div>';
+    }).join('');
+  },
+
+  adminOpenCreateUser() {
+    this.state._editingUserId = null;
+    if (this.el.userModalTitle) this.el.userModalTitle.innerHTML = '<i class="fas fa-user"></i> Nuovo Utente';
+    if (this.el.umUsername) this.el.umUsername.value = '';
+    if (this.el.umEmail) this.el.umEmail.value = '';
+    if (this.el.umPassword) this.el.umPassword.value = '';
+    if (this.el.umRole) this.el.umRole.value = 'user';
+    if (this.el.umError) this.el.umError.textContent = '';
+    if (this.el.userModal) this.el.userModal.style.display = '';
+  },
+
+  adminOpenEditUser(userId) {
+    (async () => {
+      try {
+        const doc = await db.collection('users').doc(userId).get();
+        if (!doc.exists) return;
+        const u = doc.data();
+        this.state._editingUserId = userId;
+        if (this.el.userModalTitle) this.el.userModalTitle.innerHTML = '<i class="fas fa-user"></i> Modifica Utente';
+        if (this.el.umUsername) this.el.umUsername.value = u.username || '';
+        if (this.el.umEmail) this.el.umEmail.value = u.email || '';
+        if (this.el.umPassword) this.el.umPassword.value = '';
+        if (this.el.umRole) this.el.umRole.value = u.role || 'user';
+        if (this.el.umError) this.el.umError.textContent = '';
+        if (this.el.userModal) this.el.userModal.style.display = '';
+      } catch (e) { console.error(e); }
+    })();
+  },
+
+  adminSaveUser() {
+    (async () => {
+      const username = this.el.umUsername.value.trim();
+      const email = this.el.umEmail.value.trim();
+      const password = this.el.umPassword.value.trim();
+      const role = this.el.umRole.value;
+      if (this.el.umError) this.el.umError.textContent = '';
+      if (!username || !email) { if (this.el.umError) this.el.umError.textContent = 'Username ed email obbligatori.'; return; }
+      try {
+        if (this.state._editingUserId) {
+          const updates = { username, email, role };
+          await db.collection('users').doc(this.state._editingUserId).update(updates);
+        } else {
+          if (!password) { if (this.el.umError) this.el.umError.textContent = 'Password obbligatoria per nuovi utenti.'; return; }
+          const cred = await auth.createUserWithEmailAndPassword(email, password);
+          await db.collection('users').doc(cred.user.uid).set({ username, email, role, avatar: '', createdAt: Date.now() });
+        }
+        this.state._editingUserId = null;
+        this.adminCloseUserModal();
+        this.renderAdminUsers();
+        this.toast('Utente salvato!', 'success');
+      } catch (e) {
+        if (this.el.umError) this.el.umError.textContent = e.code === 'auth/email-already-in-use' ? 'Email gi\u00e0 in uso.' : 'Errore durante il salvataggio.';
+      }
+    })();
+  },
+
+  adminCloseUserModal() {
+    this.state._editingUserId = null;
+    if (this.el.userModal) this.el.userModal.style.display = 'none';
+  },
+
+  async adminDeleteUser(userId) {
+    if (!confirm('Eliminare questo utente?')) return;
+    try {
+      await db.collection('users').doc(userId).delete();
+      this.renderAdminUsers();
+      this.toast('Utente eliminato.', 'info');
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  /* ---------- ADMIN: MESSAGES ---------- */
+  async renderAdminMessages() {
+    const messages = [];
+    try {
+      const snapshot = await db.collection('messages').orderBy('createdAt', 'desc').limit(100).get();
+      snapshot.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
+    } catch (e) { console.error(e); }
+    if (this.el.adminMsgCount) this.el.adminMsgCount.textContent = messages.length + ' messaggi';
+    const container = this.el.adminMsgList;
+    if (!container) return;
+    if (messages.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-comment"></i><p>Nessun messaggio.</p></div>';
+      return;
+    }
+    container.innerHTML = messages.map(m => {
+      const time = m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '';
+      return '<div class="admin-msg-item">' +
+        '<div class="admin-msg-info">' +
+        '<div class="admin-msg-author">' + this.escapeHtml(m.authorName || 'Anonimo') + '</div>' +
+        '<div class="admin-msg-text">' + this.escapeHtml(m.text) + '</div>' +
+        '<div class="admin-msg-meta">' + time + ' \u00B7 Like: ' + (m.likes || 0) + ' \u00B7 Dislike: ' + (m.dislikes || 0) + '</div>' +
+        '</div>' +
+        '<div class="admin-msg-actions">' +
+        '<button class="btn btn-danger btn-sm" onclick="APP.adminDeleteMessage(\'' + m.id + '\')"><i class="fas fa-trash"></i></button>' +
+        '</div></div>';
+    }).join('');
+  },
+
+  adminClearFiltered() {
+    (async () => {
+      if (!confirm('Eliminare tutti i messaggi?')) return;
+      try {
+        const snapshot = await db.collection('messages').get();
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+        this.renderAdminMessages();
+        this.toast('Messaggi eliminati.', 'info');
+      } catch (e) { this.toast('Errore.', 'error'); }
+    })();
+  },
+
+  async adminDeleteMessage(messageId) {
+    if (!confirm('Eliminare questo messaggio?')) return;
+    try {
+      await db.collection('messages').doc(messageId).delete();
+      this.renderAdminMessages();
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  /* ---------- ADMIN: RADIO ---------- */
+  async renderAdminRadio() {
+    try {
+      const doc = await db.collection('radio').doc('config').get();
+      const r = doc.exists ? doc.data() : {};
+      if (this.el.adminMixlrUser) this.el.adminMixlrUser.value = r.mixlrUsername || '';
+      if (this.el.adminStreamUrl) this.el.adminStreamUrl.value = r.streamUrl || '';
+      if (this.el.adminStreamName) this.el.adminStreamName.value = r.streamName || 'AleLatina Radio';
+      this.renderAdminPodcasts(r.podcasts || []);
+    } catch (e) { console.error(e); }
+  },
+
+  async adminSaveRadioConfig() {
+    const mixlrUsername = this.el.adminMixlrUser.value.trim();
+    const streamUrl = this.el.adminStreamUrl.value.trim();
+    const streamName = this.el.adminStreamName.value.trim() || 'AleLatina Radio';
+    try {
+      const doc = await db.collection('radio').doc('config').get();
+      const data = doc.exists ? doc.data() : {};
+      data.mixlrUsername = mixlrUsername;
+      data.streamUrl = streamUrl;
+      data.streamName = streamName;
+      await db.collection('radio').doc('config').set(data, { merge: true });
+      this.toast('Configurazione radio salvata!', 'success');
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  renderAdminPodcasts(podcasts) {
+    const container = this.el.adminPodcastList;
+    if (!container) return;
+    if (!podcasts || podcasts.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-podcast"></i><p>Nessuna puntata.</p></div>';
+      return;
+    }
+    container.innerHTML = podcasts.map((p, i) => {
+      return '<div class="admin-msg-item">' +
+        '<div class="admin-msg-info">' +
+        '<div class="admin-msg-text"><strong>' + this.escapeHtml(p.title || '') + '</strong></div>' +
+        (p.description ? '<div class="admin-msg-meta">' + this.escapeHtml(p.description) + '</div>' : '') +
+        '</div>' +
+        '<div class="admin-msg-actions">' +
+        '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditPodcast(' + i + ')"><i class="fas fa-pen"></i></button>' +
+        '<button class="btn btn-danger btn-sm" onclick="APP.adminDeletePodcast(' + i + ')"><i class="fas fa-trash"></i></button>' +
+        '</div></div>';
+    }).join('');
+  },
+
+  adminOpenAddPodcast() {
+    this.state._editingPodcastId = null;
+    if (this.el.podcastModalTitle) this.el.podcastModalTitle.innerHTML = '<i class="fas fa-podcast"></i> Nuova Puntata';
+    if (this.el.pmTitle) this.el.pmTitle.value = '';
+    if (this.el.pmDescription) this.el.pmDescription.value = '';
+    if (this.el.pmAudioUrl) this.el.pmAudioUrl.value = '';
+    if (this.el.pmImageUrl) this.el.pmImageUrl.value = '';
+    if (this.el.pmPodcastError) this.el.pmPodcastError.textContent = '';
+    if (this.el.podcastModal) this.el.podcastModal.style.display = '';
+  },
+
+  adminOpenEditPodcast(index) {
+    (async () => {
+      try {
+        const doc = await db.collection('radio').doc('config').get();
+        if (!doc.exists) return;
+        const data = doc.data();
+        const podcasts = data.podcasts || [];
+        const p = podcasts[index];
+        if (!p) return;
+        this.state._editingPodcastId = index;
+        if (this.el.podcastModalTitle) this.el.podcastModalTitle.innerHTML = '<i class="fas fa-podcast"></i> Modifica Puntata';
+        if (this.el.pmTitle) this.el.pmTitle.value = p.title || '';
+        if (this.el.pmDescription) this.el.pmDescription.value = p.description || '';
+        if (this.el.pmAudioUrl) this.el.pmAudioUrl.value = p.audioUrl || '';
+        if (this.el.pmImageUrl) this.el.pmImageUrl.value = p.imageUrl || '';
+        if (this.el.pmPodcastError) this.el.pmPodcastError.textContent = '';
+        if (this.el.podcastModal) this.el.podcastModal.style.display = '';
+      } catch (e) { console.error(e); }
+    })();
+  },
+
+  adminSavePodcast() {
+    (async () => {
+      const title = this.el.pmTitle.value.trim();
+      const description = this.el.pmDescription.value.trim();
+      const audioUrl = this.el.pmAudioUrl.value.trim();
+      const imageUrl = this.el.pmImageUrl.value.trim();
+      if (this.el.pmPodcastError) this.el.pmPodcastError.textContent = '';
+      if (!title || !audioUrl) { if (this.el.pmPodcastError) this.el.pmPodcastError.textContent = 'Titolo e URL audio obbligatori.'; return; }
+      try {
+        const doc = await db.collection('radio').doc('config').get();
+        const data = doc.exists ? doc.data() : { podcasts: [] };
+        const podcasts = data.podcasts || [];
+        const entry = { title, description, audioUrl, imageUrl, createdAt: Date.now() };
+        if (this.state._editingPodcastId !== null && this.state._editingPodcastId !== undefined) {
+          podcasts[this.state._editingPodcastId] = entry;
+        } else {
+          podcasts.push(entry);
+        }
+        data.podcasts = podcasts;
+        await db.collection('radio').doc('config').set(data, { merge: true });
+        this.state._editingPodcastId = null;
+        this.adminClosePodcastModal();
+        this.renderAdminRadio();
+        this.toast('Puntata salvata!', 'success');
+      } catch (e) { if (this.el.pmPodcastError) this.el.pmPodcastError.textContent = 'Errore.'; }
+    })();
+  },
+
+  adminClosePodcastModal() {
+    this.state._editingPodcastId = null;
+    if (this.el.podcastModal) this.el.podcastModal.style.display = 'none';
+  },
+
+  adminDeletePodcast(index) {
+    (async () => {
+      if (!confirm('Eliminare questa puntata?')) return;
+      try {
+        const doc = await db.collection('radio').doc('config').get();
+        if (!doc.exists) return;
+        const data = doc.data();
+        const podcasts = data.podcasts || [];
+        podcasts.splice(index, 1);
+        data.podcasts = podcasts;
+        await db.collection('radio').doc('config').set(data, { merge: true });
+        this.renderAdminRadio();
+        this.toast('Puntata eliminata.', 'info');
+      } catch (e) { this.toast('Errore.', 'error'); }
+    })();
   },
 
   /* ---------- PROFILE ---------- */
@@ -2039,8 +1479,9 @@ const APP = {
     if (!u) return;
     if (this.el.profileUsername) this.el.profileUsername.textContent = u.username;
     if (this.el.profileEmail) this.el.profileEmail.textContent = u.email;
-    if (this.el.profileRole) this.el.profileRole.textContent = u.role === 'admin' ? 'Amministratore' : 'Tifoso';
-    if (this.el.profileJoined) this.el.profileJoined.textContent = new Date(u.createdAt).toLocaleDateString('it-IT');
+    const roleMap = { admin: 'Amministratore', editor: 'Editor', user: 'Tifoso' };
+    if (this.el.profileRole) this.el.profileRole.textContent = roleMap[u.role] || 'Tifoso';
+    if (this.el.profileJoined) this.el.profileJoined.textContent = u.createdAt ? new Date(u.createdAt).toLocaleDateString('it-IT') : '-';
     if (this.el.profileAvatar) {
       if (u.avatar) {
         this.el.profileAvatar.innerHTML = '<img src="' + u.avatar + '" alt="">';
@@ -2048,327 +1489,189 @@ const APP = {
         this.el.profileAvatar.textContent = u.username.charAt(0).toUpperCase();
       }
     }
-    if (this.el.profileStatus) this.el.profileStatus.textContent = '';
   },
 
   handleAvatarUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 500000) {
-      this.toast('Immagine troppo grande (max 500KB).', 'error');
-      return;
-    }
+    if (file.size > 500 * 1024) { this.toast('Immagine troppo grande (max 500KB).', 'warning'); return; }
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target.result;
-      if (this.el.profileAvatar) {
-        this.el.profileAvatar.innerHTML = '<img src="' + dataUrl + '" alt="">';
-      }
-      this._pendingAvatar = dataUrl;
-      if (this.el.profileStatus) this.el.profileStatus.textContent = 'Foto caricata. Premi "Salva" per confermare.';
+    reader.onload = ev => {
+      this._newAvatar = ev.target.result;
+      if (this.el.profileAvatar) this.el.profileAvatar.innerHTML = '<img src="' + this._newAvatar + '" alt="">';
     };
     reader.readAsDataURL(file);
   },
 
-  saveProfile() {
+  async saveProfile() {
     const u = this.state.currentUser;
     if (!u) return;
-    if (this._pendingAvatar) {
-      u.avatar = this._pendingAvatar;
-      delete this._pendingAvatar;
+    if (this._newAvatar) {
+      try {
+        await db.collection('users').doc(u.id).update({ avatar: this._newAvatar });
+        u.avatar = this._newAvatar;
+        this._newAvatar = null;
+        this.afterLogin();
+        this.toast('Foto profilo aggiornata!', 'success');
+      } catch (e) { this.toast('Errore.', 'error'); }
+    } else {
+      this.toast('Nessuna modifica.', 'info');
     }
-    const idx = this.state.users.findIndex(x => x.id === u.id);
-    if (idx > -1) this.state.users[idx] = u;
-    this.saveUsers();
-    // Refresh all avatar displays
-    this.updateAllAvatars();
-    this.toast('Profilo salvato!', 'success');
-    if (this.el.profileStatus) this.el.profileStatus.textContent = '';
   },
 
-  removeAvatar() {
+  async removeAvatar() {
     const u = this.state.currentUser;
     if (!u) return;
-    if (!u.avatar && !this._pendingAvatar) return;
-    u.avatar = null;
-    delete this._pendingAvatar;
-    const idx = this.state.users.findIndex(x => x.id === u.id);
-    if (idx > -1) this.state.users[idx] = u;
-    this.saveUsers();
-    this.updateAllAvatars();
-    this.renderProfile();
-    this.toast('Foto profilo rimossa.', 'info');
-  },
-
-  updateAllAvatars() {
-    const u = this.state.currentUser;
-    if (!u) return;
-    const initial = u.username.charAt(0).toUpperCase();
-    const img = u.avatar
-      ? '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
-      : null;
-    if (this.el.topAvatar) {
-      if (img) { this.el.topAvatar.innerHTML = img; } else { this.el.topAvatar.textContent = initial; }
-    }
-    if (this.el.sidebarAvatar) {
-      if (img) { this.el.sidebarAvatar.innerHTML = img; } else { this.el.sidebarAvatar.textContent = initial; }
-    }
+    try {
+      await db.collection('users').doc(u.id).update({ avatar: '' });
+      u.avatar = '';
+      this._newAvatar = null;
+      if (this.el.profileAvatar) this.el.profileAvatar.textContent = u.username.charAt(0).toUpperCase();
+      this.afterLogin();
+      this.toast('Foto rimossa.', 'info');
+    } catch (e) { this.toast('Errore.', 'error'); }
   },
 
   /* ---------- PRIVATE MESSAGES ---------- */
-  renderInbox() {
-    const u = this.state.currentUser;
-    if (!u) return;
-    this.el.pmConversation.style.display = 'none';
-    this.el.pmInbox.style.display = '';
-    this.state.pmRecipient = null;
+  async renderInbox() {
+    if (this.state.currentUser) {
+      this.startChatsListener();
+    }
+  },
 
-    const msgs = this.state.privateMessages;
-    // Group by other party
-    const conversations = {};
-    msgs.forEach(m => {
-      const otherId = m.fromUserId === u.id ? m.toUserId : m.fromUserId;
-      if (!conversations[otherId]) {
-        conversations[otherId] = {
-          otherId,
-          otherUsername: m.fromUserId === u.id ? m.toUsername : m.fromUsername,
-          messages: [],
-          unread: 0,
-        };
-      }
-      conversations[otherId].messages.push(m);
-      if (m.toUserId === u.id && !m.read) {
-        conversations[otherId].unread++;
-      }
+  startChatsListener() {
+    this.stopChatsListener();
+    const uid = this.state.currentUser.id;
+    this.state.chatsUnsub = db.collection('chats').where('participants', 'array-contains', uid).orderBy('lastMessageAt', 'desc').onSnapshot(snapshot => {
+      const chats = [];
+      snapshot.forEach(doc => chats.push({ id: doc.id, ...doc.data() }));
+      this.renderConversations(chats);
+      this.updateMsgBadge(chats);
+    }, err => {
+      console.error('Chats listener error:', err);
     });
+  },
 
-    const convList = Object.values(conversations);
-    convList.sort((a, b) => {
-      const aLast = a.messages.reduce((max, m) => Math.max(max, m.createdAt), 0);
-      const bLast = b.messages.reduce((max, m) => Math.max(max, m.createdAt), 0);
-      return bLast - aLast;
-    });
+  stopChatsListener() {
+    if (this.state.chatsUnsub) { this.state.chatsUnsub(); this.state.chatsUnsub = null; }
+  },
 
+  renderConversations(chats) {
     const container = this.el.pmConversations;
-    if (convList.length === 0) {
-      container.innerHTML = '<div class="pm-empty"><i class="fas fa-envelope"></i><p>Nessun messaggio. Trova un tifoso nella sezione Membri per scrivergli!</p></div>';
+    if (!container) return;
+    const uid = this.state.currentUser.id;
+    if (!chats || chats.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-envelope"></i><p>Nessuna conversazione. Cerca un tifoso dalla sezione Membri per iniziare.</p></div>';
       return;
     }
-
-    container.innerHTML = convList.map(c => {
-      const lastMsg = c.messages.reduce((a, b) => a.createdAt > b.createdAt ? a : b);
-      const time = this.formatTime(lastMsg.createdAt);
-      const preview = lastMsg.text.length > 60 ? lastMsg.text.slice(0, 60) + '...' : lastMsg.text;
-      const otherUser = this.state.users.find(x => x.id === c.otherId);
-      const avatarDisplay = otherUser && otherUser.avatar
-        ? '<img src="' + otherUser.avatar + '" alt="">'
-        : c.otherUsername.charAt(0).toUpperCase();
-      const color = this.stringToColor(c.otherUsername);
-      const unreadBadge = c.unread > 0 ? '<div class="pm-conv-unread">' + c.unread + '</div>' : '';
-      return '<div class="pm-conv-card" onclick="APP.openConversation(\'' + c.otherId + '\')">' +
-        '<div class="pm-conv-avatar" style="background:' + color + '">' + avatarDisplay + '</div>' +
+    container.innerHTML = chats.map(chat => {
+      const otherId = chat.participants.find(p => p !== uid);
+      const otherName = chat.participantNames ? chat.participantNames[otherId] || otherId : otherId;
+      const lastMsg = chat.lastMessage || '';
+      const time = chat.lastMessageAt ? new Date(chat.lastMessageAt).toLocaleString('it-IT') : '';
+      const unread = chat.lastSenderId !== uid && chat.lastSenderId ? 'style="font-weight:700"' : '';
+      return '<div class="pm-conv-item" onclick="APP.openConversation(\'' + otherId + '\')" ' + unread + '>' +
+        '<div class="pm-conv-avatar">' + (otherName ? otherName.charAt(0).toUpperCase() : '?') + '</div>' +
         '<div class="pm-conv-info">' +
-          '<div class="pm-conv-name">' + c.otherUsername + '</div>' +
-          '<div class="pm-conv-preview">' + this.escapeHtml(preview) + '</div>' +
-        '</div>' +
-        '<div class="pm-conv-meta">' +
-          '<div class="pm-conv-time">' + time + '</div>' +
-          unreadBadge +
-        '</div>' +
-      '</div>';
+        '<div class="pm-conv-name">' + this.escapeHtml(otherName) + '</div>' +
+        '<div class="pm-conv-preview">' + this.escapeHtml(lastMsg) + '</div>' +
+        '<div class="pm-conv-time">' + time + '</div>' +
+        '</div></div>';
     }).join('');
   },
 
-  openConversation(otherUserId) {
-    const u = this.state.currentUser;
-    if (!u) return;
-    const other = this.state.users.find(x => x.id === otherUserId);
-    if (!other) return;
-
-    // Navigate to messages page first (in case we're on Members page)
-    this.navigateTo('messages');
-    this.state.pmRecipient = other;
-    this.el.pmInbox.style.display = 'none';
-    this.el.pmConversation.style.display = '';
-    if (this.el.pmError) this.el.pmError.textContent = '';
-
-    // Render header
-    const avatarDisplay = other.avatar
-      ? '<img src="' + other.avatar + '" alt="">'
-      : other.username.charAt(0).toUpperCase();
-    const color = this.stringToColor(other.username);
-    if (this.el.pmConvHeader) {
-      this.el.pmConvHeader.innerHTML =
-        '<div class="pm-conv-header-avatar" style="background:' + color + '">' + avatarDisplay + '</div>' +
-        '<div class="pm-conv-header-name">' + other.username + '</div>';
-    }
-
-    this.renderConversation();
-  },
-
-  showInbox() {
-    this.el.pmConversation.style.display = 'none';
-    this.el.pmInbox.style.display = '';
-    this.state.pmRecipient = null;
-    this.renderInbox();
-  },
-
-  renderConversation() {
-    const u = this.state.currentUser;
-    const other = this.state.pmRecipient;
-    if (!u || !other) return;
-
-    // Mark messages as read
-    let changed = false;
-    this.state.privateMessages.forEach(m => {
-      if (m.toUserId === u.id && m.fromUserId === other.id && !m.read) {
-        m.read = true;
-        changed = true;
-      }
-    });
-    if (changed) this.savePrivateMessages();
-
-    const msgs = this.state.privateMessages
-      .filter(m =>
-        (m.fromUserId === u.id && m.toUserId === other.id) ||
-        (m.fromUserId === other.id && m.toUserId === u.id)
-      )
-      .sort((a, b) => a.createdAt - b.createdAt);
-
-    const container = this.el.pmConvMessages;
-    if (msgs.length === 0) {
-      container.innerHTML = '<div class="pm-empty"><i class="fas fa-comment"></i><p>Nessun messaggio in questa conversazione.</p></div>';
-      return;
-    }
-
-    container.innerHTML = msgs.map(m => {
-      const sent = m.fromUserId === u.id;
-      const time = this.formatTime(m.createdAt);
-      return '<div class="pm-msg ' + (sent ? 'pm-msg-sent' : 'pm-msg-received') + '">' +
-        '<div>' + this.escapeHtml(m.text) + '</div>' +
-        '<div class="pm-msg-time">' + time + '</div>' +
-      '</div>';
-    }).join('');
-
-    // Scroll to bottom
-    container.scrollTop = container.scrollHeight;
-    this.updateMsgBadge();
-  },
-
-  sendPrivateMessage() {
-    const u = this.state.currentUser;
-    const other = this.state.pmRecipient;
-    const input = this.el.pmMessageInput;
-    if (!u || !other || !input) return;
-    const text = input.value.trim();
-    if (this.el.pmError) this.el.pmError.textContent = '';
-    if (!text) {
-      if (this.el.pmError) this.el.pmError.textContent = 'Scrivi un messaggio.';
-      return;
-    }
-    const filtered = this.containsBadWords(text) ? this.filterBadWords(text) : text;
-
-    const msg = {
-      id: 'pm_' + Date.now(),
-      fromUserId: u.id,
-      fromUsername: u.username,
-      toUserId: other.id,
-      toUsername: other.username,
-      text: filtered,
-      originalText: text,
-      createdAt: Date.now(),
-      read: false,
-    };
-
-    this.state.privateMessages.push(msg);
-    this.savePrivateMessages();
-    input.value = '';
-    this.renderConversation();
-    this.toast('Messaggio inviato a ' + other.username + '!', 'success');
-  },
-
-  getUnreadCount() {
-    const u = this.state.currentUser;
-    if (!u) return 0;
-    return this.state.privateMessages.filter(m => m.toUserId === u.id && !m.read).length;
-  },
-
-  updateMsgBadge() {
+  updateMsgBadge(chats) {
     const badge = this.el.sidebarMsgBadge;
     if (!badge) return;
-    const count = this.getUnreadCount();
-    if (count > 0) {
-      badge.textContent = count > 99 ? '99+' : count;
+    const uid = this.state.currentUser ? this.state.currentUser.id : null;
+    if (!uid || !chats) { badge.style.display = 'none'; return; }
+    const unread = chats.filter(c => c.lastSenderId && c.lastSenderId !== uid).length;
+    if (unread > 0) {
+      badge.textContent = unread;
       badge.style.display = '';
     } else {
       badge.style.display = 'none';
     }
   },
 
-  escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+  async openConversation(partnerId) {
+    this.state._editingChatPartnerId = partnerId;
+    if (this.el.pmInbox) this.el.pmInbox.style.display = 'none';
+    if (this.el.pmConversation) this.el.pmConversation.style.display = '';
+    try {
+      const userDoc = await db.collection('users').doc(partnerId).get();
+      const partnerName = userDoc.exists ? (userDoc.data().username || partnerId) : partnerId;
+      if (this.el.pmConvHeader) this.el.pmConvHeader.innerHTML = '<strong>' + this.escapeHtml(partnerName) + '</strong>';
+      const uid = this.state.currentUser.id;
+      const chatId = [uid, partnerId].sort().join('_');
+      const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages').orderBy('createdAt').get();
+      const messages = [];
+      msgsSnapshot.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
+      const container = this.el.pmConvMessages;
+      if (!container) return;
+      if (messages.length === 0) {
+        container.innerHTML = '<div class="gb-empty"><i class="fas fa-comment"></i><p>Nessun messaggio in questa conversazione.</p></div>';
+      } else {
+        container.innerHTML = messages.map(m => {
+          const isMe = m.senderId === uid;
+          return '<div class="pm-msg ' + (isMe ? 'pm-msg-me' : 'pm-msg-other') + '">' +
+            '<div class="pm-msg-text">' + this.escapeHtml(m.text) + '</div>' +
+            '<div class="pm-msg-time">' + (m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '') + '</div>' +
+            '</div>';
+        }).join('');
+      }
+    } catch (e) { console.error('Open conversation error:', e); }
   },
 
-  /* ---------- PERSISTENCE ---------- */
-  saveUsers() {
-    localStorage.setItem('alelatina_users', JSON.stringify(this.state.users));
+  showInbox() {
+    this.state._editingChatPartnerId = null;
+    if (this.el.pmInbox) this.el.pmInbox.style.display = '';
+    if (this.el.pmConversation) this.el.pmConversation.style.display = 'none';
+    this.renderInbox();
   },
 
-  saveMessages() {
-    localStorage.setItem('alelatina_messages', JSON.stringify(this.state.messages));
-  },
-
-  savePrivateMessages() {
-    localStorage.setItem('alelatina_pms', JSON.stringify(this.state.privateMessages));
-  },
-
-  /* ---------- UTILITIES ---------- */
-  formatTime(ts) {
-    const date = new Date(ts);
-    const now = new Date();
-    const diff = now - date;
-    const mins = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (mins < 1) return 'Adesso';
-    if (mins < 60) return mins + ' min fa';
-    if (hours < 24) return hours + 'h fa';
-    if (days < 7) return days + 'g fa';
-    return date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
-  },
-
-  stringToColor(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  async sendPrivateMessage() {
+    if (!this.state.currentUser) return;
+    const input = this.el.pmMessageInput;
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) { this.toast('Scrivi un messaggio!', 'warning'); return; }
+    const filtered = this.filterBadWords(text);
+    const partnerId = this.state._editingChatPartnerId;
+    if (!partnerId) return;
+    const uid = this.state.currentUser.id;
+    const chatId = [uid, partnerId].sort().join('_');
+    try {
+      const partnerDoc = await db.collection('users').doc(partnerId).get();
+      const partnerName = partnerDoc.exists ? (partnerDoc.data().username || partnerId) : partnerId;
+      await db.collection('chats').doc(chatId).collection('messages').add({
+        senderId: uid,
+        text: filtered,
+        createdAt: Date.now(),
+      });
+      const participantNames = {};
+      participantNames[uid] = this.state.currentUser.username;
+      participantNames[partnerId] = partnerName;
+      await db.collection('chats').doc(chatId).set({
+        participants: [uid, partnerId],
+        participantNames,
+        lastMessage: filtered,
+        lastMessageAt: Date.now(),
+        lastSenderId: uid,
+      }, { merge: true });
+      input.value = '';
+      this.openConversation(partnerId);
+    } catch (e) {
+      if (this.el.pmError) this.el.pmError.textContent = 'Errore durante l\'invio.';
     }
-    const hue = Math.abs(hash) % 360;
-    return 'hsl(' + hue + ', 60%, 45%)';
   },
 
-  /* ---------- TOAST ---------- */
-  toast(message, type = 'info') {
-    const icons = {
-      success: 'fa-check-circle',
-      error: 'fa-circle-exclamation',
-      warning: 'fa-triangle-exclamation',
-      info: 'fa-circle-info',
-    };
-    const el = document.createElement('div');
-    el.className = 'toast toast-' + type;
-    el.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '"></i> ' + message;
-    this.el.toastContainer.appendChild(el);
-    setTimeout(() => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateX(40px)';
-      el.style.transition = 'all 0.3s ease';
-      setTimeout(() => el.remove(), 300);
-    }, 3500);
+  async startPrivateChat(userId) {
+    if (!this.state.currentUser) { this.toast('Accedi per mandare messaggi.', 'warning'); return; }
+    if (userId === this.state.currentUser.id) { this.toast('Non puoi scrivere a te stesso.', 'info'); return; }
+    this.navigateTo('messages');
+    this.openConversation(userId);
   },
 };
 
-/* ---------- START ---------- */
 document.addEventListener('DOMContentLoaded', () => APP.init());
