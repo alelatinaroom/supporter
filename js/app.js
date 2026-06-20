@@ -455,7 +455,8 @@ const APP = {
   },
 
   navigateTo(page) {
-    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'pagellePage', 'matchPage'];
+    this.closeSidebar();
+    const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'pagellePage', 'matchPage'];
     pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
     if (this.el.sidebarItems) {
       this.el.sidebarItems.forEach(i => { i.classList.toggle('active', i.dataset.page === page); });
@@ -556,7 +557,12 @@ const APP = {
 
   showAuth() {
     this.state.redirectAfterLogin = this.getCurrentPage();
-    this.navigateTo('home');
+    this.closeSidebar();
+    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'pagellePage', 'matchPage'];
+    pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
+    if (this.el.sidebarItems) {
+      this.el.sidebarItems.forEach(i => { i.classList.remove('active'); });
+    }
     if (this.el.authPage) this.el.authPage.style.display = '';
     if (!this.state.currentUser) {
       this.switchAuthTab('login');
