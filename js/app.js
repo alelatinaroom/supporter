@@ -1024,6 +1024,7 @@ const APP = {
       if (hasLive) { this.el.radioStatusBadge.classList.add('live'); if (this.el.radioStatusText) this.el.radioStatusText.textContent = 'In diretta'; }
       else { this.el.radioStatusBadge.classList.remove('live'); if (this.el.radioStatusText) this.el.radioStatusText.textContent = 'Offline'; }
     }
+    if (hasLive) this.showMiniPlayer();
     this.renderSchedule();
     this.renderPodcasts();
     this.updateRadioBadge();

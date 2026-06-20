@@ -312,14 +312,13 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .home-bg {
   position: fixed; inset: 0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 16px,
-      rgba(26,58,107,0.04) 16px, rgba(26,58,107,0.04) 32px
-    ),
-    radial-gradient(ellipse at 30% 20%, rgba(77,166,255,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 80%, rgba(0,0,0,0.08) 0%, transparent 50%);
+  background: url('../images/curva-nord.jpg') center/cover no-repeat;
+}
+.home-bg::after {
+  content: ''; position: absolute; inset: 0;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.55);
 }
 .home-container {
   position: relative; z-index: 1; text-align: center;
