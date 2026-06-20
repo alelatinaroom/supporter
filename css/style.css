@@ -647,6 +647,23 @@ textarea { resize: vertical; min-height: 60px; }
 .gb-del-btn:hover { color: var(--accent3) !important; }
 
 /* ==============================
+   PAGINATION
+   ============================== */
+.gb-pagination {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 20px 0; flex-wrap: wrap;
+}
+.gb-page-btn {
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  color: var(--text); cursor: pointer; font-family: var(--font);
+  font-size: 14px; font-weight: 600; padding: 8px 14px;
+  border-radius: var(--radius-xs); transition: all 0.2s;
+}
+.gb-page-btn:hover:not(:disabled) { background: var(--accent); color: #fff; border-color: var(--accent); }
+.gb-page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.gb-page-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* ==============================
    MEMBERS
    ============================== */
 .members-search {

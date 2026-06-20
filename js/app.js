@@ -71,6 +71,9 @@ const APP = {
     _editingChatPartnerId: null,
     _messagesConvUnsub: null,
     radioData: null,
+    allMessages: [],
+    messagesPage: 1,
+    messagesPerPage: 15,
   },
 
   el: {},
@@ -126,6 +129,7 @@ const APP = {
       gbPostBtn: $('gbPostBtn'),
       gbNewPost: $('gbNewPost'),
       gbMessages: $('gbMessages'),
+      gbPagination: $('gbPagination'),
       gbFilters: qsa('.gb-filter'),
       updateCharCount: $('updateCharCount'),
       membersSearch: $('membersSearch'),
@@ -256,6 +260,7 @@ const APP = {
         this.el.gbFilters.forEach(x => x.classList.remove('active'));
         f.classList.add('active');
         this.state.currentFilter = f.dataset.filter;
+        this.state.messagesPage = 1;
         this.renderMessages();
       });
     });
@@ -654,7 +659,8 @@ const APP = {
     this.state.messagesUnsub = db.collection('messages').orderBy('createdAt', 'desc').limit(200).onSnapshot(snapshot => {
       const messages = [];
       snapshot.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
-      this.renderMessages(messages);
+      this.state.allMessages = messages;
+      this.renderMessages();
     }, err => {
       console.error('Messages listener error:', err);
       const container = this.el.gbMessages;
@@ -700,17 +706,24 @@ const APP = {
     }
   },
 
-  renderMessages(messages) {
+  renderMessages() {
     if (!this.el.gbMessages) return;
     const container = this.el.gbMessages;
+    const messages = this.state.allMessages;
     if (!messages || messages.length === 0) {
       container.innerHTML = '<div class="gb-empty"><i class="fas fa-message"></i><p>Nessun messaggio ancora. Sii il primo a scrivere!</p></div>';
+      this.renderPagination(0);
       return;
     }
     const filter = this.state.currentFilter || 'all';
     let filtered = messages;
     if (filter === 'popular') filtered = [...messages].sort((a, b) => (b.likes || 0) - (a.likes || 0));
-    container.innerHTML = filtered.map(m => {
+    const totalPages = Math.ceil(filtered.length / this.state.messagesPerPage) || 1;
+    const page = Math.min(this.state.messagesPage, totalPages);
+    this.state.messagesPage = page;
+    const start = (page - 1) * this.state.messagesPerPage;
+    const pageMessages = filtered.slice(start, start + this.state.messagesPerPage);
+    container.innerHTML = pageMessages.map(m => {
       const time = m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '';
       const isOwner = this.state.currentUser && this.state.currentUser.id === m.authorId;
       const cu = this.state.currentUser;
@@ -729,6 +742,28 @@ const APP = {
         (isOwner || (this.state.currentUser && this.state.currentUser.role === 'admin') ? '<button class="gb-like-btn gb-del-btn" onclick="APP.deleteMessage(\'' + m.id + '\')"><i class="fas fa-trash"></i></button>' : '') +
         '</div></div>';
     }).join('');
+    this.renderPagination(totalPages);
+  },
+
+  renderPagination(totalPages) {
+    const container = this.el.gbPagination;
+    if (!container) return;
+    if (totalPages <= 1) { container.innerHTML = ''; return; }
+    const page = this.state.messagesPage;
+    let html = '<div class="gb-pagination">';
+    html += '<button class="gb-page-btn" onclick="APP.goToPage(' + (page - 1) + ')"' + (page <= 1 ? ' disabled' : '') + '><i class="fas fa-chevron-left"></i></button>';
+    for (let i = 1; i <= totalPages; i++) {
+      html += '<button class="gb-page-btn' + (i === page ? ' active' : '') + '" onclick="APP.goToPage(' + i + ')">' + i + '</button>';
+    }
+    html += '<button class="gb-page-btn" onclick="APP.goToPage(' + (page + 1) + ')"' + (page >= totalPages ? ' disabled' : '') + '><i class="fas fa-chevron-right"></i></button>';
+    html += '</div>';
+    container.innerHTML = html;
+  },
+
+  goToPage(page) {
+    const totalPages = Math.ceil((this.state.allMessages || []).length / this.state.messagesPerPage) || 1;
+    this.state.messagesPage = Math.max(1, Math.min(page, totalPages));
+    this.renderMessages();
   },
 
   async postMessage() {
