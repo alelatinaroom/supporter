@@ -1479,12 +1479,14 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .radio-hero-bg {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, #1a1a3e 0%, #2d1b4e 40%, #0f2040 100%);
+  background: url('../images/curva-nord.jpg') center/cover no-repeat;
   z-index: 0;
 }
 .radio-hero-bg::after {
   content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 30% 50%, rgba(108,99,255,0.15) 0%, transparent 70%);
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 .radio-hero-content { position: relative; z-index: 1; }
 .radio-hero-icon {
