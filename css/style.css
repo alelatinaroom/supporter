@@ -493,23 +493,27 @@ textarea { resize: vertical; min-height: 60px; }
    GUESTBOOK
    ============================== */
 .guestbook-page {
-  max-width: 680px; margin: 0 auto;
+  max-width: 600px; margin: 0 auto;
 }
 
 /* Post form */
 .gb-post-form {
-  display: flex; gap: 14px;
   background: var(--card-bg); border: 1px solid var(--card-border);
   border-radius: var(--radius); padding: 20px; margin-bottom: 20px;
   box-shadow: var(--shadow);
 }
+.gb-post-user {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
 .gb-post-avatar {
-  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   background: linear-gradient(135deg, var(--accent), var(--secondary));
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 16px; color: #fff;
+  font-weight: 700; font-size: 14px; color: #fff;
 }
-.gb-post-input-wrap { flex: 1; }
+.gb-post-username {
+  font-size: 14px; font-weight: 600;
+}
 .gb-post-input {
   width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border);
   border-radius: var(--radius-sm); padding: 12px;
@@ -548,7 +552,7 @@ textarea { resize: vertical; min-height: 60px; }
 .gb-filter:hover:not(.active) { border-color: var(--accent); color: var(--text); }
 
 /* Messages container */
-.gb-messages { display: flex; flex-direction: column; gap: 14px; }
+.gb-messages { display: flex; flex-direction: column; gap: 14px; align-items: center; }
 
 /* Empty state */
 .gb-empty {
@@ -558,9 +562,9 @@ textarea { resize: vertical; min-height: 60px; }
 
 /* Message card (rendered by JS) */
 .gb-message {
-  display: flex; gap: 14px;
+  width: 100%; max-width: 500px; margin: 0 auto;
   background: var(--card-bg); border: 1px solid var(--card-border);
-  border-radius: var(--radius); padding: 18px 20px;
+  border-radius: var(--radius); padding: 16px 18px;
   box-shadow: var(--shadow);
   animation: msgIn 0.35s cubic-bezier(0.4,0,0.2,1);
   transition: all 0.2s;
@@ -573,37 +577,41 @@ textarea { resize: vertical; min-height: 60px; }
   from { opacity: 0; transform: translateY(10px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+.gb-msg-user {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
 .gb-msg-avatar {
-  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   background: linear-gradient(135deg, var(--accent), var(--secondary));
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 15px; color: #fff;
+  font-weight: 700; font-size: 14px; color: #fff;
   overflow: hidden;
 }
 .gb-msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.gb-msg-body { flex: 1; min-width: 0; }
-.gb-msg-header {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;
+.gb-msg-meta {
+  display: flex; flex-direction: column; gap: 1px;
 }
-.gb-msg-header strong { font-size: 14px; }
-.gb-msg-header span { font-size: 11px; color: var(--text-muted); }
+.gb-msg-name { font-size: 14px; }
+.gb-msg-time { font-size: 11px; color: var(--text-muted); }
 .gb-msg-text {
   font-size: 14px; line-height: 1.6; word-wrap: break-word;
-  color: var(--text);
+  color: var(--text); margin-bottom: 10px;
 }
 .gb-msg-actions {
-  display: flex; align-items: center; gap: 12px; margin-top: 10px;
-  padding-top: 10px; border-top: 1px solid var(--card-border);
+  display: flex; align-items: center; gap: 4px; padding-top: 10px;
+  border-top: 1px solid var(--card-border);
 }
 .gb-like-btn {
   background: none; border: none; color: var(--text-muted); cursor: pointer;
   font-size: 13px; display: inline-flex; align-items: center; gap: 5px;
-  transition: all 0.2s; font-family: var(--font); padding: 4px 8px;
+  transition: all 0.2s; font-family: var(--font); padding: 4px 10px;
   border-radius: var(--radius-xs);
 }
 .gb-like-btn:hover { background: var(--glass); color: var(--accent); }
-.gb-like-btn:first-child:hover { color: var(--accent2); }
-.gb-like-btn:nth-child(2):hover { color: var(--accent3); }
+.gb-like-btn:first-of-type:hover { color: var(--accent2); }
+.gb-like-btn:nth-of-type(2):hover { color: var(--accent3); }
+.gb-del-btn { margin-left: auto; }
+.gb-del-btn:hover { color: var(--accent3) !important; }
 
 /* ==============================
    MEMBERS

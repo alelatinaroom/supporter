@@ -661,13 +661,15 @@ const APP = {
     if (this.state.currentUser) {
       this.el.gbNewPost.innerHTML =
         '<div class="gb-post-form">' +
+        '<div class="gb-post-user">' +
         '<div class="gb-post-avatar">' + this.escapeHtml(this.state.currentUser.username.charAt(0).toUpperCase()) + '</div>' +
-        '<div class="gb-post-input-wrap">' +
+        '<span class="gb-post-username">' + this.escapeHtml(this.state.currentUser.username) + '</span>' +
+        '</div>' +
         '<textarea id="gbMessageInput" class="gb-post-input" placeholder="Scrivi un messaggio sul Muro..." maxlength="500"></textarea>' +
         '<div class="gb-post-footer">' +
         '<span id="updateCharCount" class="gb-charcount">0/500</span>' +
         '<button id="gbPostBtn" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Pubblica</button>' +
-        '</div></div></div>';
+        '</div></div>';
       this.el.gbPostBtn = document.getElementById('gbPostBtn');
       this.el.gbMessageInput = document.getElementById('gbMessageInput');
       this.el.updateCharCount = document.getElementById('updateCharCount');
@@ -701,15 +703,18 @@ const APP = {
       const time = m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '';
       const isOwner = this.state.currentUser && this.state.currentUser.id === m.authorId;
       return '<div class="gb-message" data-id="' + m.id + '">' +
+        '<div class="gb-msg-user">' +
         '<div class="gb-msg-avatar">' + (m.authorAvatar ? '<img src="' + m.authorAvatar + '" alt="">' : (m.authorName ? m.authorName.charAt(0).toUpperCase() : '?')) + '</div>' +
-        '<div class="gb-msg-body">' +
-        '<div class="gb-msg-header"><strong>' + this.escapeHtml(m.authorName || 'Anonimo') + '</strong> <span>' + time + '</span></div>' +
+        '<div class="gb-msg-meta">' +
+        '<strong class="gb-msg-name">' + this.escapeHtml(m.authorName || 'Anonimo') + '</strong>' +
+        '<span class="gb-msg-time">' + time + '</span>' +
+        '</div></div>' +
         '<div class="gb-msg-text">' + this.escapeHtml(m.text) + '</div>' +
         '<div class="gb-msg-actions">' +
         '<button class="gb-like-btn" onclick="APP.toggleLike(\'' + m.id + '\')"><i class="fas fa-thumbs-up"></i> <span>' + (m.likes || 0) + '</span></button>' +
         '<button class="gb-like-btn" onclick="APP.toggleDislike(\'' + m.id + '\')"><i class="fas fa-thumbs-down"></i> <span>' + (m.dislikes || 0) + '</span></button>' +
-        (isOwner || (this.state.currentUser && this.state.currentUser.role === 'admin') ? '<button class="gb-like-btn" onclick="APP.deleteMessage(\'' + m.id + '\')" style="color:var(--accent3)"><i class="fas fa-trash"></i></button>' : '') +
-        '</div></div></div>';
+        (isOwner || (this.state.currentUser && this.state.currentUser.role === 'admin') ? '<button class="gb-like-btn gb-del-btn" onclick="APP.deleteMessage(\'' + m.id + '\')"><i class="fas fa-trash"></i></button>' : '') +
+        '</div></div>';
     }).join('');
   },
 
