@@ -820,9 +820,10 @@ const APP = {
       this.el.membersList.innerHTML = users.map(u => {
         const initial = u.username ? u.username.charAt(0).toUpperCase() : '?';
         const roleLabel = u.role === 'admin' ? 'Admin' : u.role === 'editor' ? 'Editor' : 'Tifoso';
+        const roleClass = 'member-role-' + (u.role || 'user');
         return '<div class="member-card">' +
           '<div class="member-avatar">' + (u.avatar ? '<img src="' + u.avatar + '" alt="">' : initial) + '</div>' +
-          '<div class="member-info"><div class="member-name">' + this.escapeHtml(u.username || '?') + '</div><div class="member-role">' + roleLabel + '</div></div>' +
+          '<div class="member-info"><div class="member-name">' + this.escapeHtml(u.username || '?') + '</div><div class="member-role ' + roleClass + '">' + roleLabel + '</div></div>' +
           (this.state.currentUser && u.id !== this.state.currentUser.id ? '<button class="btn btn-ghost btn-sm" onclick="APP.startPrivateChat(\'' + u.id + '\')"><i class="fas fa-envelope"></i></button>' : '') +
           '</div>';
       }).join('');
