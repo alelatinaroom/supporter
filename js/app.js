@@ -520,7 +520,6 @@ const APP = {
     }
     switch (page) {
       case 'home':
-        if (this.state.currentUser) { this.navigateTo('guestbook'); return; }
         this.showHome();
         break;
       case 'guestbook':
