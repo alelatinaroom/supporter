@@ -2,9 +2,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users: only authenticated users can read; admin can write all; users can write own doc
+    // Users: anyone can read (only username/role/avatar shown); admin can write all; users can write own doc
     match /users/{userId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && (
         request.auth.uid == userId ||
@@ -14,18 +14,19 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Messages: read if authenticated, create/delete based on auth
+    // Messages: anyone can read, only authenticated can write
     match /messages/{messageId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow create: if request.auth != null;
       allow update: if request.auth != null;
       allow delete: if request.auth != null;
     }
 
-    // Chats and sub-messages: participants only
+    // Chats and sub-messages: participants only, or owner can delete
     match /chats/{chatId} {
       allow read, write: if request.auth != null && request.auth.uid in resource.data.participants;
       allow create: if request.auth != null;
+      allow delete: if request.auth != null && request.auth.uid in resource.data.participants;
 
       match /messages/{msgId} {
         allow read: if request.auth != null;
@@ -34,9 +35,9 @@ service cloud.firestore {
       }
     }
 
-    // Articles: read if authenticated, write if editor/admin
+    // Articles: anyone can read, write if editor/admin
     match /articles/{articleId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow create: if request.auth != null &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['editor', 'admin'];
       allow update: if request.auth != null &&
@@ -45,9 +46,9 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Matches: read if authenticated, write if admin
+    // Matches: anyone can read, write if admin
     match /matches/{matchId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow create: if request.auth != null &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
       allow update: if request.auth != null &&
@@ -56,9 +57,9 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Radio config: read if authenticated, write if admin
+    // Radio config: anyone can read, write if admin
     match /radio/{doc} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if request.auth != null &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }

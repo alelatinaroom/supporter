@@ -1631,7 +1631,9 @@ const APP = {
         '<div class="pm-conv-name">' + this.escapeHtml(otherName) + '</div>' +
         '<div class="pm-conv-preview">' + this.escapeHtml(lastMsg) + '</div>' +
         '<div class="pm-conv-time">' + time + '</div>' +
-        '</div></div>';
+        '</div>' +
+        '<button class="btn btn-ghost btn-sm pm-conv-del" onclick="event.stopPropagation();APP.deleteChat(\'' + otherId + '\')" title="Elimina conversazione"><i class="fas fa-trash"></i></button>' +
+        '</div>';
     }).join('');
   },
 
@@ -1646,6 +1648,24 @@ const APP = {
       badge.style.display = '';
     } else {
       badge.style.display = 'none';
+    }
+  },
+
+  async deleteChat(partnerId) {
+    if (!this.state.currentUser) return;
+    if (!confirm('Eliminare questa conversazione? I messaggi verranno rimossi permanentemente.')) return;
+    const uid = this.state.currentUser.id;
+    const chatId = [uid, partnerId].sort().join('_');
+    try {
+      const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages').get();
+      const batch = db.batch();
+      msgsSnapshot.forEach(doc => batch.delete(doc.ref));
+      batch.delete(db.collection('chats').doc(chatId));
+      await batch.commit();
+      this.toast('Conversazione eliminata.', 'info');
+    } catch (e) {
+      console.error('Delete chat error:', e);
+      this.toast('Errore durante l\'eliminazione.', 'error');
     }
   },
 
