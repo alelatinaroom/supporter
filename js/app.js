@@ -651,6 +651,8 @@ const APP = {
       this.renderMessages(messages);
     }, err => {
       console.error('Messages listener error:', err);
+      const container = this.el.gbMessages;
+      if (container) container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-triangle"></i><p>Errore caricamento messaggi: ' + this.escapeHtml(err.message) + '</p></div>';
     });
   },
 
