@@ -365,11 +365,17 @@ const APP = {
     const u = this.state.currentUser;
     if (!u) return;
     if (this.el.topUsername) this.el.topUsername.textContent = u.username;
-    if (this.el.topAvatar) this.el.topAvatar.textContent = u.username.charAt(0).toUpperCase();
+    if (this.el.topAvatar) {
+      if (u.avatar) { this.el.topAvatar.innerHTML = '<img src="' + u.avatar + '" alt="">'; }
+      else { this.el.topAvatar.textContent = u.username.charAt(0).toUpperCase(); }
+    }
     if (this.el.topAuth) this.el.topAuth.style.display = 'none';
     if (this.el.topUser) this.el.topUser.style.display = '';
     if (this.el.sidebarUsername) this.el.sidebarUsername.textContent = u.username;
-    if (this.el.sidebarAvatar) this.el.sidebarAvatar.textContent = u.username.charAt(0).toUpperCase();
+    if (this.el.sidebarAvatar) {
+      if (u.avatar) { this.el.sidebarAvatar.innerHTML = '<img src="' + u.avatar + '" alt="">'; }
+      else { this.el.sidebarAvatar.textContent = u.username.charAt(0).toUpperCase(); }
+    }
     const roleMap = { admin: 'Amministratore', editor: 'Editor', user: 'Tifoso' };
     if (this.el.sidebarRole) this.el.sidebarRole.textContent = roleMap[u.role] || 'Tifoso';
     if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.style.display = 'none';
@@ -1567,7 +1573,7 @@ const APP = {
         this._newAvatar = null;
         this.afterLogin();
         this.toast('Foto profilo aggiornata!', 'success');
-      } catch (e) { this.toast('Errore.', 'error'); }
+      } catch (e) { console.error('Save avatar error:', e); this.toast('Errore: ' + e.message, 'error'); }
     } else {
       this.toast('Nessuna modifica.', 'info');
     }
