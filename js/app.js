@@ -810,8 +810,10 @@ const APP = {
     return this.REACTIONS.map(r => {
       const count = reactions[r.type] || 0;
       const active = userReact === r.type ? ' active' : '';
-      return '<button class="gb-reaction' + active + '" onclick="APP.toggleReaction(\'' + r.type + '\',\'' + m.id + '\')" title="' + r.label + '">' +
-        r.emoji + ' <span>' + count + '</span></button>';
+      return '<span class="gb-reaction-group"><button class="gb-reaction' + active + '" onclick="APP.toggleReaction(\'' + r.type + '\',\'' + m.id + '\')" title="' + r.label + '">' +
+        r.emoji + '</button>' +
+        (count > 0 ? '<button class="gb-reaction-count" onclick="APP.showReactionUsers(\'' + r.type + '\',\'' + m.id + '\')" title="Vedi chi ha reagito">' + count + '</button>' : '') +
+        '</span>';
     }).join('');
   },
 
@@ -844,6 +846,32 @@ const APP = {
     const totalPages = Math.ceil((this.state.allMessages || []).length / this.state.messagesPerPage) || 1;
     this.state.messagesPage = Math.max(1, Math.min(page, totalPages));
     this.renderMessages();
+  },
+
+  async showReactionUsers(type, messageId) {
+    try {
+      const doc = await db.collection('messages').doc(messageId).get();
+      if (!doc.exists) return;
+      const userReactions = doc.data().userReactions || {};
+      const uids = Object.keys(userReactions).filter(uid => userReactions[uid] === type);
+      if (uids.length === 0) return;
+      const snapshots = await Promise.all(uids.map(uid => db.collection('users').doc(uid).get().catch(() => null)));
+      const names = snapshots.map((s, i) => s && s.exists ? (s.data().username || 'Anonimo') : uids[i]);
+      const label = this.REACTIONS.find(r => r.type === type);
+      const emoji = label ? label.emoji : type;
+      let html = '<div class="modal-overlay" onclick="APP.closeReactionUsers()"><div class="modal" onclick="event.stopPropagation()"><div class="modal-header"><h3>' + emoji + ' ' + names.length + '</h3><button class="modal-close" onclick="APP.closeReactionUsers()">&times;</button></div><div class="modal-body"><ul class="reaction-users-list">';
+      names.forEach(n => { html += '<li>' + APP.escapeHtml(n) + '</li>'; });
+      html += '</ul></div></div></div>';
+      const el = document.createElement('div');
+      el.id = 'reactionUsersModal';
+      el.innerHTML = html;
+      document.body.appendChild(el);
+    } catch (e) { /* ignore */ }
+  },
+
+  closeReactionUsers() {
+    const el = document.getElementById('reactionUsersModal');
+    if (el) el.remove();
   },
 
   async postMessage() {
