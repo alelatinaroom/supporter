@@ -69,6 +69,7 @@ const APP = {
     _editingUserId: null,
     _editingPodcastId: null,
     _editingChatPartnerId: null,
+    _messagesConvUnsub: null,
     radioData: null,
   },
 
@@ -1648,7 +1649,12 @@ const APP = {
     }
   },
 
+  stopMessagesListener() {
+    if (this.state._messagesConvUnsub) { this.state._messagesConvUnsub(); this.state._messagesConvUnsub = null; }
+  },
+
   async openConversation(partnerId) {
+    this.stopMessagesListener();
     this.state._editingChatPartnerId = partnerId;
     if (this.el.pmInbox) this.el.pmInbox.style.display = 'none';
     if (this.el.pmConversation) this.el.pmConversation.style.display = '';
@@ -1658,26 +1664,32 @@ const APP = {
       if (this.el.pmConvHeader) this.el.pmConvHeader.innerHTML = '<strong>' + this.escapeHtml(partnerName) + '</strong>';
       const uid = this.state.currentUser.id;
       const chatId = [uid, partnerId].sort().join('_');
-      const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages').orderBy('createdAt').get();
-      const messages = [];
-      msgsSnapshot.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
       const container = this.el.pmConvMessages;
       if (!container) return;
-      if (messages.length === 0) {
-        container.innerHTML = '<div class="gb-empty"><i class="fas fa-comment"></i><p>Nessun messaggio in questa conversazione.</p></div>';
-      } else {
-        container.innerHTML = messages.map(m => {
-          const isMe = m.senderId === uid;
-          return '<div class="pm-msg ' + (isMe ? 'pm-msg-me' : 'pm-msg-other') + '">' +
-            '<div class="pm-msg-text">' + this.escapeHtml(m.text) + '</div>' +
-            '<div class="pm-msg-time">' + (m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '') + '</div>' +
-            '</div>';
-        }).join('');
-      }
+      this.state._messagesConvUnsub = db.collection('chats').doc(chatId).collection('messages').orderBy('createdAt').onSnapshot(snapshot => {
+        const messages = [];
+        snapshot.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
+        if (messages.length === 0) {
+          container.innerHTML = '<div class="gb-empty"><i class="fas fa-comment"></i><p>Nessun messaggio in questa conversazione.</p></div>';
+        } else {
+          container.innerHTML = messages.map(m => {
+            const isMe = m.senderId === uid;
+            return '<div class="pm-msg ' + (isMe ? 'pm-msg-me' : 'pm-msg-other') + '">' +
+              '<div class="pm-msg-text">' + this.escapeHtml(m.text) + '</div>' +
+              '<div class="pm-msg-time">' + (m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '') + '</div>' +
+              '</div>';
+          }).join('');
+        }
+        container.scrollTop = container.scrollHeight;
+      }, err => {
+        console.error('Messages listener error:', err);
+        container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-triangle"></i><p>Errore caricamento messaggi.</p></div>';
+      });
     } catch (e) { console.error('Open conversation error:', e); }
   },
 
   showInbox() {
+    this.stopMessagesListener();
     this.state._editingChatPartnerId = null;
     if (this.el.pmInbox) this.el.pmInbox.style.display = '';
     if (this.el.pmConversation) this.el.pmConversation.style.display = 'none';
