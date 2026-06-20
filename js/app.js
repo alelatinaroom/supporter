@@ -683,6 +683,11 @@ const APP = {
         b.classList.toggle('active', b.dataset.color === accent);
       });
     }
+    const logo = saved === 'light' ? 'images/logo_black.png' : 'images/logo_white.png';
+    const topLogo = document.getElementById('topLogo');
+    const sideLogo = document.getElementById('sideLogo');
+    if (topLogo) topLogo.src = logo;
+    if (sideLogo) sideLogo.src = logo;
   },
 
   setTheme(theme) {
