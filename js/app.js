@@ -782,6 +782,7 @@ const APP = {
         '<div class="gb-msg-text">' + this.escapeHtml(m.text) + '</div>' +
         '<div class="gb-msg-actions">' +
         this.renderReactions(m) +
+        (isOwner || (this.state.currentUser && this.state.currentUser.role === 'admin') ? '<button class="gb-like-btn gb-edit-btn" onclick="APP.editMessage(\'' + m.id + '\')"><i class="fas fa-pen"></i></button>' : '') +
         (isOwner || (this.state.currentUser && this.state.currentUser.role === 'admin') ? '<button class="gb-like-btn gb-del-btn" onclick="APP.deleteMessage(\'' + m.id + '\')"><i class="fas fa-trash"></i></button>' : '') +
         '</div></div>';
     }).join('');
@@ -878,6 +879,47 @@ const APP = {
     try {
       await db.collection('messages').doc(messageId).delete();
     } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  editMessage(messageId) {
+    const card = this.el.gbMessages.querySelector('.gb-message[data-id="' + messageId + '"]');
+    if (!card) return;
+    const textEl = card.querySelector('.gb-msg-text');
+    const actions = card.querySelector('.gb-msg-actions');
+    if (!textEl || !actions) return;
+    const originalText = textEl.textContent;
+    textEl.innerHTML = '<textarea class="gb-edit-textarea" maxlength="500">' + this.escapeHtml(originalText) + '</textarea>';
+    const btnHtml = '<button class="gb-like-btn gb-save-btn" onclick="APP.saveEditMessage(\'' + messageId + '\')"><i class="fas fa-check"></i></button>' +
+      '<button class="gb-like-btn gb-cancel-btn" onclick="APP.cancelEditMessage(\'' + messageId + '\')"><i class="fas fa-times"></i></button>';
+    const editBtn = actions.querySelector('.gb-edit-btn');
+    const delBtn = actions.querySelector('.gb-del-btn');
+    if (editBtn) editBtn.style.display = 'none';
+    if (delBtn) delBtn.style.display = 'none';
+    const existing = actions.querySelector('.gb-edit-save-group');
+    if (existing) existing.remove();
+    const group = document.createElement('span');
+    group.className = 'gb-edit-save-group';
+    group.innerHTML = btnHtml;
+    actions.appendChild(group);
+    const ta = textEl.querySelector('textarea');
+    if (ta) { ta.focus(); ta.select(); }
+  },
+
+  cancelEditMessage(messageId) {
+    this.renderMessages();
+  },
+
+  async saveEditMessage(messageId) {
+    const card = this.el.gbMessages.querySelector('.gb-message[data-id="' + messageId + '"]');
+    if (!card) return;
+    const ta = card.querySelector('.gb-edit-textarea');
+    if (!ta) return;
+    const newText = ta.value.trim();
+    if (!newText) { this.toast('Il messaggio non può essere vuoto.', 'warning'); return; }
+    try {
+      await db.collection('messages').doc(messageId).update({ text: newText, editedAt: Date.now() });
+      this.toast('Messaggio modificato!', 'success');
+    } catch (e) { this.toast('Errore nel salvataggio.', 'error'); }
   },
 
   updateCharCount() {
