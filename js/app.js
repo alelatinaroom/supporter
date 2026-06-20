@@ -170,7 +170,7 @@ const APP = {
       adminAddScheduleBtn: $('adminAddScheduleBtn'),
       radioPage: $('radioPage'),
       radioMixlrEmbed: $('radioMixlrEmbed'),
-      mixlrIframe: $('mixlrIframe'),
+      mixlrLink: $('mixlrLink'),
       radioDirectPlayer: $('radioDirectPlayer'),
       radioAudio: $('radioAudio'),
       radioStreamName: $('radioStreamName'),
@@ -1016,8 +1016,10 @@ const APP = {
     const hasLive = r.mixlrUsername || r.streamUrl;
     if (this.el.radioConfigInfo) this.el.radioConfigInfo.style.display = hasLive ? 'none' : '';
     if (this.el.radioLivePlayer) this.el.radioLivePlayer.style.display = hasLive ? '' : 'none';
-    if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = r.mixlrUsername ? '' : 'none';
-    if (this.el.mixlrIframe && r.mixlrUsername) this.el.mixlrIframe.src = 'https://mixlr.com/embed/' + encodeURIComponent(r.mixlrUsername);
+    if (this.el.radioMixlrEmbed) {
+      this.el.radioMixlrEmbed.style.display = r.mixlrUsername ? '' : 'none';
+      if (r.mixlrUsername && this.el.mixlrLink) this.el.mixlrLink.href = 'https://mixlr.com/' + encodeURIComponent(r.mixlrUsername);
+    }
     if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = (!r.mixlrUsername && r.streamUrl) ? '' : 'none';
     if (this.el.radioAudio && r.streamUrl && !r.mixlrUsername) this.el.radioAudio.src = r.streamUrl;
     if (this.el.radioStatusBadge) {
@@ -1036,7 +1038,7 @@ const APP = {
     if (r.mixlrUsername) {
       if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = '';
       if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = 'none';
-      if (this.el.mixlrIframe && !this.el.mixlrIframe.src) this.el.mixlrIframe.src = 'https://mixlr.com/embed/' + encodeURIComponent(r.mixlrUsername);
+      window.open('https://mixlr.com/' + encodeURIComponent(r.mixlrUsername), '_blank');
     } else if (r.streamUrl) {
       const audio = this.el.radioAudio;
       if (audio) { audio.play(); }
@@ -1051,7 +1053,6 @@ const APP = {
     if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = 'none';
     const audio = this.el.radioAudio;
     if (audio) { audio.pause(); audio.currentTime = 0; }
-    if (this.el.mixlrIframe) { this.el.mixlrIframe.src = ''; }
     this.hideMiniPlayer();
     this.toast('Radio fermata.', 'info');
   },
