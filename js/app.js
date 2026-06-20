@@ -1516,6 +1516,10 @@ const APP = {
       try {
         if (this.state._editingUserId) {
           const updates = { username, email, role };
+          if (password) {
+            await auth.sendPasswordResetEmail(email);
+            this.toast('Email di reset password inviata a ' + email, 'info');
+          }
           await db.collection('users').doc(this.state._editingUserId).update(updates);
         } else {
           if (!password) { if (this.el.umError) this.el.umError.textContent = 'Password obbligatoria per nuovi utenti.'; return; }
