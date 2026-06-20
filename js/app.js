@@ -153,6 +153,12 @@ const APP = {
       adminSaveStreamBtn: $('adminSaveStreamBtn'),
       adminAddPodcastBtn: $('adminAddPodcastBtn'),
       adminPodcastList: $('adminPodcastList'),
+      adminSchedDay: $('adminSchedDay'),
+      adminSchedHour: $('adminSchedHour'),
+      adminSchedTitle: $('adminSchedTitle'),
+      adminSchedDesc: $('adminSchedDesc'),
+      adminSchedTag: $('adminSchedTag'),
+      adminAddScheduleBtn: $('adminAddScheduleBtn'),
       radioPage: $('radioPage'),
       radioMixlrEmbed: $('radioMixlrEmbed'),
       mixlrIframe: $('mixlrIframe'),
@@ -162,6 +168,11 @@ const APP = {
       radioPlayBtn: $('radioPlayBtn'),
       radioStopBtn: $('radioStopBtn'),
       radioConfigInfo: $('radioConfigInfo'),
+      radioLivePlayer: $('radioLivePlayer'),
+      radioStatusBadge: $('radioStatusBadge'),
+      radioStatusText: $('radioStatusText'),
+      radioScheduleList: $('radioScheduleList'),
+      radioScheduleSection: $('radioScheduleSection'),
       radioPodcastList: $('radioPodcastList'),
       sidebarRadioBadge: $('sidebarRadioBadge'),
       editorialsPage: $('editorialsPage'),
@@ -326,6 +337,7 @@ const APP = {
     if (this.el.radioStopBtn) this.el.radioStopBtn.addEventListener('click', () => this.radioStop());
     if (this.el.adminSaveStreamBtn) this.el.adminSaveStreamBtn.addEventListener('click', () => this.adminSaveRadioConfig());
     if (this.el.adminAddPodcastBtn) this.el.adminAddPodcastBtn.addEventListener('click', () => this.adminOpenAddPodcast());
+    if (this.el.adminAddScheduleBtn) this.el.adminAddScheduleBtn.addEventListener('click', () => this.adminAddScheduleItem());
     if (this.el.podcastModalClose) this.el.podcastModalClose.addEventListener('click', () => this.adminClosePodcastModal());
     if (this.el.pmCancelBtn) this.el.pmCancelBtn.addEventListener('click', () => this.adminClosePodcastModal());
     if (this.el.pmSaveBtn) this.el.pmSaveBtn.addEventListener('click', () => this.adminSavePodcast());
@@ -897,19 +909,25 @@ const APP = {
   async renderRadioPage() {
     try {
       const doc = await db.collection('radio').doc('config').get();
-      this.state.radioData = doc.exists ? doc.data() : { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [] };
+      this.state.radioData = doc.exists ? doc.data() : { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [], schedule: [] };
     } catch (e) {
-      this.state.radioData = { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [] };
+      this.state.radioData = { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [], schedule: [] };
     }
     const r = this.state.radioData;
     if (!r) return;
     if (this.el.radioStreamName) this.el.radioStreamName.textContent = r.streamName || 'AleLatina Radio';
     const hasLive = r.mixlrUsername || r.streamUrl;
     if (this.el.radioConfigInfo) this.el.radioConfigInfo.style.display = hasLive ? 'none' : '';
+    if (this.el.radioLivePlayer) this.el.radioLivePlayer.style.display = hasLive ? '' : 'none';
     if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = r.mixlrUsername ? '' : 'none';
     if (this.el.mixlrIframe && r.mixlrUsername) this.el.mixlrIframe.src = 'https://mixlr.com/embed/' + encodeURIComponent(r.mixlrUsername);
     if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = (!r.mixlrUsername && r.streamUrl) ? '' : 'none';
     if (this.el.radioAudio && r.streamUrl && !r.mixlrUsername) this.el.radioAudio.src = r.streamUrl;
+    if (this.el.radioStatusBadge) {
+      if (hasLive) { this.el.radioStatusBadge.classList.add('live'); if (this.el.radioStatusText) this.el.radioStatusText.textContent = 'In diretta'; }
+      else { this.el.radioStatusBadge.classList.remove('live'); if (this.el.radioStatusText) this.el.radioStatusText.textContent = 'Offline'; }
+    }
+    this.renderSchedule();
     this.renderPodcasts();
     this.updateRadioBadge();
   },
@@ -940,6 +958,23 @@ const APP = {
     }
   },
 
+  renderSchedule() {
+    const container = this.el.radioScheduleList;
+    const section = this.el.radioScheduleSection;
+    if (!container || !section) return;
+    const schedule = this.state.radioData && this.state.radioData.schedule ? this.state.radioData.schedule : [];
+    if (schedule.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    container.innerHTML = schedule.map(s => {
+      return '<div class="radio-schedule-card">' +
+        '<div class="radio-schedule-time"><span class="day">' + this.escapeHtml(s.day || '') + '</span><span class="hour">' + this.escapeHtml(s.hour || '') + '</span></div>' +
+        '<div class="radio-schedule-info"><div class="title">' + this.escapeHtml(s.title || '') + '</div>' +
+        (s.description ? '<div class="desc">' + this.escapeHtml(s.description) + '</div>' : '') + '</div>' +
+        (s.tag ? '<div class="radio-schedule-tag">' + this.escapeHtml(s.tag) + '</div>' : '') +
+        '</div>';
+    }).join('');
+  },
+
   async renderPodcasts() {
     if (!this.el.radioPodcastList) return;
     const podcasts = this.state.radioData && this.state.radioData.podcasts ? this.state.radioData.podcasts : [];
@@ -948,10 +983,12 @@ const APP = {
       return;
     }
     this.el.radioPodcastList.innerHTML = [...podcasts].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).map(p => {
+      const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
       return '<div class="radio-podcast-card">' +
-        (p.imageUrl ? '<img src="' + p.imageUrl + '" alt="" class="radio-podcast-img">' : '<div class="radio-podcast-img radio-podcast-img-placeholder"><i class="fas fa-podcast"></i></div>') +
+        (p.imageUrl ? '<div class="radio-podcast-cover"><img src="' + p.imageUrl + '" alt=""></div>' : '<div class="radio-podcast-cover"><i class="fas fa-podcast"></i></div>') +
         '<div class="radio-podcast-info"><div class="radio-podcast-title">' + this.escapeHtml(p.title || '') + '</div>' +
         (p.description ? '<div class="radio-podcast-desc">' + this.escapeHtml(p.description) + '</div>' : '') +
+        (dateStr ? '<div class="radio-podcast-meta">' + dateStr + '</div>' : '') +
         (p.audioUrl ? '<audio controls style="width:100%;margin-top:8px"><source src="' + p.audioUrl + '"></audio>' : '') +
         '</div></div>';
     }).join('');
@@ -1467,7 +1504,69 @@ const APP = {
       if (this.el.adminStreamUrl) this.el.adminStreamUrl.value = r.streamUrl || '';
       if (this.el.adminStreamName) this.el.adminStreamName.value = r.streamName || 'AleLatina Radio';
       this.renderAdminPodcasts(r.podcasts || []);
+      this.renderAdminSchedule(r.schedule || []);
     } catch (e) { console.error(e); }
+  },
+
+  adminAddScheduleItem() {
+    (async () => {
+      const day = this.el.adminSchedDay.value.trim();
+      const hour = this.el.adminSchedHour.value.trim();
+      const title = this.el.adminSchedTitle.value.trim();
+      const description = this.el.adminSchedDesc.value.trim();
+      const tag = this.el.adminSchedTag.value.trim();
+      if (!day || !hour || !title) { this.toast('Giorno, ora e titolo obbligatori.', 'warning'); return; }
+      try {
+        const doc = await db.collection('radio').doc('config').get();
+        const data = doc.exists ? doc.data() : { schedule: [] };
+        const schedule = data.schedule || [];
+        schedule.push({ day, hour, title, description, tag, createdAt: Date.now() });
+        data.schedule = schedule;
+        await db.collection('radio').doc('config').set(data, { merge: true });
+        this.el.adminSchedDay.value = '';
+        this.el.adminSchedHour.value = '';
+        this.el.adminSchedTitle.value = '';
+        this.el.adminSchedDesc.value = '';
+        this.el.adminSchedTag.value = '';
+        this.renderAdminSchedule(schedule);
+        this.toast('Appuntamento aggiunto!', 'success');
+      } catch (e) { this.toast('Errore.', 'error'); }
+    })();
+  },
+
+  renderAdminSchedule(schedule) {
+    const container = document.getElementById('adminScheduleList');
+    if (!container) return;
+    if (!schedule || schedule.length === 0) {
+      container.innerHTML = '<div class="gb-empty" style="padding:12px"><i class="fas fa-calendar-days"></i><p>Nessun appuntamento.</p></div>';
+      return;
+    }
+    container.innerHTML = schedule.map((s, i) => {
+      return '<div class="admin-msg-item">' +
+        '<div class="admin-msg-info">' +
+        '<strong>' + this.escapeHtml(s.day + ' - ' + s.hour) + '</strong>: ' + this.escapeHtml(s.title || '') +
+        (s.description ? '<div class="admin-msg-meta">' + this.escapeHtml(s.description) + '</div>' : '') +
+        (s.tag ? '<span class="member-role member-role-editor" style="display:inline-block;margin-top:4px">' + this.escapeHtml(s.tag) + '</span>' : '') +
+        '</div>' +
+        '<div class="admin-msg-actions">' +
+        '<button class="btn btn-danger btn-sm" onclick="APP.adminDeleteScheduleItem(' + i + ')"><i class="fas fa-trash"></i></button>' +
+        '</div></div>';
+    }).join('');
+  },
+
+  async adminDeleteScheduleItem(index) {
+    if (!confirm('Rimuovere questo appuntamento?')) return;
+    try {
+      const doc = await db.collection('radio').doc('config').get();
+      if (!doc.exists) return;
+      const data = doc.data();
+      const schedule = data.schedule || [];
+      schedule.splice(index, 1);
+      data.schedule = schedule;
+      await db.collection('radio').doc('config').set(data, { merge: true });
+      this.renderAdminSchedule(schedule);
+      this.toast('Appuntamento rimosso.', 'info');
+    } catch (e) { this.toast('Errore.', 'error'); }
   },
 
   async adminSaveRadioConfig() {

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AleLatina Supporter Rooms</title>
-<link rel="stylesheet" href="css/style.css?v=35">
+<link rel="stylesheet" href="css/style.css?v=36">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -251,36 +251,65 @@
 
   <!-- PAGE: RADIO -->
   <main id="radioPage" class="page content-page" style="display:none">
-    <div class="page-header">
-      <h2><i class="fas fa-microphone"></i> AleLatina Radio</h2>
-      <p>Ascolta in diretta e recupera le puntate</p>
+    <div class="radio-hero">
+      <div class="radio-hero-bg"></div>
+      <div class="radio-hero-content">
+        <div class="radio-hero-icon"><i class="fas fa-tower-broadcast"></i></div>
+        <h2 class="radio-hero-title">AleLatina Radio</h2>
+        <p class="radio-hero-subtitle">La voce del tifo nerazzurro</p>
+      </div>
     </div>
+
     <div class="radio-live-section">
-      <div class="radio-player-card">
-        <div class="radio-status">
-          <span class="radio-status-dot"></span>
-          <span>In diretta</span>
-        </div>
-        <div id="radioMixlrEmbed" class="radio-mixlr-embed" style="display:none">
-          <iframe id="mixlrIframe" src="" width="100%" height="180px" scrolling="no" frameborder="no"></iframe>
-        </div>
-        <div id="radioDirectPlayer" class="radio-direct-player" style="display:none">
-          <audio id="radioAudio" controls autoplay></audio>
-        </div>
-        <div class="radio-stream-name" id="radioStreamName">AleLatina Radio</div>
-        <div class="radio-actions" id="radioActions">
-          <button id="radioPlayBtn" class="btn btn-primary"><i class="fas fa-play"></i> Play</button>
-          <button id="radioStopBtn" class="btn btn-ghost"><i class="fas fa-stop"></i> Stop</button>
+      <div id="radioConfigInfo" style="display:none">
+        <div class="radio-empty-state">
+          <i class="fas fa-microphone-slash"></i>
+          <h3>Nessuna diretta configurata</h3>
+          <p>L'amministratore non ha ancora impostato lo streaming live.</p>
         </div>
       </div>
-      <div id="radioConfigInfo" class="radio-config-info" style="display:none">
-        <i class="fas fa-microphone-slash"></i>
-        <h3>Nessuna diretta configurata</h3>
-        <p>L'amministratore non ha ancora impostato uno streaming live.</p>
+
+      <div id="radioLivePlayer" class="radio-live-player" style="display:none">
+        <div class="radio-player-cover">
+          <div class="radio-player-cover-placeholder" id="radioPlayerCover">
+            <i class="fas fa-tower-broadcast"></i>
+          </div>
+        </div>
+        <div class="radio-player-body">
+          <div class="radio-player-top">
+            <div class="radio-status-badge" id="radioStatusBadge">
+              <span class="radio-status-dot"></span>
+              <span id="radioStatusText">In diretta</span>
+            </div>
+            <div class="radio-stream-name" id="radioStreamName">AleLatina Radio</div>
+          </div>
+          <div id="radioMixlrEmbed" style="display:none">
+            <iframe id="mixlrIframe" src="" width="100%" height="180px" scrolling="no" frameborder="no" style="border-radius:12px"></iframe>
+          </div>
+          <div id="radioDirectPlayer" style="display:none">
+            <audio id="radioAudio" controls autoplay style="width:100%;border-radius:8px"></audio>
+          </div>
+          <div class="radio-actions" id="radioActions">
+            <button id="radioPlayBtn" class="radio-btn radio-btn-play"><i class="fas fa-play"></i> Play</button>
+            <button id="radioStopBtn" class="radio-btn radio-btn-stop"><i class="fas fa-stop"></i> Stop</button>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="radio-podcasts-section">
-      <h3><i class="fas fa-podcast"></i> Podcast - Puntate</h3>
+
+    <div class="radio-section" id="radioScheduleSection" style="display:none">
+      <div class="radio-section-header">
+        <i class="fas fa-calendar-days"></i>
+        <h3>Prossime Dirette</h3>
+      </div>
+      <div id="radioScheduleList" class="radio-schedule-list"></div>
+    </div>
+
+    <div class="radio-section">
+      <div class="radio-section-header">
+        <i class="fas fa-podcast"></i>
+        <h3>Podcast - Puntate</h3>
+      </div>
       <div id="radioPodcastList" class="radio-podcast-list"></div>
     </div>
   </main>
@@ -402,8 +431,39 @@
         <input type="text" id="adminStreamName" class="form-input" placeholder="AleLatina Radio">
       </div>
       <button class="btn btn-primary" id="adminSaveStreamBtn"><i class="fas fa-save"></i> Salva Configurazione</button>
-      <div class="admin-toolbar" style="margin-top:20px">
-        <span>Podcast</span>
+
+      <div class="admin-section-divider">
+        <span><i class="fas fa-calendar-days"></i> Programmazione</span>
+      </div>
+      <div class="form-row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="form-group" style="flex:1;min-width:100px">
+          <label>Giorno</label>
+          <input type="text" id="adminSchedDay" class="form-input" placeholder="es. Lunedì">
+        </div>
+        <div class="form-group" style="flex:1;min-width:80px">
+          <label>Ora</label>
+          <input type="text" id="adminSchedHour" class="form-input" placeholder="es. 21:00">
+        </div>
+        <div class="form-group" style="flex:2;min-width:140px">
+          <label>Titolo</label>
+          <input type="text" id="adminSchedTitle" class="form-input" placeholder="es. Diretta Pre-partita">
+        </div>
+        <div class="form-group" style="flex:1;min-width:100px">
+          <label>Tag</label>
+          <input type="text" id="adminSchedTag" class="form-input" placeholder="es. Live">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Descrizione (opzionale)</label>
+        <input type="text" id="adminSchedDesc" class="form-input" placeholder="es. Analisi e commenti prima del match">
+      </div>
+      <button class="btn btn-primary btn-sm" id="adminAddScheduleBtn"><i class="fas fa-plus"></i> Aggiungi Appuntamento</button>
+      <div id="adminScheduleList" class="admin-msg-list" style="margin-top:12px"></div>
+
+      <div class="admin-section-divider">
+        <span><i class="fas fa-podcast"></i> Podcast - Puntate</span>
+      </div>
+      <div class="admin-toolbar" style="margin-top:8px">
         <button class="btn btn-primary btn-sm" id="adminAddPodcastBtn"><i class="fas fa-plus"></i> Aggiungi Puntata</button>
       </div>
       <div id="adminPodcastList" class="admin-msg-list"></div>
@@ -598,6 +658,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=24"></script>
+<script src="js/app.js?v=25"></script>
 </body>
 </html>
