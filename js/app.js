@@ -63,6 +63,7 @@ const APP = {
     redirectAfterLogin: null,
     messagesUnsub: null,
     chatsUnsub: null,
+    _registering: false,
     _editingArticleId: null,
     _editingMatchId: null,
     _editingUserId: null,
@@ -336,6 +337,7 @@ const APP = {
   initAuth() {
     auth.onAuthStateChanged(async user => {
       if (user) {
+        if (this.state._registering) return;
         try {
           const doc = await db.collection('users').doc(user.uid).get();
           if (doc.exists) {
@@ -431,24 +433,38 @@ const APP = {
     if (!username || !email || !password) { if (this.el.regError) this.el.regError.textContent = 'Compila tutti i campi.'; return; }
     if (password.length < 6) { if (this.el.regError) this.el.regError.textContent = 'La password deve essere di almeno 6 caratteri.'; return; }
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) { if (this.el.regError) this.el.regError.textContent = 'Username: 3-20 caratteri, solo lettere, numeri e underscore.'; return; }
+    this.state._registering = true;
     try {
-      const signInMethods = await auth.fetchSignInMethodsForEmail(email);
-      if (signInMethods.length > 0) { if (this.el.regError) this.el.regError.textContent = 'Email gi\u00e0 registrata.'; return; }
       const userCred = await auth.createUserWithEmailAndPassword(email, password);
-      const existing = await db.collection('users').where('username', '==', username).get();
-      if (!existing.empty) {
-        await userCred.user.delete();
-        if (this.el.regError) this.el.regError.textContent = 'Username gi\u00e0 in uso.';
-        return;
-      }
+      try {
+        const existing = await db.collection('users').where('username', '==', username).get();
+        if (!existing.empty) {
+          try { await userCred.user.delete(); } catch (_) {}
+          if (this.el.regError) this.el.regError.textContent = 'Username gi\u00e0 in uso.';
+          this.state._registering = false;
+          return;
+        }
+      } catch (_) {}
       const allUsers = await db.collection('users').get();
       const isFirst = allUsers.size === 0;
       await db.collection('users').doc(userCred.user.uid).set({
         username, email, role: isFirst ? 'admin' : 'user', avatar: '', createdAt: Date.now()
       });
+      this.state._registering = false;
+      const doc = await db.collection('users').doc(userCred.user.uid).get();
+      if (doc.exists) {
+        this.state.currentUser = { id: userCred.user.uid, ...doc.data() };
+      }
+      this.afterLogin();
       this.toast('Registrato con successo! Bentornato ' + username, 'success');
     } catch (e) {
-      if (this.el.regError) this.el.regError.textContent = e.code === 'auth/email-already-in-use' ? 'Email gi\u00e0 in uso.' : 'Errore durante la registrazione. Riprova.';
+      this.state._registering = false;
+      if (e.code === 'auth/email-already-in-use') {
+        if (this.el.regError) this.el.regError.textContent = 'Email gi\u00e0 registrata.';
+      } else {
+        console.error('Register error:', e);
+        if (this.el.regError) this.el.regError.textContent = 'Errore durante la registrazione. Riprova.';
+      }
     }
   },
 
