@@ -269,6 +269,22 @@ textarea { resize: vertical; min-height: 60px; }
 .sidebar-footer { border-top: 1px solid var(--card-border); padding: 8px 0; }
 .sidebar-footer .sidebar-item { color: var(--accent3); }
 .sidebar-footer .sidebar-item.sidebar-login-item { color: var(--accent); }
+.sidebar-theme { padding: 12px 20px; border-top: 1px solid var(--card-border); }
+.sidebar-theme-toggle { display: flex; gap: 6px; margin-bottom: 8px; }
+.sidebar-theme-btn {
+  flex: 1; padding: 8px; border: 1px solid var(--card-border); border-radius: var(--radius-xs);
+  background: var(--glass); color: var(--text-muted); cursor: pointer; font-size: 15px;
+  transition: all 0.2s; text-align: center;
+}
+.sidebar-theme-btn:hover { border-color: var(--accent); color: var(--text); }
+.sidebar-theme-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.sidebar-accent-picker { display: flex; gap: 6px; flex-wrap: wrap; }
+.sidebar-accent-btn {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent;
+  cursor: pointer; transition: all 0.2s; padding: 0;
+}
+.sidebar-accent-btn:hover { transform: scale(1.2); }
+.sidebar-accent-btn.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--primary); }
 .sidebar-overlay {
   position: fixed; inset: 0; z-index: 1500;
   background: rgba(0,0,0,0.5); opacity: 0; visibility: hidden;

@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="images/icon-192.png">
 <link rel="apple-touch-icon" href="images/icon-192.png">
-<link rel="stylesheet" href="css/style.css?v=45">
+<link rel="stylesheet" href="css/style.css?v=46">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -80,6 +80,21 @@
       <a class="sidebar-item" data-page="pagelle"><i class="fas fa-futbol"></i> Pagelle</a>
       <a class="sidebar-item editor-only" data-page="editorPanel" id="sidebarEditorBtn" style="display:none"><i class="fas fa-pen-fancy"></i> Scrivi Articolo</a>
       <a class="sidebar-item admin-only" data-page="admin" id="sidebarAdminBtn" style="display:none"><i class="fas fa-shield"></i> Pannello Admin</a>
+    </div>
+    <div class="sidebar-theme">
+      <div class="sidebar-theme-toggle">
+        <button class="sidebar-theme-btn" data-theme-val="dark" onclick="APP.setTheme('dark')" title="Scuro"><i class="fas fa-moon"></i></button>
+        <button class="sidebar-theme-btn" data-theme-val="light" onclick="APP.setTheme('light')" title="Chiaro"><i class="fas fa-sun"></i></button>
+      </div>
+      <div class="sidebar-accent-picker">
+        <button class="sidebar-accent-btn" data-color="#4da6ff" style="background:#4da6ff" onclick="APP.setAccentColor('#4da6ff')" title="Blu"></button>
+        <button class="sidebar-accent-btn" data-color="#22c55e" style="background:#22c55e" onclick="APP.setAccentColor('#22c55e')" title="Verde"></button>
+        <button class="sidebar-accent-btn" data-color="#a855f7" style="background:#a855f7" onclick="APP.setAccentColor('#a855f7')" title="Viola"></button>
+        <button class="sidebar-accent-btn" data-color="#ff4444" style="background:#ff4444" onclick="APP.setAccentColor('#ff4444')" title="Rosso"></button>
+        <button class="sidebar-accent-btn" data-color="#f97316" style="background:#f97316" onclick="APP.setAccentColor('#f97316')" title="Arancione"></button>
+        <button class="sidebar-accent-btn" data-color="#ec4899" style="background:#ec4899" onclick="APP.setAccentColor('#ec4899')" title="Rosa"></button>
+        <button class="sidebar-accent-btn" data-color="#14b8a6" style="background:#14b8a6" onclick="APP.setAccentColor('#14b8a6')" title="Teal"></button>
+      </div>
     </div>
     <div class="sidebar-footer" id="sidebarFooter">
       <a class="sidebar-item sidebar-login-item" id="sidebarLoginBtn" style="display:none"><i class="fas fa-right-to-bracket"></i> Accedi</a>
@@ -696,7 +711,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=39"></script>
+<script src="js/app.js?v=40"></script>
 <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>
 </body>
 </html>

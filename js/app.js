@@ -683,6 +683,12 @@ const APP = {
         b.classList.toggle('active', b.dataset.color === accent);
       });
     }
+    document.querySelectorAll('.sidebar-theme-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.themeVal === saved);
+    });
+    document.querySelectorAll('.sidebar-accent-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.color === accent);
+    });
     const logo = saved === 'light' ? 'images/logo_black.png' : 'images/logo_white.png';
     const topLogo = document.getElementById('topLogo');
     const sideLogo = document.getElementById('sideLogo');
