@@ -1493,7 +1493,8 @@ const APP = {
         '</div>' +
         '<div class="admin-msg-actions">' +
         banBtn +
-        '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditUser(\'' + u.id + '\')"><i class="fas fa-pen"></i></button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditUser(\'' + u.id + '\')" title="Modifica"><i class="fas fa-pen"></i></button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="APP.adminCopyResetLink(\'' + u.id + '\')" title="Copia link reset"><i class="fas fa-key"></i></button>' +
         (u.role !== 'admin' ? '<button class="btn btn-danger btn-sm" onclick="APP.adminDeleteUser(\'' + u.id + '\')"><i class="fas fa-trash"></i></button>' : '') +
         '</div></div>';
     }).join('');
@@ -1571,6 +1572,28 @@ const APP = {
       this.renderAdminUsers();
       this.toast('Utente eliminato.', 'info');
     } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  async adminCopyResetLink(userId) {
+    try {
+      const doc = await db.collection('users').doc(userId).get();
+      if (!doc.exists) return;
+      const email = doc.data().email;
+      if (!email) { this.toast('Email non trovata.', 'error'); return; }
+      const res = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=' + firebaseConfig.apiKey, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestType: 'PASSWORD_RESET', email })
+      });
+      const data = await res.json();
+      if (data.oobCode) {
+        const link = 'https://' + firebaseConfig.projectId + '.firebaseapp.com/__/auth/action?mode=resetPassword&oobCode=' + data.oobCode + '&apiKey=' + firebaseConfig.apiKey + '&lang=it';
+        try { await navigator.clipboard.writeText(link); this.toast('Link reset copiato negli appunti!', 'success'); } catch (e) { this.toast('Link: ' + link, 'info'); }
+      } else {
+        await auth.sendPasswordResetEmail(email);
+        this.toast('Email di reset inviata a ' + email, 'info');
+      }
+    } catch (e) { this.toast('Errore. Email inviata manualmente.', 'info'); try { await auth.sendPasswordResetEmail(email); } catch (e2) {} }
   },
 
   async adminToggleBanUser(userId) {
