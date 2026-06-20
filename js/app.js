@@ -111,7 +111,7 @@ const APP = {
       membersPage: $('membersPage'),
       rulesPage: $('rulesPage'),
       adminPage: $('adminPage'),
-      loginUsername: $('loginUsername'),
+      loginEmail: $('loginEmail'),
       loginPassword: $('loginPassword'),
       loginBtn: $('loginBtn'),
       loginError: $('loginError'),
@@ -246,6 +246,7 @@ const APP = {
       tab.addEventListener('click', () => this.switchAuthTab(tab.dataset.form));
     });
     this.el.loginBtn.addEventListener('click', () => this.login());
+    this.el.loginEmail.addEventListener('keydown', e => { if (e.key === 'Enter') this.login(); });
     this.el.loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') this.login(); });
     this.el.registerBtn.addEventListener('click', () => this.register());
     this.el.regPassword.addEventListener('keydown', e => { if (e.key === 'Enter') this.register(); });
@@ -411,17 +412,14 @@ const APP = {
   },
 
   async login() {
-    const username = this.el.loginUsername.value.trim();
+    const email = this.el.loginEmail.value.trim();
     const password = this.el.loginPassword.value.trim();
     if (this.el.loginError) this.el.loginError.textContent = '';
-    if (!username || !password) { if (this.el.loginError) this.el.loginError.textContent = 'Compila tutti i campi.'; return; }
+    if (!email || !password) { if (this.el.loginError) this.el.loginError.textContent = 'Compila tutti i campi.'; return; }
     try {
-      const snapshot = await db.collection('users').where('username', '==', username).get();
-      if (snapshot.empty) { if (this.el.loginError) this.el.loginError.textContent = 'Utente non trovato.'; return; }
-      const userData = snapshot.docs[0].data();
-      await auth.signInWithEmailAndPassword(userData.email, password);
+      await auth.signInWithEmailAndPassword(email, password);
     } catch (e) {
-      if (this.el.loginError) this.el.loginError.textContent = e.code === 'auth/wrong-password' ? 'Password errata.' : e.code === 'auth/user-not-found' ? 'Utente non trovato.' : 'Errore di accesso. Verifica le credenziali.';
+      if (this.el.loginError) this.el.loginError.textContent = e.code === 'auth/wrong-password' ? 'Password errata.' : e.code === 'auth/user-not-found' ? 'Email non trovata.' : 'Errore di accesso. Verifica le credenziali.';
     }
   },
 
