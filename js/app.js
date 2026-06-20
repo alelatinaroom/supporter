@@ -909,13 +909,13 @@ const APP = {
   async renderRadioPage() {
     try {
       const doc = await db.collection('radio').doc('config').get();
-      this.state.radioData = doc.exists ? doc.data() : { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [], schedule: [] };
+      this.state.radioData = doc.exists ? doc.data() : { streamUrl: '', streamName: 'Radio aleLatina', mixlrUsername: '', podcasts: [], schedule: [] };
     } catch (e) {
-      this.state.radioData = { streamUrl: '', streamName: 'AleLatina Radio', mixlrUsername: '', podcasts: [], schedule: [] };
+      this.state.radioData = { streamUrl: '', streamName: 'Radio aleLatina', mixlrUsername: '', podcasts: [], schedule: [] };
     }
     const r = this.state.radioData;
     if (!r) return;
-    if (this.el.radioStreamName) this.el.radioStreamName.textContent = r.streamName || 'AleLatina Radio';
+    if (this.el.radioStreamName) this.el.radioStreamName.textContent = r.streamName || 'Radio aleLatina';
     const hasLive = r.mixlrUsername || r.streamUrl;
     if (this.el.radioConfigInfo) this.el.radioConfigInfo.style.display = hasLive ? 'none' : '';
     if (this.el.radioLivePlayer) this.el.radioLivePlayer.style.display = hasLive ? '' : 'none';
@@ -1502,7 +1502,7 @@ const APP = {
       const r = doc.exists ? doc.data() : {};
       if (this.el.adminMixlrUser) this.el.adminMixlrUser.value = r.mixlrUsername || '';
       if (this.el.adminStreamUrl) this.el.adminStreamUrl.value = r.streamUrl || '';
-      if (this.el.adminStreamName) this.el.adminStreamName.value = r.streamName || 'AleLatina Radio';
+      if (this.el.adminStreamName) this.el.adminStreamName.value = r.streamName || 'Radio aleLatina';
       this.renderAdminPodcasts(r.podcasts || []);
       this.renderAdminSchedule(r.schedule || []);
     } catch (e) { console.error(e); }
@@ -1572,7 +1572,7 @@ const APP = {
   async adminSaveRadioConfig() {
     const mixlrUsername = this.el.adminMixlrUser.value.trim();
     const streamUrl = this.el.adminStreamUrl.value.trim();
-    const streamName = this.el.adminStreamName.value.trim() || 'AleLatina Radio';
+    const streamName = this.el.adminStreamName.value.trim() || 'Radio aleLatina';
     try {
       const doc = await db.collection('radio').doc('config').get();
       const data = doc.exists ? doc.data() : {};
