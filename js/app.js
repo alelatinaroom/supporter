@@ -432,12 +432,17 @@ const APP = {
     if (password.length < 6) { if (this.el.regError) this.el.regError.textContent = 'La password deve essere di almeno 6 caratteri.'; return; }
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) { if (this.el.regError) this.el.regError.textContent = 'Username: 3-20 caratteri, solo lettere, numeri e underscore.'; return; }
     try {
-      const existing = await db.collection('users').where('username', '==', username).get();
-      if (!existing.empty) { if (this.el.regError) this.el.regError.textContent = 'Username gi\u00e0 in uso.'; return; }
-      const existingEmail = await db.collection('users').where('email', '==', email).get();
-      if (!existingEmail.empty) { if (this.el.regError) this.el.regError.textContent = 'Email gi\u00e0 registrata.'; return; }
+      const signInMethods = await auth.fetchSignInMethodsForEmail(email);
+      if (signInMethods.length > 0) { if (this.el.regError) this.el.regError.textContent = 'Email gi\u00e0 registrata.'; return; }
       const userCred = await auth.createUserWithEmailAndPassword(email, password);
-      const isFirst = (await db.collection('users').get()).size === 0;
+      const existing = await db.collection('users').where('username', '==', username).get();
+      if (!existing.empty) {
+        await userCred.user.delete();
+        if (this.el.regError) this.el.regError.textContent = 'Username gi\u00e0 in uso.';
+        return;
+      }
+      const allUsers = await db.collection('users').get();
+      const isFirst = allUsers.size === 0;
       await db.collection('users').doc(userCred.user.uid).set({
         username, email, role: isFirst ? 'admin' : 'user', avatar: '', createdAt: Date.now()
       });
