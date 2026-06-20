@@ -97,6 +97,7 @@ const APP = {
       topLoginBtn: $('topLoginBtn'),
       topRegisterBtn: $('topRegisterBtn'),
       topLogoutBtn: $('topLogoutBtn'),
+      homePage: $('homePage'),
       sidebarUsername: $('sidebarUsername'),
       sidebarAvatar: $('sidebarAvatar'),
       sidebarRole: $('sidebarRole'),
@@ -534,7 +535,7 @@ const APP = {
     if (this.el.splash) {
       this.el.splash.style.display = '';
       setTimeout(() => {
-        this.el.splash.classList.add('fade-out');
+        this.el.splash.classList.add('hide');
         setTimeout(() => {
           this.el.splash.style.display = 'none';
           if (this.el.topBar) this.el.topBar.style.display = '';
