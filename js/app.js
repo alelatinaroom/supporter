@@ -518,6 +518,7 @@ const APP = {
       case 'editorPanel':
         if (this.state.currentUser && (this.state.currentUser.role === 'editor' || this.state.currentUser.role === 'admin')) {
           this.el.editorPanelPage.style.display = '';
+          if (!this.state._editingArticleId && this.el.editorPanelTitle) this.el.editorPanelTitle.textContent = 'Nuovo Articolo';
         } else {
           this.navigateTo('guestbook');
         }
@@ -903,13 +904,16 @@ const APP = {
         this.el.editorialsList.innerHTML = '<div class="gb-empty"><i class="fas fa-newspaper"></i><p>Nessun editoriale ancora. Il primo arriver\u00e0 presto!</p></div>';
         return;
       }
+      const canEdit = this.state.currentUser && (this.state.currentUser.role === 'editor' || this.state.currentUser.role === 'admin');
       this.el.editorialsList.innerHTML = articles.map(a => {
         const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        const editBtn = canEdit ? '<button class="article-edit-btn" onclick="event.stopPropagation();APP.editArticle(\'' + a.id + '\')"><i class="fas fa-pen"></i></button>' : '';
         return '<div class="article-card" onclick="APP.openArticle(\'' + a.id + '\')">' +
           (a.cover ? '<img src="' + a.cover + '" alt="" class="article-card-img">' : '<div class="article-card-img article-card-img-placeholder"><i class="fas fa-newspaper"></i></div>') +
           '<div class="article-card-body"><h3>' + this.escapeHtml(a.title) + '</h3>' +
           (a.subtitle ? '<p>' + this.escapeHtml(a.subtitle) + '</p>' : '') +
-          '<div class="article-card-meta">' + dateStr + ' \u00B7 ' + this.escapeHtml(a.authorName || 'Anonimo') + '</div></div></div>';
+          '<div class="article-card-meta">' + dateStr + ' \u00B7 ' + this.escapeHtml(a.authorName || 'Anonimo') + '</div>' + editBtn +
+          '</div></div>';
       }).join('');
     } catch (e) { console.error('Editorials error:', e); }
   },
@@ -929,6 +933,21 @@ const APP = {
           '<div class="article-full-meta">' + dateStr + ' \u00B7 ' + this.escapeHtml(a.authorName || 'Anonimo') + '</div>' +
           '<div class="article-full-body">' + a.content + '</div>';
       }
+    } catch (e) { this.toast('Errore nel caricamento dell\'articolo.', 'error'); }
+  },
+
+  async editArticle(articleId) {
+    try {
+      const doc = await db.collection('articles').doc(articleId).get();
+      if (!doc.exists) return;
+      const a = doc.data();
+      this.state._editingArticleId = articleId;
+      this.el.artTitle.value = a.title || '';
+      this.el.artSubtitle.value = a.subtitle || '';
+      this.el.artCover.value = a.cover || '';
+      this.el.artContent.value = a.content || '';
+      if (this.el.editorPanelTitle) this.el.editorPanelTitle.textContent = 'Modifica Articolo';
+      this.navigateTo('editorPanel');
     } catch (e) { this.toast('Errore nel caricamento dell\'articolo.', 'error'); }
   },
 

@@ -950,6 +950,16 @@ textarea { resize: vertical; min-height: 60px; }
   padding-top: 12px;
   border-top: 1px solid var(--card-border);
 }
+.article-edit-btn {
+  position: absolute; top: 12px; right: 12px;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: none; background: rgba(0,0,0,0.6);
+  color: #fff; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; z-index: 2;
+}
+.article-edit-btn:hover { background: var(--accent); transform: scale(1.1); }
+.article-card { position: relative; }
 
 /* ARTICLE VIEW */
 .article-container {
