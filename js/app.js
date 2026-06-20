@@ -129,6 +129,7 @@ const APP = {
       loginPassword: $('loginPassword'),
       loginBtn: $('loginBtn'),
       loginError: $('loginError'),
+      resetPwdBtn: $('resetPwdBtn'),
       regUsername: $('regUsername'),
       regEmail: $('regEmail'),
       regPassword: $('regPassword'),
@@ -277,6 +278,7 @@ const APP = {
     this.el.loginBtn.addEventListener('click', () => this.login());
     this.el.loginEmail.addEventListener('keydown', e => { if (e.key === 'Enter') this.login(); });
     this.el.loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') this.login(); });
+    this.el.resetPwdBtn.addEventListener('click', () => this.sendResetEmail());
     this.el.registerBtn.addEventListener('click', () => this.register());
     this.el.regPassword.addEventListener('keydown', e => { if (e.key === 'Enter') this.register(); });
     this.el.gbFilters.forEach(f => {
@@ -458,6 +460,20 @@ const APP = {
       await auth.signInWithEmailAndPassword(email, password);
     } catch (e) {
       if (this.el.loginError) this.el.loginError.textContent = e.code === 'auth/wrong-password' ? 'Password errata.' : e.code === 'auth/user-not-found' ? 'Email non trovata.' : 'Errore di accesso. Verifica le credenziali.';
+    }
+  },
+
+  async sendResetEmail() {
+    const email = this.el.loginEmail.value.trim();
+    if (this.el.loginError) this.el.loginError.textContent = '';
+    if (!email) { if (this.el.loginError) this.el.loginError.textContent = 'Inserisci la tua email.'; return; }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      this.el.loginError.textContent = 'Email di reset inviata! Controlla la tua casella.';
+      this.el.loginError.style.color = '#4caf50';
+    } catch (e) {
+      this.el.loginError.style.color = '';
+      if (this.el.loginError) this.el.loginError.textContent = e.code === 'auth/user-not-found' ? 'Email non trovata.' : 'Errore nell\'invio. Riprova.';
     }
   },
 
