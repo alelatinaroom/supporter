@@ -113,6 +113,8 @@ const APP = {
       topLoginBtn: $('topLoginBtn'),
       topRegisterBtn: $('topRegisterBtn'),
       topLogoutBtn: $('topLogoutBtn'),
+      topNotifBtn: $('topNotifBtn'),
+      notifBadge: $('notifBadge'),
       homePage: $('homePage'),
       sidebarUsername: $('sidebarUsername'),
       sidebarAvatar: $('sidebarAvatar'),
@@ -377,6 +379,7 @@ const APP = {
     if (this.el.pmMessageInput) this.el.pmMessageInput.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendPrivateMessage(); }
     });
+    if (this.el.topNotifBtn) this.el.topNotifBtn.addEventListener('click', () => this.showNotifications());
   },
 
   initAuth() {
@@ -432,6 +435,7 @@ const APP = {
     if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = (u.role === 'editor' || u.role === 'admin') ? '' : 'none';
     this.updateMsgBadge();
     this.updateRadioBadge();
+    this.startNotifsListener();
     if (this.state.redirectAfterLogin) {
       this.navigateTo(this.state.redirectAfterLogin);
       this.state.redirectAfterLogin = null;
@@ -455,6 +459,7 @@ const APP = {
     if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = 'none';
     if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = 'none';
     if (this.el.sidebarMsgBadge) this.el.sidebarMsgBadge.style.display = 'none';
+    this.stopNotifsListener();
     this.navigateTo('home');
   },
 
@@ -846,7 +851,7 @@ const APP = {
         '<strong class="gb-msg-name">' + this.escapeHtml(m.authorName || 'Anonimo') + '</strong>' +
         '<span class="gb-msg-time">' + time + '</span>' +
         '</div></div>' +
-        '<div class="gb-msg-text">' + this.escapeHtml(m.text) + '</div>' +
+        '<div class="gb-msg-text">' + this.escapeHtml(m.text).replace(/@(\S+)/g, '<span class="gb-mention">@$1</span>') + '</div>' +
         '<div class="gb-msg-actions">' +
         this.renderReactions(m) +
         (isOwner || (this.state.currentUser && this.state.currentUser.role === 'admin') ? '<button class="gb-like-btn gb-edit-btn" onclick="APP.editMessage(\'' + m.id + '\')"><i class="fas fa-pen"></i></button>' : '') +
@@ -941,6 +946,81 @@ const APP = {
     if (el) el.remove();
   },
 
+  startNotifsListener() {
+    this.stopNotifsListener();
+    if (!this.state.currentUser) return;
+    this._notifsUnsub = db.collection('notifications')
+      .where('userId', '==', this.state.currentUser.id)
+      .where('read', '==', false)
+      .onSnapshot(snap => {
+        const count = snap.size;
+        const badge = this.el.notifBadge;
+        if (badge) {
+          if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.style.display = '';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      });
+  },
+
+  stopNotifsListener() {
+    if (this._notifsUnsub) { this._notifsUnsub(); this._notifsUnsub = null; }
+  },
+
+  async showNotifications() {
+    if (!this.state.currentUser) return;
+    const existing = document.getElementById('notifModal');
+    if (existing) existing.remove();
+    try {
+      const snap = await db.collection('notifications')
+        .where('userId', '==', this.state.currentUser.id)
+        .orderBy('createdAt', 'desc')
+        .limit(50)
+        .get();
+      const notifs = [];
+      snap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
+      let html = '<div class="modal-overlay" onclick="APP.closeNotifModal()"><div class="modal modal-notif" onclick="event.stopPropagation()">' +
+        '<div class="modal-header"><h3><i class="fas fa-bell"></i> Notifiche</h3><button class="modal-close" onclick="APP.closeNotifModal()">&times;</button></div>' +
+        '<div class="modal-body">';
+      if (notifs.length === 0) {
+        html += '<div class="radio-empty-state"><i class="fas fa-bell-slash"></i><p>Nessuna notifica.</p></div>';
+      } else {
+        html += '<ul class="notif-list">';
+        for (const n of notifs) {
+          const time = n.createdAt ? new Date(n.createdAt).toLocaleString('it-IT') : '';
+          html += '<li class="notif-item' + (n.read ? '' : ' notif-unread') + '">' +
+            '<div class="notif-icon"><i class="fas fa-at"></i></div>' +
+            '<div class="notif-body">' +
+            '<div class="notif-text"><strong>' + this.escapeHtml(n.fromName) + '</strong> ti ha menzionato nel muro:</div>' +
+            '<div class="notif-preview">' + this.escapeHtml(n.text) + '</div>' +
+            '<div class="notif-time">' + time + '</div>' +
+            '</div>' +
+            '</li>';
+        }
+        html += '</ul>';
+      }
+      html += '</div></div></div>';
+      const el = document.createElement('div');
+      el.id = 'notifModal';
+      el.innerHTML = html;
+      document.body.appendChild(el);
+      const unreadIds = notifs.filter(n => !n.read).map(n => n.id);
+      if (unreadIds.length > 0) {
+        const batch = db.batch();
+        unreadIds.forEach(id => batch.update(db.collection('notifications').doc(id), { read: true }));
+        await batch.commit();
+      }
+    } catch (e) { this.toast('Errore nel caricamento notifiche.', 'error'); }
+  },
+
+  closeNotifModal() {
+    const el = document.getElementById('notifModal');
+    if (el) el.remove();
+  },
+
   async postMessage() {
     if (!this.state.currentUser) { this.toast('Accedi per scrivere!', 'warning'); return; }
     const input = this.el.gbMessageInput;
@@ -950,7 +1030,7 @@ const APP = {
     if (this.checkBlasfemo(text)) { this.toast('Messaggio blasfemo non consentito.', 'error'); return; }
     const filtered = this.filterBadWords(text);
     try {
-      await db.collection('messages').add({
+      const msgRef = await db.collection('messages').add({
         text: filtered,
         authorId: this.state.currentUser.id,
         authorName: this.state.currentUser.username,
@@ -959,6 +1039,28 @@ const APP = {
         userReactions: {},
         createdAt: Date.now(),
       });
+      const mentions = filtered.match(/@(\S+)/g);
+      if (mentions) {
+        const unique = [...new Set(mentions.map(m => m.slice(1).toLowerCase()))];
+        const usersSnap = await db.collection('users').get();
+        const users = [];
+        usersSnap.forEach(d => users.push({ id: d.id, ...d.data() }));
+        for (const name of unique) {
+          const target = users.find(u => u.username && u.username.toLowerCase() === name);
+          if (target && target.id !== this.state.currentUser.id) {
+            await db.collection('notifications').add({
+              userId: target.id,
+              type: 'mention',
+              messageId: msgRef.id,
+              fromName: this.state.currentUser.username,
+              fromId: this.state.currentUser.id,
+              text: filtered.length > 80 ? filtered.slice(0, 80) + '...' : filtered,
+              read: false,
+              createdAt: Date.now(),
+            });
+          }
+        }
+      }
       input.value = '';
       this.updateCharCount();
     } catch (e) {

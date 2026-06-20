@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="images/icon-192.png">
 <link rel="apple-touch-icon" href="images/icon-192.png">
-<link rel="stylesheet" href="css/style.css?v=47">
+<link rel="stylesheet" href="css/style.css?v=48">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -43,6 +43,7 @@
       <div class="top-user" id="topUser">
         <span class="top-username" id="topUsername">User</span>
         <div class="top-avatar" id="topAvatar">U</div>
+        <button class="top-notif-btn" id="topNotifBtn" title="Notifiche"><i class="fas fa-bell"></i><span id="notifBadge" class="notif-badge" style="display:none">0</span></button>
         <button class="top-logout-btn" id="topLogoutBtn" title="Esci"><i class="fas fa-right-from-bracket"></i></button>
       </div>
       <div class="top-auth" id="topAuth" style="display:none">
@@ -711,7 +712,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=40"></script>
+<script src="js/app.js?v=41"></script>
 <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>
 </body>
 </html>
