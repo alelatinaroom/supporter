@@ -989,7 +989,7 @@ const APP = {
         '<div class="radio-podcast-info"><div class="radio-podcast-title">' + this.escapeHtml(p.title || '') + '</div>' +
         (p.description ? '<div class="radio-podcast-desc">' + this.escapeHtml(p.description) + '</div>' : '') +
         (dateStr ? '<div class="radio-podcast-meta">' + dateStr + '</div>' : '') +
-        (p.audioUrl ? (p.audioUrl.indexOf('mixlr.com') !== -1 ? '<iframe src="https://mixlr.com/embed/recording/' + this.extractMixlrId(p.audioUrl) + '" width="100%" height="180px" scrolling="no" frameborder="no" style="border-radius:8px;margin-top:8px"></iframe>' : '<audio controls style="width:100%;margin-top:8px"><source src="' + p.audioUrl + '"></audio>') : '') +
+        (p.audioUrl ? (p.audioUrl.indexOf('mixlr.com') !== -1 ? '<a href="' + p.audioUrl + '" target="_blank" class="radio-podcast-play" style="display:inline-flex;margin-top:8px"><i class="fas fa-external-link-alt"></i> Ascolta su Mixlr</a>' : '<audio controls style="width:100%;margin-top:8px"><source src="' + p.audioUrl + '"></audio>') : '') +
         '</div></div>';
     }).join('');
   },
