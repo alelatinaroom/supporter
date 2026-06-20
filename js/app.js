@@ -669,10 +669,11 @@ const APP = {
   renderGuestbookUI() {
     if (!this.el.gbNewPost) return;
     if (this.state.currentUser) {
+      const cu = this.state.currentUser;
       this.el.gbNewPost.innerHTML =
         '<div class="gb-post-form">' +
         '<div class="gb-post-user">' +
-        '<div class="gb-post-avatar">' + this.escapeHtml(this.state.currentUser.username.charAt(0).toUpperCase()) + '</div>' +
+        '<div class="gb-post-avatar">' + (cu.avatar ? '<img src="' + cu.avatar + '" alt="">' : this.escapeHtml(cu.username.charAt(0).toUpperCase())) + '</div>' +
         '<span class="gb-post-username">' + this.escapeHtml(this.state.currentUser.username) + '</span>' +
         '</div>' +
         '<textarea id="gbMessageInput" class="gb-post-input" placeholder="Scrivi un messaggio sul Muro..." maxlength="500"></textarea>' +
@@ -712,9 +713,11 @@ const APP = {
     container.innerHTML = filtered.map(m => {
       const time = m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '';
       const isOwner = this.state.currentUser && this.state.currentUser.id === m.authorId;
+      const cu = this.state.currentUser;
+      const avatarUrl = (cu && isOwner && cu.avatar) ? cu.avatar : (m.authorAvatar || '');
       return '<div class="gb-message" data-id="' + m.id + '">' +
         '<div class="gb-msg-user">' +
-        '<div class="gb-msg-avatar">' + (m.authorAvatar ? '<img src="' + m.authorAvatar + '" alt="">' : (m.authorName ? m.authorName.charAt(0).toUpperCase() : '?')) + '</div>' +
+        '<div class="gb-msg-avatar">' + (avatarUrl ? '<img src="' + avatarUrl + '" alt="">' : (m.authorName ? m.authorName.charAt(0).toUpperCase() : '?')) + '</div>' +
         '<div class="gb-msg-meta">' +
         '<strong class="gb-msg-name">' + this.escapeHtml(m.authorName || 'Anonimo') + '</strong>' +
         '<span class="gb-msg-time">' + time + '</span>' +
