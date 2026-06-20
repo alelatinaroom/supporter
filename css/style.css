@@ -1728,6 +1728,49 @@ textarea { resize: vertical; min-height: 60px; }
 /* ==============================
    RESPONSIVE
    ============================== */
+/* ==============================
+   MINI PLAYER
+   ============================== */
+.mini-player {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+  background: linear-gradient(135deg, #1a1a3e, #0f2040);
+  border-top: 1px solid rgba(77,166,255,0.2);
+  padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+  animation: miniPlayerSlideUp 0.3s ease;
+}
+@keyframes miniPlayerSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.mini-player-info {
+  display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+}
+.mini-player-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #4dff8c; flex-shrink: 0;
+  animation: radioPulse 1.5s infinite;
+}
+.mini-player-name {
+  font-size: 14px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mini-player-btn {
+  background: none; border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; width: 36px; height: 36px; border-radius: 50%;
+  cursor: pointer; font-size: 14px; display: flex;
+  align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.mini-player-btn:hover {
+  background: rgba(255,77,77,0.2);
+  border-color: var(--accent3);
+  color: var(--accent3);
+}
+body.has-mini-player { padding-bottom: 56px; }
+
 @media (max-width: 600px) {
   .top-username { display: none; }
   .members-list { grid-template-columns: 1fr; }

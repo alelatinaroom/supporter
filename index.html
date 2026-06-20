@@ -657,13 +657,24 @@
   <!-- TOAST NOTIFICATIONS -->
   <div id="toastContainer" class="toast-container"></div>
 
+  <!-- MINI RADIO PLAYER -->
+  <div id="miniPlayer" class="mini-player" style="display:none">
+    <div class="mini-player-info">
+      <div class="mini-player-dot"></div>
+      <span class="mini-player-name" id="miniPlayerName">Radio aleLatina</span>
+    </div>
+    <div class="mini-player-actions">
+      <button id="miniPlayerStop" class="mini-player-btn" title="Stoppa"><i class="fas fa-stop"></i></button>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=26"></script>
+<script src="js/app.js?v=27"></script>
 <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>
 </body>
 </html>

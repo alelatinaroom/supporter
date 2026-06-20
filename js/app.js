@@ -175,6 +175,9 @@ const APP = {
       radioScheduleSection: $('radioScheduleSection'),
       radioPodcastList: $('radioPodcastList'),
       sidebarRadioBadge: $('sidebarRadioBadge'),
+      miniPlayer: $('miniPlayer'),
+      miniPlayerName: $('miniPlayerName'),
+      miniPlayerStop: $('miniPlayerStop'),
       editorialsPage: $('editorialsPage'),
       editorialsList: $('editorialsList'),
       articlePage: $('articlePage'),
@@ -335,6 +338,7 @@ const APP = {
     });
     if (this.el.radioPlayBtn) this.el.radioPlayBtn.addEventListener('click', () => this.radioPlay());
     if (this.el.radioStopBtn) this.el.radioStopBtn.addEventListener('click', () => this.radioStop());
+    if (this.el.miniPlayerStop) this.el.miniPlayerStop.addEventListener('click', () => this.radioStop());
     if (this.el.adminSaveStreamBtn) this.el.adminSaveStreamBtn.addEventListener('click', () => this.adminSaveRadioConfig());
     if (this.el.adminAddPodcastBtn) this.el.adminAddPodcastBtn.addEventListener('click', () => this.adminOpenAddPodcast());
     if (this.el.adminAddScheduleBtn) this.el.adminAddScheduleBtn.addEventListener('click', () => this.adminAddScheduleItem());
@@ -938,18 +942,38 @@ const APP = {
     if (r.mixlrUsername) {
       if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = '';
       if (this.el.radioDirectPlayer) this.el.radioDirectPlayer.style.display = 'none';
+      if (this.el.mixlrIframe && !this.el.mixlrIframe.src) this.el.mixlrIframe.src = 'https://mixlr.com/embed/' + encodeURIComponent(r.mixlrUsername);
     } else if (r.streamUrl) {
       const audio = this.el.radioAudio;
-      if (audio) { audio.play(); this.toast('Radio in riproduzione!', 'success'); }
+      if (audio) { audio.play(); }
     } else {
       this.toast('Nessuna diretta configurata.', 'warning');
+      return;
     }
+    this.showMiniPlayer();
   },
 
   radioStop() {
+    if (this.el.radioMixlrEmbed) this.el.radioMixlrEmbed.style.display = 'none';
     const audio = this.el.radioAudio;
     if (audio) { audio.pause(); audio.currentTime = 0; }
+    if (this.el.mixlrIframe) { this.el.mixlrIframe.src = ''; }
+    this.hideMiniPlayer();
     this.toast('Radio fermata.', 'info');
+  },
+
+  showMiniPlayer() {
+    if (!this.el.miniPlayer) return;
+    const name = (this.state.radioData && this.state.radioData.streamName) || 'Radio aleLatina';
+    if (this.el.miniPlayerName) this.el.miniPlayerName.textContent = name;
+    this.el.miniPlayer.style.display = '';
+    document.body.classList.add('has-mini-player');
+  },
+
+  hideMiniPlayer() {
+    if (!this.el.miniPlayer) return;
+    this.el.miniPlayer.style.display = 'none';
+    document.body.classList.remove('has-mini-player');
   },
 
   updateRadioBadge() {
