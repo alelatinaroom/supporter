@@ -1593,13 +1593,16 @@ const APP = {
   startChatsListener() {
     this.stopChatsListener();
     const uid = this.state.currentUser.id;
-    this.state.chatsUnsub = db.collection('chats').where('participants', 'array-contains', uid).orderBy('lastMessageAt', 'desc').onSnapshot(snapshot => {
+    this.state.chatsUnsub = db.collection('chats').where('participants', 'array-contains', uid).onSnapshot(snapshot => {
       const chats = [];
       snapshot.forEach(doc => chats.push({ id: doc.id, ...doc.data() }));
+      chats.sort((a, b) => (b.lastMessageAt || 0) - (a.lastMessageAt || 0));
       this.renderConversations(chats);
       this.updateMsgBadge(chats);
     }, err => {
       console.error('Chats listener error:', err);
+      const container = this.el.pmConversations;
+      if (container) container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-triangle"></i><p>Errore nel caricamento: ' + this.escapeHtml(err.message) + '</p></div>';
     });
   },
 
