@@ -368,13 +368,7 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .home-badge {
   margin: 0 auto 24px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-}
-.home-badge-label {
-  margin-top: 8px; font-size: 18px; font-weight: 800;
-  background: linear-gradient(135deg, #fff 30%, var(--accent));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  letter-spacing: 3px; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: center;
 }
 .home-badge svg { display: block; }
 .home-title {
