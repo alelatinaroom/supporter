@@ -142,6 +142,8 @@ const APP = {
       gbMessageInput: $('gbMessageInput'),
       gbInstallCard: $('gbInstallCard'),
       gbInstallClose: $('gbInstallClose'),
+      homeInstallCard: $('homeInstallCard'),
+      homeInstallClose: $('homeInstallClose'),
       gbPostBtn: $('gbPostBtn'),
       gbNewPost: $('gbNewPost'),
       gbMessages: $('gbMessages'),
@@ -385,11 +387,20 @@ const APP = {
     if (this.el.gbInstallClose) this.el.gbInstallClose.addEventListener('click', () => {
       if (this.el.gbInstallCard) this.el.gbInstallCard.style.display = 'none';
     });
+    if (this.el.homeInstallClose) this.el.homeInstallClose.addEventListener('click', () => {
+      if (this.el.homeInstallCard) this.el.homeInstallCard.style.display = 'none';
+    });
     if (this.el.gbInstallCard && window.matchMedia('(display-mode: standalone)').matches) {
       this.el.gbInstallCard.style.display = 'none';
     }
+    if (this.el.homeInstallCard && window.matchMedia('(display-mode: standalone)').matches) {
+      this.el.homeInstallCard.style.display = 'none';
+    }
     if (this.el.gbInstallCard && window.matchMedia('(display-mode: minimal-ui)').matches) {
       this.el.gbInstallCard.style.display = 'none';
+    }
+    if (this.el.homeInstallCard && window.matchMedia('(display-mode: minimal-ui)').matches) {
+      this.el.homeInstallCard.style.display = 'none';
     }
   },
 

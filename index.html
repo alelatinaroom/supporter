@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="images/icon-192.png">
 <link rel="apple-touch-icon" href="images/icon-192.png">
-<link rel="stylesheet" href="css/style.css?v=51">
+<link rel="stylesheet" href="css/style.css?v=52">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -146,6 +146,31 @@
           <h3>Pagelle</h3>
           <p>Vota i giocatori e scopri top &amp; flop della partita</p>
           <span class="home-card-btn">Vota <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </div>
+      <div class="gb-install-card" id="homeInstallCard">
+        <button class="gb-install-close" id="homeInstallClose" title="Nascondi"><i class="fas fa-times"></i></button>
+        <div class="gb-install-header"><i class="fas fa-mobile-screen-button"></i> Installa AleLatina sul telefono</div>
+        <div class="gb-install-steps">
+          <div class="gb-install-platform">
+            <div class="gb-install-platform-icon"><i class="fab fa-android"></i> Android</div>
+            <ol>
+              <li>Apri il sito in <strong>Chrome</strong></li>
+              <li>Tocca il menu <i class="fas fa-ellipsis-vertical"></i> (tre puntini)</li>
+              <li>Seleziona <strong>"Aggiungi alla schermata Home"</strong></li>
+              <li>Tocca <strong>"Installa"</strong></li>
+            </ol>
+          </div>
+          <div class="gb-install-divider"></div>
+          <div class="gb-install-platform">
+            <div class="gb-install-platform-icon"><i class="fab fa-apple"></i> iPhone</div>
+            <ol>
+              <li>Apri il sito in <strong>Safari</strong></li>
+              <li>Tocca il menu <i class="fas fa-share"></i> (condividi)</li>
+              <li>Scorri e tocca <strong>"Aggiungi a Home"</strong></li>
+              <li>Tocca <strong>"Aggiungi"</strong> in alto a destra</li>
+            </ol>
+          </div>
         </div>
       </div>
       <p class="home-footer">#ForzaLatina</p>
@@ -737,7 +762,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=47"></script>
+<script src="js/app.js?v=48"></script>
 <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>
 </body>
 </html>
