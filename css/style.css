@@ -2061,6 +2061,40 @@ body.has-mini-player { padding-bottom: 56px; }
 .gb-link-reject-btn { color: #f44336; }
 .gb-link-reject-btn:hover { background: rgba(244,67,54,0.15); }
 
+/* Link preview card */
+.gb-link-preview {
+  display: flex; gap: 10px; margin: 4px 0;
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: 10px; overflow: hidden; text-decoration: none;
+  transition: all 0.2s; max-width: 320px;
+}
+.gb-link-preview:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(77,166,255,0.1); }
+.gb-link-preview-img {
+  flex: 0 0 80px; background-size: cover; background-position: center;
+  background-color: var(--hover-bg);
+}
+.gb-link-preview-body {
+  flex: 1; padding: 8px 8px 8px 0; min-width: 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.gb-link-preview-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gb-link-preview-desc {
+  font-size: 11px; color: var(--text-muted);
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gb-link-preview-domain {
+  font-size: 10px; color: var(--accent2); font-weight: 600;
+}
+@media (max-width: 500px) {
+  .gb-link-preview { max-width: 100%; }
+  .gb-link-preview-img { flex-basis: 60px; }
+}
+
 /* ---------- INSTALL CARD ---------- */
 .gb-install-card {
   position: relative;

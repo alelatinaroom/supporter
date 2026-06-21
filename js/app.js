@@ -88,6 +88,7 @@ const APP = {
   },
 
   el: {},
+  _linkPreviews: {},
 
   init() {
     this.cacheDOM();
@@ -920,6 +921,17 @@ const APP = {
         const link = m.links[parseInt(idx)];
         if (!link) return match;
         if (link.approved) {
+          const preview = this._linkPreviews[link.url];
+          if (preview && (preview.title || preview.description)) {
+            const img = preview.image ? preview.image.url || preview.image : '';
+            return '<a href="' + this.escapeHtml(link.url) + '" target="_blank" rel="noopener" class="gb-link-preview">' +
+              (img ? '<span class="gb-link-preview-img" style="background-image:url(' + this.escapeHtml(img) + ')"></span>' : '') +
+              '<span class="gb-link-preview-body">' +
+              (preview.title ? '<span class="gb-link-preview-title">' + this.escapeHtml(preview.title) + '</span>' : '') +
+              (preview.description ? '<span class="gb-link-preview-desc">' + this.escapeHtml(preview.description).substring(0, 80) + '</span>' : '') +
+              '<span class="gb-link-preview-domain">' + this.escapeHtml(preview.url ? this._getDomain(preview.url) : this._getDomain(link.url)) + '</span>' +
+              '</span></a>';
+          }
           const domain = this._getDomain(link.url);
           return '<a href="' + this.escapeHtml(link.url) + '" target="_blank" rel="noopener" class="gb-link-card">' +
             '<span class="gb-link-card-domain"><i class="fas fa-link"></i> ' + this.escapeHtml(domain) + '</span>' +
@@ -940,6 +952,16 @@ const APP = {
 
   _getDomain(url) {
     try { return new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return url; }
+  },
+
+  async _fetchPreview(url) {
+    try {
+      const res = await fetch('https://api.microlink.io/?url=' + encodeURIComponent(url), { signal: AbortSignal.timeout(5000) });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data && data.status === 'success' && data.data) return data.data;
+      return null;
+    } catch { return null; }
   },
 
   async renderMessages() {
@@ -976,6 +998,16 @@ const APP = {
           this.state._fetchedAuthors[id] = true;
         }));
       } catch (e) { /* ignore fetch errors */ }
+    }
+    const linkUrls = [];
+    pageMessages.forEach(m => {
+      if (m.links) m.links.forEach(l => { if (l.approved && !this._linkPreviews[l.url]) linkUrls.push(l.url); });
+    });
+    if (linkUrls.length > 0) {
+      const previews = await Promise.allSettled(linkUrls.map(url => this._fetchPreview(url)));
+      linkUrls.forEach((url, i) => {
+        if (previews[i].status === 'fulfilled' && previews[i].value) this._linkPreviews[url] = previews[i].value;
+      });
     }
     container.innerHTML = pageMessages.map(m => {
       const time = m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '';
