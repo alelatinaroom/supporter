@@ -64,6 +64,17 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
+    // Comunicati: anyone can read, write if editorgruppo/editor/admin, delete only admin
+    match /comunicati/{docId} {
+      allow read: if true;
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['editorgruppo', 'editor', 'admin'];
+      allow update: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['editorgruppo', 'editor', 'admin'];
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // Radio config: anyone can read, write if admin
     match /radio/{doc} {
       allow read: if true;

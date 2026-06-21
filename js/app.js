@@ -77,6 +77,7 @@ const APP = {
     _editingUserId: null,
     _editingPodcastId: null,
     _editingChatPartnerId: null,
+    _editingComunicatoId: null,
     _messagesConvUnsub: null,
     radioData: null,
     allMessages: [],
@@ -211,6 +212,24 @@ const APP = {
       artCancelBtn: $('artCancelBtn'),
       artSaveBtn: $('artSaveBtn'),
       sidebarEditorBtn: $('sidebarEditorBtn'),
+      sidebarComunicatoBtn: $('sidebarComunicatoBtn'),
+      sideComunicatoBtn: $('sidebarComunicatoBtn'),
+      comunicatiPage: $('comunicatiPage'),
+      comunicatiList: $('comunicatiList'),
+      comunicatoPage: $('comunicatoPage'),
+      comunicatoContent: $('comunicatoContent'),
+      comunicatoEditorPage: $('comunicatoEditorPage'),
+      comEditorTitle: $('comEditorTitle'),
+      comTitle: $('comTitle'),
+      comImage: $('comImage'),
+      comContent: $('comContent'),
+      comError: $('comError'),
+      comCancelBtn: $('comCancelBtn'),
+      comSaveBtn: $('comSaveBtn'),
+      comBackBtn: $('comBackBtn'),
+      adminComunicati: $('adminComunicati'),
+      adminComunicatiList: $('adminComunicatiList'),
+      adminComunicatiCount: $('adminComunicatiCount'),
       pagellePage: $('pagellePage'),
       pagelleMatchList: $('pagelleMatchList'),
       matchPage: $('matchPage'),
@@ -333,6 +352,9 @@ const APP = {
         } else if (tab.dataset.atab === 'pagelle') {
           this.el.adminPagelle.classList.add('active');
           this.renderAdminMatches();
+        } else if (tab.dataset.atab === 'comunicati') {
+          this.el.adminComunicati.classList.add('active');
+          this.renderAdminComunicati();
         }
       });
     });
@@ -344,6 +366,9 @@ const APP = {
     if (this.el.userModal) this.el.userModal.addEventListener('click', e => {
       if (e.target === this.el.userModal) this.adminCloseUserModal();
     });
+    if (this.el.comBackBtn) this.el.comBackBtn.addEventListener('click', () => this.navigateTo('comunicati'));
+    if (this.el.comSaveBtn) this.el.comSaveBtn.addEventListener('click', () => this.saveComunicato());
+    if (this.el.comCancelBtn) this.el.comCancelBtn.addEventListener('click', () => this.cancelComunicato());
     if (this.el.articleBackBtn) this.el.articleBackBtn.addEventListener('click', () => this.navigateTo('editorials'));
     if (this.el.artPreviewBtn) this.el.artPreviewBtn.addEventListener('click', () => this.toggleArticlePreview());
     if (this.el.artSaveBtn) this.el.artSaveBtn.addEventListener('click', () => this.saveArticle());
@@ -449,12 +474,14 @@ const APP = {
       if (u.avatar) { this.el.sidebarAvatar.innerHTML = '<img src="' + u.avatar + '" alt="">'; }
       else { this.el.sidebarAvatar.textContent = u.username.charAt(0).toUpperCase(); }
     }
-    const roleMap = { admin: 'Amministratore', editor: 'Editor', user: 'Tifoso' };
+    const roleMap = { admin: 'Amministratore', editor: 'Editor', editorgruppo: 'Editor Gruppo', user: 'Tifoso' };
     if (this.el.sidebarRole) this.el.sidebarRole.textContent = roleMap[u.role] || 'Tifoso';
     if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.style.display = 'none';
     if (this.el.logoutBtn) this.el.logoutBtn.style.display = '';
     if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = u.role === 'admin' ? '' : 'none';
-    if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = (u.role === 'editor' || u.role === 'admin') ? '' : 'none';
+    const canEdit = (u.role === 'editor' || u.role === 'editorgruppo' || u.role === 'admin');
+    if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = (u.role === 'editor' || u.role === 'editorgruppo' || u.role === 'admin') ? '' : 'none';
+    if (this.el.sidebarComunicatoBtn) this.el.sidebarComunicatoBtn.style.display = canEdit ? '' : 'none';
     this.updateMsgBadge();
     this.updateRadioBadge();
     this.startNotifsListener();
@@ -480,6 +507,7 @@ const APP = {
     if (this.el.logoutBtn) this.el.logoutBtn.style.display = 'none';
     if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = 'none';
     if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = 'none';
+    if (this.el.sidebarComunicatoBtn) this.el.sidebarComunicatoBtn.style.display = 'none';
     if (this.el.sidebarMsgBadge) this.el.sidebarMsgBadge.style.display = 'none';
     this.stopNotifsListener();
     this.navigateTo('home');
@@ -571,7 +599,7 @@ const APP = {
 
   navigateTo(page) {
     this.closeSidebar();
-    const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'pagellePage', 'matchPage'];
+    const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage'];
     pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
     if (this.el.sidebarItems) {
       this.el.sidebarItems.forEach(i => { i.classList.toggle('active', i.dataset.page === page); });
@@ -616,6 +644,21 @@ const APP = {
           if (!this.state._editingArticleId && this.el.editorPanelTitle) this.el.editorPanelTitle.textContent = 'Nuovo Articolo';
         } else {
           this.navigateTo('guestbook');
+        }
+        break;
+      case 'comunicati':
+        this.el.comunicatiPage.style.display = '';
+        this.renderComunicati();
+        break;
+      case 'comunicato':
+        this.el.comunicatoPage.style.display = '';
+        break;
+      case 'comunicatoEditor':
+        if (this.state.currentUser && (this.state.currentUser.role === 'editorgruppo' || this.state.currentUser.role === 'editor' || this.state.currentUser.role === 'admin')) {
+          this.el.comunicatoEditorPage.style.display = '';
+          if (!this.state._editingComunicatoId && this.el.comEditorTitle) this.el.comEditorTitle.textContent = 'Nuovo Comunicato';
+        } else {
+          this.navigateTo('comunicati');
         }
         break;
       case 'pagelle':
@@ -673,7 +716,7 @@ const APP = {
   showAuth() {
     this.state.redirectAfterLogin = this.getCurrentPage();
     this.closeSidebar();
-    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'pagellePage', 'matchPage'];
+    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage'];
     pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
     if (this.el.sidebarItems) {
       this.el.sidebarItems.forEach(i => { i.classList.remove('active'); });
@@ -685,7 +728,7 @@ const APP = {
   },
 
   getCurrentPage() {
-    const pages = ['guestbook', 'members', 'rules', 'radio', 'editorials', 'pagelle', 'messages'];
+    const pages = ['guestbook', 'members', 'rules', 'radio', 'editorials', 'comunicati', 'pagelle', 'messages'];
     for (const p of pages) {
       if (this.el[p + 'Page'] && this.el[p + 'Page'].style.display !== 'none') return p;
     }
@@ -1233,7 +1276,7 @@ const APP = {
       }
       this.el.membersList.innerHTML = users.map(u => {
         const initial = u.username ? u.username.charAt(0).toUpperCase() : '?';
-        const roleLabel = u.role === 'admin' ? 'Admin' : u.role === 'editor' ? 'Editor' : 'Tifoso';
+        const roleLabel = u.role === 'admin' ? 'Admin' : u.role === 'editor' ? 'Editor' : u.role === 'editorgruppo' ? 'Editor Gruppo' : 'Tifoso';
         const roleClass = 'member-role-' + (u.role || 'user');
         return '<div class="member-card">' +
           '<div class="member-avatar">' + (u.avatar ? '<img src="' + u.avatar + '" alt="">' : initial) + '</div>' +
@@ -1467,6 +1510,131 @@ const APP = {
     } else {
       preview.style.display = 'none';
     }
+  },
+
+  /* ---------- COMUNICATI ---------- */
+  async renderComunicati() {
+    if (!this.el.comunicatiList) return;
+    try {
+      const snapshot = await db.collection('comunicati').orderBy('createdAt', 'desc').get();
+      const items = [];
+      snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+      if (items.length === 0) {
+        this.el.comunicatiList.innerHTML = '<div class="gb-empty"><i class="fas fa-bullhorn"></i><p>Nessun comunicato ancora. Il primo arriver\u00e0 presto!</p></div>';
+        return;
+      }
+      const canEdit = this.state.currentUser && (this.state.currentUser.role === 'editorgruppo' || this.state.currentUser.role === 'editor' || this.state.currentUser.role === 'admin');
+      this.el.comunicatiList.innerHTML = items.map(a => {
+        const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        const editBtn = canEdit ? '<button class="article-edit-btn" onclick="event.stopPropagation();APP.editComunicato(\'' + a.id + '\')"><i class="fas fa-pen"></i></button>' : '';
+        return '<div class="article-card" onclick="APP.openComunicato(\'' + a.id + '\')">' +
+          (a.image ? '<img src="' + a.image + '" alt="" class="article-card-img">' : '<div class="article-card-img article-card-img-placeholder"><i class="fas fa-bullhorn"></i></div>') +
+          '<div class="article-card-body"><h3>' + this.escapeHtml(a.title) + '</h3>' +
+          '<div class="article-card-meta">' + dateStr + ' \u00B7 ' + this.escapeHtml(a.authorName || 'Anonimo') + '</div>' + editBtn +
+          '</div></div>';
+      }).join('');
+    } catch (e) { console.error('Comunicati error:', e); }
+  },
+
+  async openComunicato(comunicatoId) {
+    try {
+      const doc = await db.collection('comunicati').doc(comunicatoId).get();
+      if (!doc.exists) return;
+      const a = doc.data();
+      this.navigateTo('comunicato');
+      if (this.el.comunicatoContent) {
+        const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        this.el.comunicatoContent.innerHTML =
+          '<div class="article-full-img">' + (a.image ? '<img src="' + a.image + '">' : '') + '</div>' +
+          '<h1>' + this.escapeHtml(a.title) + '</h1>' +
+          '<div class="article-full-meta">' + dateStr + ' \u00B7 ' + this.escapeHtml(a.authorName || 'Anonimo') + '</div>' +
+          '<div class="article-full-body">' + a.text + '</div>';
+      }
+    } catch (e) { this.toast('Errore nel caricamento del comunicato.', 'error'); }
+  },
+
+  async editComunicato(comunicatoId) {
+    try {
+      const doc = await db.collection('comunicati').doc(comunicatoId).get();
+      if (!doc.exists) return;
+      const a = doc.data();
+      this.state._editingComunicatoId = comunicatoId;
+      this.el.comTitle.value = a.title || '';
+      this.el.comImage.value = a.image || '';
+      this.el.comContent.value = a.text || '';
+      if (this.el.comEditorTitle) this.el.comEditorTitle.textContent = 'Modifica Comunicato';
+      this.navigateTo('comunicatoEditor');
+    } catch (e) { this.toast('Errore nel caricamento del comunicato.', 'error'); }
+  },
+
+  async saveComunicato() {
+    const title = this.el.comTitle.value.trim();
+    const image = this.el.comImage.value.trim();
+    const text = this.el.comContent.value.trim();
+    if (!this.state.currentUser) return;
+    if (this.el.comError) this.el.comError.textContent = '';
+    if (!title || !text) { if (this.el.comError) this.el.comError.textContent = 'Titolo e contenuto obbligatori.'; return; }
+    try {
+      if (this.state._editingComunicatoId) {
+        await db.collection('comunicati').doc(this.state._editingComunicatoId).update({ title, image, text });
+      } else {
+        await db.collection('comunicati').add({
+          title, image, text,
+          authorId: this.state.currentUser.id,
+          authorName: this.state.currentUser.username,
+          createdAt: Date.now(),
+        });
+      }
+      this.state._editingComunicatoId = null;
+      this.el.comTitle.value = '';
+      this.el.comImage.value = '';
+      this.el.comContent.value = '';
+      this.toast('Comunicato pubblicato!', 'success');
+      this.navigateTo('comunicati');
+    } catch (e) { if (this.el.comError) this.el.comError.textContent = 'Errore durante il salvataggio.'; }
+  },
+
+  cancelComunicato() {
+    if (this.el.comTitle) this.el.comTitle.value = '';
+    if (this.el.comImage) this.el.comImage.value = '';
+    if (this.el.comContent) this.el.comContent.value = '';
+    this.state._editingComunicatoId = null;
+    this.navigateTo('comunicati');
+  },
+
+  async renderAdminComunicati() {
+    const items = [];
+    try {
+      const snapshot = await db.collection('comunicati').orderBy('createdAt', 'desc').get();
+      snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+    } catch (e) { console.error(e); }
+    if (this.el.adminComunicatiCount) this.el.adminComunicatiCount.textContent = items.length + ' comunicati';
+    const container = this.el.adminComunicatiList;
+    if (!container) return;
+    if (items.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-bullhorn"></i><p>Nessun comunicato.</p></div>';
+      return;
+    }
+    container.innerHTML = items.map(m => {
+      const time = m.createdAt ? new Date(m.createdAt).toLocaleString('it-IT') : '';
+      return '<div class="admin-msg-item">' +
+        '<div class="admin-msg-info">' +
+        '<div class="admin-msg-text"><strong>' + this.escapeHtml(m.title) + '</strong></div>' +
+        '<div class="admin-msg-meta">' + time + ' \u00B7 ' + this.escapeHtml(m.authorName || 'Anonimo') + '</div>' +
+        '</div>' +
+        '<div class="admin-msg-actions">' +
+        '<button class="btn btn-danger btn-sm" onclick="APP.deleteComunicato(\'' + m.id + '\')"><i class="fas fa-trash"></i></button>' +
+        '</div></div>';
+    }).join('');
+  },
+
+  async deleteComunicato(comunicatoId) {
+    if (!confirm('Eliminare questo comunicato?')) return;
+    try {
+      await db.collection('comunicati').doc(comunicatoId).delete();
+      this.renderAdminComunicati();
+      this.toast('Comunicato eliminato.', 'info');
+    } catch (e) { this.toast('Errore.', 'error'); }
   },
 
   /* ---------- PAGELLE ---------- */
@@ -1727,7 +1895,7 @@ const APP = {
       container.innerHTML = '<div class="gb-empty"><i class="fas fa-users"></i><p>Nessun utente.</p></div>';
       return;
     }
-    const roleMap = { admin: 'Admin', editor: 'Editor', user: 'Tifoso' };
+    const roleMap = { admin: 'Admin', editor: 'Editor', editorgruppo: 'Editor Gruppo', user: 'Tifoso' };
     container.innerHTML = users.map(u => {
       const banBtn = u.role !== 'admin' ? '<button class="btn btn-sm ' + (u.banned ? 'btn-ghost' : 'btn-danger') + '" onclick="APP.adminToggleBanUser(\'' + u.id + '\')" title="' + (u.banned ? 'Riattiva' : 'Sospendi') + '"><i class="fas ' + (u.banned ? 'fa-check' : 'fa-ban') + '"></i></button>' : '';
       return '<div class="admin-msg-item' + (u.banned ? ' admin-msg-banned' : '') + '">' +
@@ -2098,7 +2266,7 @@ const APP = {
     if (!u) return;
     if (this.el.profileUsername) this.el.profileUsername.textContent = u.username;
     if (this.el.profileEmail) this.el.profileEmail.textContent = u.email;
-    const roleMap = { admin: 'Amministratore', editor: 'Editor', user: 'Tifoso' };
+    const roleMap = { admin: 'Amministratore', editor: 'Editor', editorgruppo: 'Editor Gruppo', user: 'Tifoso' };
     if (this.el.profileRole) this.el.profileRole.textContent = roleMap[u.role] || 'Tifoso';
     if (this.el.profileJoined) this.el.profileJoined.textContent = u.createdAt ? new Date(u.createdAt).toLocaleDateString('it-IT') : '-';
     if (this.el.profileAvatar) {

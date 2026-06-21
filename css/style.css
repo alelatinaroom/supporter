@@ -771,6 +771,7 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .member-role-admin { background: var(--accent2); color: #000; }
 .member-role-editor { background: var(--accent); color: #fff; }
+.member-role-editorgruppo { background: #a855f7; color: #fff; }
 .member-role-user { background: var(--glass); color: var(--text-muted); }
 
 /* ==============================

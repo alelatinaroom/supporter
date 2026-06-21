@@ -79,6 +79,8 @@
       <a class="sidebar-item" data-page="radio"><i class="fas fa-microphone"></i> Radio <span id="sidebarRadioBadge" class="sidebar-badge radio-live" style="display:none">LIVE</span></a>
       <a class="sidebar-item" data-page="editorials"><i class="fas fa-newspaper"></i> Editoriali</a>
       <a class="sidebar-item" data-page="pagelle"><i class="fas fa-futbol"></i> Pagelle</a>
+      <a class="sidebar-item" data-page="comunicati"><i class="fas fa-bullhorn"></i> Comunicati</a>
+      <a class="sidebar-item editor-only" data-page="comunicatoEditor" id="sidebarComunicatoBtn" style="display:none"><i class="fas fa-pen-fancy"></i> Scrivi Comunicato</a>
       <a class="sidebar-item editor-only" data-page="editorPanel" id="sidebarEditorBtn" style="display:none"><i class="fas fa-pen-fancy"></i> Scrivi Articolo</a>
       <a class="sidebar-item admin-only" data-page="admin" id="sidebarAdminBtn" style="display:none"><i class="fas fa-shield"></i> Pannello Admin</a>
     </div>
@@ -446,6 +448,58 @@
     </div>
   </main>
 
+  <!-- PAGE: COMUNICATI -->
+  <main id="comunicatiPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-bullhorn"></i> Gruppi e comunicati</h2>
+      <p>Comunicati ufficiali e news dai gruppi della comunità nerazzurra</p>
+    </div>
+    <div id="comunicatiList" class="editorials-list"></div>
+  </main>
+
+  <!-- PAGE: COMUNICATO VIEW -->
+  <main id="comunicatoPage" class="page content-page" style="display:none">
+    <div class="article-container">
+      <button class="btn btn-ghost btn-sm" id="comBackBtn" style="margin-bottom:16px"><i class="fas fa-arrow-left"></i> Torna ai comunicati</button>
+      <div id="comunicatoContent" class="article-content"></div>
+    </div>
+  </main>
+
+  <!-- PAGE: COMUNICATO EDITOR -->
+  <main id="comunicatoEditorPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-pen-fancy"></i> <span id="comEditorTitle">Nuovo Comunicato</span></h2>
+      <p>Scrivi un comunicato per la comunità</p>
+    </div>
+    <div class="editor-panel">
+      <div class="form-group">
+        <label>Titolo</label>
+        <input type="text" id="comTitle" class="form-input" placeholder="Titolo del comunicato" maxlength="120">
+      </div>
+      <div class="form-group">
+        <label>URL Copertina (opzionale)</label>
+        <input type="text" id="comImage" class="form-input" placeholder="https://example.com/copertina.jpg">
+      </div>
+      <div class="form-group">
+        <label>Contenuto</label>
+        <div class="editor-toolbar">
+          <button type="button" class="editor-tb-btn" data-tag="b" title="Grassetto"><i class="fas fa-bold"></i></button>
+          <button type="button" class="editor-tb-btn" data-tag="i" title="Corsivo"><i class="fas fa-italic"></i></button>
+          <button type="button" class="editor-tb-btn" data-tag="u" title="Sottolineato"><i class="fas fa-underline"></i></button>
+          <button type="button" class="editor-tb-btn" data-wrap="h3" title="Titolo"><i class="fas fa-heading"></i></button>
+          <button type="button" class="editor-tb-btn" data-wrap="p" title="Paragrafo"><i class="fas fa-paragraph"></i></button>
+          <button type="button" class="editor-tb-btn" data-wrap="blockquote" title="Citazione"><i class="fas fa-quote-right"></i></button>
+        </div>
+        <textarea id="comContent" class="form-input editor-textarea" rows="16" placeholder="Scrivi il comunicato... Puoi usare tag HTML come &lt;b&gt;, &lt;i&gt;, &lt;h3&gt;, &lt;blockquote&gt;..."></textarea>
+      </div>
+      <p id="comError" class="form-error"></p>
+      <div class="editor-actions">
+        <button class="btn btn-ghost" id="comCancelBtn">Annulla</button>
+        <button class="btn btn-primary" id="comSaveBtn"><i class="fas fa-save"></i> Pubblica</button>
+      </div>
+    </div>
+  </main>
+
   <!-- PAGE: PAGELLE -->
   <main id="pagellePage" class="page content-page" style="display:none">
     <div class="page-header">
@@ -475,6 +529,7 @@
       <button class="admin-tab" data-atab="users"><i class="fas fa-users-gear"></i> Utenti</button>
       <button class="admin-tab" data-atab="radio"><i class="fas fa-microphone"></i> Radio</button>
       <button class="admin-tab" data-atab="pagelle"><i class="fas fa-star"></i> Pagelle</button>
+      <button class="admin-tab" data-atab="comunicati"><i class="fas fa-bullhorn"></i> Comunicati</button>
     </div>
     <div id="adminMessages" class="admin-section active">
       <div class="admin-toolbar">
@@ -548,6 +603,12 @@
       </div>
       <div id="adminMatchList" class="admin-msg-list"></div>
     </div>
+    <div id="adminComunicati" class="admin-section">
+      <div class="admin-toolbar">
+        <span id="adminComunicatiCount">0 comunicati</span>
+      </div>
+      <div id="adminComunicatiList" class="admin-msg-list"></div>
+    </div>
   </main>
 
   <!-- MODAL: Create/Edit User -->
@@ -575,6 +636,7 @@
           <select id="umRole" class="form-input">
             <option value="user">Tifoso</option>
             <option value="editor">Editor</option>
+            <option value="editorgruppo">Editor Gruppo</option>
             <option value="admin">Amministratore</option>
           </select>
         </div>
