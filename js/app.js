@@ -1053,14 +1053,14 @@ const APP = {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') return;
       const swReg = await navigator.serviceWorker.register('sw.js');
-      const token = await messaging.getToken({ serviceWorkerRegistration: swReg, vapidKey: 'REPLACE_ME_WITH_YOUR_VAPID_KEY' });
+      const token = await messaging.getToken({ serviceWorkerRegistration: swReg, vapidKey: 'BFVtHaMJtBMNnHPQzRC4bcxHVppDZwmCCPgjYlHn5AngQZZdtf6F6A0Uedf1Tv952exI4f8cM44OjWe3RbEo_YI' });
       if (token) {
         await db.collection('users').doc(this.state.currentUser.id).update({
           fcmTokens: firebase.firestore.FieldValue.arrayUnion(token)
         });
       }
       messaging.onTokenRefresh(() => {
-        messaging.getToken({ serviceWorkerRegistration: swReg, vapidKey: 'REPLACE_ME_WITH_YOUR_VAPID_KEY' }).then(newToken => {
+        messaging.getToken({ serviceWorkerRegistration: swReg, vapidKey: 'BFVtHaMJtBMNnHPQzRC4bcxHVppDZwmCCPgjYlHn5AngQZZdtf6F6A0Uedf1Tv952exI4f8cM44OjWe3RbEo_YI' }).then(newToken => {
           if (newToken) {
             db.collection('users').doc(this.state.currentUser.id).update({
               fcmTokens: firebase.firestore.FieldValue.arrayUnion(newToken)

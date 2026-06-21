@@ -6,7 +6,7 @@ self.addEventListener('install', event => {
     '/supporter/index.html',
     '/supporter/css/style.css?v=50',
     '/supporter/js/config.js?v=3',
-    '/supporter/js/app.js?v=45',
+    '/supporter/js/app.js?v=46',
     '/supporter/images/logo_white.png',
     '/supporter/images/icon-192.png',
     '/supporter/images/icon-512.png',
