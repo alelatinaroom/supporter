@@ -139,11 +139,8 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .splash-content { text-align: center; z-index: 1; }
 .splash-badge {
-  width: 100px; height: 100px; margin: 0 auto 24px;
-  background: linear-gradient(135deg, var(--accent), #1a3a6b);
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 40px rgba(77,166,255,0.3);
-  animation: pulseGlow 2s ease-in-out infinite;
+  margin: 0 auto 24px;
+  display: flex; align-items: center; justify-content: center;
 }
 .splash-badge svg { display: block; }
 @keyframes pulseGlow {
