@@ -975,10 +975,10 @@ const APP = {
     if (!this.state.currentUser) return;
     this._notifsUnsub = db.collection('notifications')
       .where('userId', '==', this.state.currentUser.id)
-      .orderBy('createdAt', 'desc')
       .onSnapshot(snap => {
         let count = 0;
-        snap.forEach(d => { if (!d.data().read) count++; });
+        const all = [];
+        snap.forEach(d => { const data = d.data(); if (!data.read) count++; all.push(data); });
         const badge = this.el.notifBadge;
         if (badge) {
           if (count > 0) {
@@ -1002,11 +1002,10 @@ const APP = {
     try {
       const snap = await db.collection('notifications')
         .where('userId', '==', this.state.currentUser.id)
-        .orderBy('createdAt', 'desc')
-        .limit(50)
         .get();
       const notifs = [];
       snap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
+      notifs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       let html = '<div class="modal-overlay" onclick="APP.closeNotifModal()"><div class="modal modal-notif" onclick="event.stopPropagation()">' +
         '<div class="modal-header"><h3><i class="fas fa-bell"></i> Notifiche</h3><button class="modal-close" onclick="APP.closeNotifModal()">&times;</button></div>' +
         '<div class="modal-body">';
