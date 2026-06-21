@@ -804,6 +804,30 @@ const APP = {
     }
   },
 
+  renderMessageText(m) {
+    let text = this.escapeHtml(m.text);
+    text = text.replace(/@(\S+)/g, '<span class="gb-mention">@$1</span>');
+    if (m.links && m.links.length > 0) {
+      const cu = this.state.currentUser;
+      const isMod = cu && (cu.role === 'admin' || cu.role === 'editor');
+      text = text.replace(/\[link (\d+)\]/g, (match, idx) => {
+        const link = m.links[parseInt(idx)];
+        if (!link) return match;
+        if (link.approved) {
+          return '<a href="' + this.escapeHtml(link.url) + '" target="_blank" rel="noopener" class="gb-link-approved">' + this.escapeHtml(link.url) + '</a>';
+        } else {
+          let html = '<span class="gb-link-pending">' + this.escapeHtml(link.url) + ' <span class="gb-link-badge">in attesa</span></span>';
+          if (isMod) {
+            html += '<button class="gb-link-approve-btn" onclick="APP.approveLink(\'' + m.id + '\',' + idx + ')" title="Approva link"><i class="fas fa-check"></i></button>';
+            html += '<button class="gb-link-reject-btn" onclick="APP.rejectLink(\'' + m.id + '\',' + idx + ')" title="Rimuovi link"><i class="fas fa-times"></i></button>';
+          }
+          return html;
+        }
+      });
+    }
+    return text;
+  },
+
   async renderMessages() {
     if (!this.el.gbMessages) return;
     const container = this.el.gbMessages;
@@ -851,7 +875,7 @@ const APP = {
         '<strong class="gb-msg-name">' + this.escapeHtml(m.authorName || 'Anonimo') + '</strong>' +
         '<span class="gb-msg-time">' + time + '</span>' +
         '</div></div>' +
-        '<div class="gb-msg-text">' + this.escapeHtml(m.text).replace(/@(\S+)/g, '<span class="gb-mention">@$1</span>') + '</div>' +
+        '<div class="gb-msg-text">' + this.renderMessageText(m) + '</div>' +
         '<div class="gb-msg-actions">' +
         this.renderReactions(m) +
         (isOwner || (this.state.currentUser && this.state.currentUser.role === 'admin') ? '<button class="gb-like-btn gb-edit-btn" onclick="APP.editMessage(\'' + m.id + '\')"><i class="fas fa-pen"></i></button>' : '') +
@@ -1029,16 +1053,35 @@ const APP = {
     if (!text) { this.toast('Scrivi un messaggio!', 'warning'); return; }
     if (this.checkBlasfemo(text)) { this.toast('Messaggio blasfemo non consentito.', 'error'); return; }
     const filtered = this.filterBadWords(text);
+    const urlRegex = /https?:\/\/[^\s]+/g;
+    const urls = filtered.match(urlRegex);
+    let finalText = filtered;
+    let links = [];
+    if (urls) {
+      const unique = [...new Set(urls)];
+      const isMod = this.state.currentUser.role === 'admin' || this.state.currentUser.role === 'editor';
+      links = unique.map(u => ({ url: u, approved: isMod }));
+      let idx = 0;
+      finalText = finalText.replace(urlRegex, () => {
+        const n = idx++;
+        return '[link ' + n + ']';
+      });
+      if (links.length > 0 && !isMod) {
+        this.toast('I link saranno visibili dopo l\'approvazione di un amministratore.', 'info');
+      }
+    }
     try {
-      const msgRef = await db.collection('messages').add({
-        text: filtered,
+      const msgData = {
+        text: finalText,
         authorId: this.state.currentUser.id,
         authorName: this.state.currentUser.username,
         authorAvatar: this.state.currentUser.avatar || '',
         reactions: {},
         userReactions: {},
         createdAt: Date.now(),
-      });
+      };
+      if (links.length > 0) msgData.links = links;
+      const msgRef = await db.collection('messages').add(msgData);
       const mentions = filtered.match(/@(\S+)/g);
       if (mentions) {
         const unique = [...new Set(mentions.map(m => m.slice(1).toLowerCase()))];
@@ -1075,6 +1118,34 @@ const APP = {
     if (!confirm('Eliminare questo messaggio?')) return;
     try {
       await db.collection('messages').doc(messageId).delete();
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  async approveLink(messageId, linkIndex) {
+    if (!this.state.currentUser) return;
+    const role = this.state.currentUser.role;
+    if (role !== 'admin' && role !== 'editor') { this.toast('Non autorizzato.', 'error'); return; }
+    try {
+      const doc = await db.collection('messages').doc(messageId).get();
+      if (!doc.exists) return;
+      const links = doc.data().links || [];
+      if (!links[linkIndex]) return;
+      links[linkIndex].approved = true;
+      await db.collection('messages').doc(messageId).update({ links });
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  async rejectLink(messageId, linkIndex) {
+    if (!this.state.currentUser) return;
+    const role = this.state.currentUser.role;
+    if (role !== 'admin' && role !== 'editor') { this.toast('Non autorizzato.', 'error'); return; }
+    try {
+      const doc = await db.collection('messages').doc(messageId).get();
+      if (!doc.exists) return;
+      const links = doc.data().links || [];
+      if (!links[linkIndex]) return;
+      links.splice(linkIndex, 1);
+      await db.collection('messages').doc(messageId).update({ links });
     } catch (e) { this.toast('Errore.', 'error'); }
   },
 
