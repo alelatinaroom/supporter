@@ -624,6 +624,56 @@ textarea { resize: vertical; min-height: 60px; }
 .gb-login-prompt h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
 .gb-login-prompt p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
 
+/* Editorial slider */
+.editorial-slider {
+  position: relative; margin: 0 0 20px; padding: 12px 36px 8px;
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  animation: fadeIn 0.3s ease;
+}
+.editorial-slider-header {
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.editorial-slider-header i { color: var(--accent); }
+.editorial-slider-track {
+  display: flex; gap: 10px; overflow-x: auto; scroll-behavior: smooth;
+  padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.editorial-slider-track::-webkit-scrollbar { display: none; }
+.editorial-slide {
+  flex: 0 0 auto; max-width: 220px; min-width: 160px;
+  padding: 8px 12px; border-radius: 8px;
+  background: var(--hover-bg); cursor: pointer;
+  transition: all 0.2s; border: 1px solid transparent;
+}
+.editorial-slide:hover {
+  border-color: var(--accent); background: var(--active-bg);
+}
+.editorial-slide-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.editorial-slide-date {
+  font-size: 11px; color: var(--text-muted); margin-top: 2px;
+}
+.editorial-slider-btn {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid var(--card-border); background: var(--card-bg);
+  color: var(--text-muted); cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 12px; transition: all 0.2s; z-index: 2;
+}
+.editorial-slider-btn:hover { color: var(--accent); border-color: var(--accent); }
+.editorial-slider-prev { left: 4px; }
+.editorial-slider-next { right: 4px; }
+@media (max-width: 500px) {
+  .editorial-slider { padding: 10px 30px 6px; }
+  .editorial-slide { max-width: 160px; min-width: 120px; }
+}
+
 /* Filters */
 .gb-filters {
   display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;

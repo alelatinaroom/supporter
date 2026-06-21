@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="images/icon-192.png">
 <link rel="apple-touch-icon" href="images/icon-192.png">
-<link rel="stylesheet" href="css/style.css?v=58">
+<link rel="stylesheet" href="css/style.css?v=59">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -270,6 +270,12 @@
           </ol>
         </div>
       </div>
+    </div>
+    <div class="editorial-slider" id="editorialSlider" style="display:none">
+      <div class="editorial-slider-header"><i class="fas fa-newspaper"></i> Editoriali recenti</div>
+      <div class="editorial-slider-track" id="editorialSliderTrack"></div>
+      <button class="editorial-slider-btn editorial-slider-prev" id="editorialSliderPrev"><i class="fas fa-chevron-left"></i></button>
+      <button class="editorial-slider-btn editorial-slider-next" id="editorialSliderNext"><i class="fas fa-chevron-right"></i></button>
     </div>
     <div class="gb-new" id="gbNewPost"></div>
     <div class="gb-filters">
@@ -830,7 +836,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=51"></script>
+<script src="js/app.js?v=52"></script>
 <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>
 </body>
 </html>

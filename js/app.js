@@ -148,6 +148,10 @@ const APP = {
       gbPostBtn: $('gbPostBtn'),
       gbNewPost: $('gbNewPost'),
       gbMessages: $('gbMessages'),
+      editorialSlider: $('editorialSlider'),
+      editorialSliderTrack: $('editorialSliderTrack'),
+      editorialSliderPrev: $('editorialSliderPrev'),
+      editorialSliderNext: $('editorialSliderNext'),
       gbPagination: $('gbPagination'),
       gbFilters: qsa('.gb-filter'),
       updateCharCount: $('updateCharCount'),
@@ -426,6 +430,22 @@ const APP = {
     if (this.el.homeInstallCard && window.matchMedia('(display-mode: minimal-ui)').matches) {
       this.el.homeInstallCard.style.display = 'none';
     }
+    if (this.el.editorialSliderTrack) {
+      this.el.editorialSliderTrack.addEventListener('click', e => {
+        const slide = e.target.closest('.editorial-slide');
+        if (slide) this.openArticle(slide.dataset.id);
+      });
+    }
+    if (this.el.editorialSliderPrev) {
+      this.el.editorialSliderPrev.addEventListener('click', () => {
+        if (this.el.editorialSliderTrack) this.el.editorialSliderTrack.scrollBy({ left: -200, behavior: 'smooth' });
+      });
+    }
+    if (this.el.editorialSliderNext) {
+      this.el.editorialSliderNext.addEventListener('click', () => {
+        if (this.el.editorialSliderTrack) this.el.editorialSliderTrack.scrollBy({ left: 200, behavior: 'smooth' });
+      });
+    }
   },
 
   initAuth() {
@@ -627,6 +647,7 @@ const APP = {
         this.el.guestbookPage.style.display = '';
         this.renderGuestbookUI();
         this.startMessagesListener();
+        this.renderEditorialSlider();
         break;
       case 'members':
         this.el.membersPage.style.display = '';
@@ -1441,6 +1462,23 @@ const APP = {
           '</div></div>';
       }).join('');
     } catch (e) { console.error('Editorials error:', e); }
+  },
+
+  async renderEditorialSlider() {
+    if (!this.el.editorialSlider || !this.el.editorialSliderTrack) return;
+    try {
+      const snapshot = await db.collection('articles').orderBy('createdAt', 'desc').limit(8).get();
+      const articles = [];
+      snapshot.forEach(doc => articles.push({ id: doc.id, ...doc.data() }));
+      if (articles.length === 0) { this.el.editorialSlider.style.display = 'none'; return; }
+      this.el.editorialSlider.style.display = '';
+      this.el.editorialSliderTrack.innerHTML = articles.map(a => {
+        const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : '';
+        return '<div class="editorial-slide" data-id="' + a.id + '">' +
+          '<div class="editorial-slide-title">' + this.escapeHtml(a.title) + '</div>' +
+          '<div class="editorial-slide-date">' + dateStr + '</div></div>';
+      }).join('');
+    } catch (e) { console.error('Editorial slider error:', e); }
   },
 
   async openArticle(articleId) {
