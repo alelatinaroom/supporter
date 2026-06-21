@@ -436,6 +436,7 @@ const APP = {
     this.updateMsgBadge();
     this.updateRadioBadge();
     this.startNotifsListener();
+    this.setupFCM();
     if (this.state.redirectAfterLogin) {
       this.navigateTo(this.state.redirectAfterLogin);
       this.state.redirectAfterLogin = null;
@@ -1043,6 +1044,40 @@ const APP = {
   closeNotifModal() {
     const el = document.getElementById('notifModal');
     if (el) el.remove();
+  },
+
+  async setupFCM() {
+    if (!messaging) return;
+    if (!this.state.currentUser) return;
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+      const swReg = await navigator.serviceWorker.register('sw.js');
+      const token = await messaging.getToken({ serviceWorkerRegistration: swReg, vapidKey: 'REPLACE_ME_WITH_YOUR_VAPID_KEY' });
+      if (token) {
+        await db.collection('users').doc(this.state.currentUser.id).update({
+          fcmTokens: firebase.firestore.FieldValue.arrayUnion(token)
+        });
+      }
+      messaging.onTokenRefresh(() => {
+        messaging.getToken({ serviceWorkerRegistration: swReg, vapidKey: 'REPLACE_ME_WITH_YOUR_VAPID_KEY' }).then(newToken => {
+          if (newToken) {
+            db.collection('users').doc(this.state.currentUser.id).update({
+              fcmTokens: firebase.firestore.FieldValue.arrayUnion(newToken)
+            }).catch(() => {});
+          }
+        }).catch(() => {});
+      });
+    } catch (e) { /* FCM setup silently ignored */ }
+    messaging.onMessage(payload => {
+      if (payload.notification) {
+        const title = payload.notification.title || 'AleLatina';
+        const body = payload.notification.body || '';
+        if (Notification.permission === 'granted') {
+          new Notification(title, { body, icon: 'images/icon-192.png' });
+        }
+      }
+    });
   },
 
   async postMessage() {
