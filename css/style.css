@@ -462,6 +462,13 @@ textarea { resize: vertical; min-height: 60px; }
 .home-card-pagelle::before { background: linear-gradient(135deg, rgba(34,197,94,0.12), transparent 60%); }
 .home-card-pagelle:hover { border-color: #22c55e; box-shadow: 0 8px 32px rgba(34,197,94,0.2); }
 .home-card-pagelle:hover::before { opacity: 1; }
+.home-card-comunicati {
+  border-top: 3px solid #f59e0b;
+  background: linear-gradient(135deg, rgba(245,158,11,0.06), transparent 60%);
+}
+.home-card-comunicati::before { background: linear-gradient(135deg, rgba(245,158,11,0.12), transparent 60%); }
+.home-card-comunicati:hover { border-color: #f59e0b; box-shadow: 0 8px 32px rgba(245,158,11,0.2); }
+.home-card-comunicati:hover::before { opacity: 1; }
 .home-card-icon {
   position: relative; z-index: 1;
   width: 40px; height: 40px; border-radius: 12px;
@@ -507,6 +514,13 @@ textarea { resize: vertical; min-height: 60px; }
 .home-card-pagelle:hover .home-card-icon {
   box-shadow: 0 4px 24px rgba(34,197,94,0.3);
 }
+.home-card-comunicati .home-card-icon {
+  background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(245,158,11,0.05));
+  color: #f59e0b; box-shadow: 0 4px 16px rgba(245,158,11,0.15);
+}
+.home-card-comunicati:hover .home-card-icon {
+  box-shadow: 0 4px 24px rgba(245,158,11,0.3);
+}
 .home-card h3 { position: relative; z-index: 1; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
 .home-card p { display: none; }
 @media (max-width: 800px) {
@@ -523,6 +537,7 @@ textarea { resize: vertical; min-height: 60px; }
 .home-card-radio .home-card-btn { color: var(--accent3); }
 .home-card-editorials .home-card-btn { color: #a855f7; }
 .home-card-pagelle .home-card-btn { color: #22c55e; }
+.home-card-comunicati .home-card-btn { color: #f59e0b; }
 .home-card:hover .home-card-btn { gap: 14px; }
 .home-card:hover .home-card-btn i { animation: cardArrow 0.6s ease infinite; }
 @keyframes cardArrow {
@@ -553,6 +568,7 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .page-header h2 i { color: var(--accent); -webkit-text-fill-color: initial; margin-right: 10px; }
 .page-header p { color: var(--text-muted); font-size: 14px; margin-top: 6px; }
+.comunicati-legend { font-size: 12px; color: var(--text-muted); font-style: italic; margin-top: 4px; }
 @keyframes pageHeaderIn {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }

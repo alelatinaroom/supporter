@@ -1,12 +1,12 @@
-const CACHE = 'alelatina-v1';
+const CACHE = 'alelatina-v2';
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll([
     '/supporter/',
     '/supporter/index.html',
-    '/supporter/css/style.css?v=55',
+    '/supporter/css/style.css?v=58',
     '/supporter/js/config.js?v=2',
-    '/supporter/js/app.js?v=48',
+    '/supporter/js/app.js?v=51',
     '/supporter/images/logo_white.png',
     '/supporter/images/icon-192.png',
     '/supporter/images/icon-512.png',

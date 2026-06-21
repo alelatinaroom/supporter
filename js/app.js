@@ -211,7 +211,6 @@ const APP = {
       artError: $('artError'),
       artCancelBtn: $('artCancelBtn'),
       artSaveBtn: $('artSaveBtn'),
-      sidebarEditorBtn: $('sidebarEditorBtn'),
       sidebarComunicatoBtn: $('sidebarComunicatoBtn'),
       sideComunicatoBtn: $('sidebarComunicatoBtn'),
       comunicatiPage: $('comunicatiPage'),
@@ -480,8 +479,23 @@ const APP = {
     if (this.el.logoutBtn) this.el.logoutBtn.style.display = '';
     if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = u.role === 'admin' ? '' : 'none';
     const canEdit = (u.role === 'editor' || u.role === 'editorgruppo' || u.role === 'admin');
-    if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = (u.role === 'editor' || u.role === 'editorgruppo' || u.role === 'admin') ? '' : 'none';
     if (this.el.sidebarComunicatoBtn) this.el.sidebarComunicatoBtn.style.display = canEdit ? '' : 'none';
+    // Dynamic "Scrivi Articolo" button — only for editor/admin
+    const existingBtn = document.getElementById('sidebarEditorBtn');
+    if (u.role === 'editor' || u.role === 'admin') {
+      if (!existingBtn && this.el.sidebarAdminBtn) {
+        const btn = document.createElement('a');
+        btn.className = 'sidebar-item';
+        btn.id = 'sidebarEditorBtn';
+        btn.setAttribute('data-page', 'editorPanel');
+        btn.innerHTML = '<i class="fas fa-pen-fancy"></i> Scrivi Articolo';
+        btn.addEventListener('click', () => { this.closeSidebar(); this.navigateTo('editorPanel'); });
+        this.el.sidebarAdminBtn.parentNode.insertBefore(btn, this.el.sidebarAdminBtn);
+        this.el.sidebarItems = document.querySelectorAll('.sidebar-item');
+      }
+    } else if (existingBtn) {
+      existingBtn.remove();
+    }
     this.updateMsgBadge();
     this.updateRadioBadge();
     this.startNotifsListener();
@@ -506,7 +520,8 @@ const APP = {
     if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.style.display = '';
     if (this.el.logoutBtn) this.el.logoutBtn.style.display = 'none';
     if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = 'none';
-    if (this.el.sidebarEditorBtn) this.el.sidebarEditorBtn.style.display = 'none';
+    const seBtn = document.getElementById('sidebarEditorBtn');
+    if (seBtn) seBtn.remove();
     if (this.el.sidebarComunicatoBtn) this.el.sidebarComunicatoBtn.style.display = 'none';
     if (this.el.sidebarMsgBadge) this.el.sidebarMsgBadge.style.display = 'none';
     this.stopNotifsListener();

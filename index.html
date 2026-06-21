@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="images/icon-192.png">
 <link rel="apple-touch-icon" href="images/icon-192.png">
-<link rel="stylesheet" href="css/style.css?v=55">
+<link rel="stylesheet" href="css/style.css?v=58">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -81,7 +81,6 @@
       <a class="sidebar-item" data-page="pagelle"><i class="fas fa-futbol"></i> Pagelle</a>
       <a class="sidebar-item" data-page="comunicati"><i class="fas fa-bullhorn"></i> Comunicati</a>
       <a class="sidebar-item editor-only" data-page="comunicatoEditor" id="sidebarComunicatoBtn" style="display:none"><i class="fas fa-pen-fancy"></i> Scrivi Comunicato</a>
-      <a class="sidebar-item editor-only" data-page="editorPanel" id="sidebarEditorBtn" style="display:none"><i class="fas fa-pen-fancy"></i> Scrivi Articolo</a>
       <a class="sidebar-item admin-only" data-page="admin" id="sidebarAdminBtn" style="display:none"><i class="fas fa-shield"></i> Pannello Admin</a>
     </div>
     <div class="sidebar-theme">
@@ -148,6 +147,12 @@
           <h3>Pagelle</h3>
           <p>Vota i giocatori e scopri top &amp; flop della partita</p>
           <span class="home-card-btn">Vota <i class="fas fa-arrow-right"></i></span>
+        </div>
+        <div class="home-card home-card-comunicati" onclick="APP.enterAsGuestPage('comunicati')">
+          <div class="home-card-icon"><i class="fas fa-bullhorn"></i></div>
+          <h3>Gruppi e comunicati</h3>
+          <p>Comunicati ufficiali dai gruppi organizzati</p>
+          <span class="home-card-btn">Leggi <i class="fas fa-arrow-right"></i></span>
         </div>
       </div>
       <div class="gb-install-card" id="homeInstallCard">
@@ -453,6 +458,7 @@
     <div class="page-header">
       <h2><i class="fas fa-bullhorn"></i> Gruppi e comunicati</h2>
       <p>Comunicati ufficiali e news dai gruppi della comunità nerazzurra</p>
+      <p class="comunicati-legend">Sezione dedicata ai Gruppi Organizzati autogestita</p>
     </div>
     <div id="comunicatiList" class="editorials-list"></div>
   </main>
@@ -824,7 +830,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=48"></script>
+<script src="js/app.js?v=51"></script>
 <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>
 </body>
 </html>
