@@ -156,6 +156,9 @@ const APP = {
       gbNewsSliderTrack: $('gbNewsSliderTrack'),
       gbNewsSliderPrev: $('gbNewsSliderPrev'),
       gbNewsSliderNext: $('gbNewsSliderNext'),
+      homeNewsSliderTrack: $('homeNewsSliderTrack'),
+      homeNewsSliderPrev: $('homeNewsSliderPrev'),
+      homeNewsSliderNext: $('homeNewsSliderNext'),
       gbPagination: $('gbPagination'),
       gbFilters: qsa('.gb-filter'),
       updateCharCount: $('updateCharCount'),
@@ -465,6 +468,16 @@ const APP = {
         if (this.el.gbNewsSliderTrack) this.el.gbNewsSliderTrack.scrollBy({ left: 200, behavior: 'smooth' });
       });
     }
+    if (this.el.homeNewsSliderPrev) {
+      this.el.homeNewsSliderPrev.addEventListener('click', () => {
+        if (this.el.homeNewsSliderTrack) this.el.homeNewsSliderTrack.scrollBy({ left: -200, behavior: 'smooth' });
+      });
+    }
+    if (this.el.homeNewsSliderNext) {
+      this.el.homeNewsSliderNext.addEventListener('click', () => {
+        if (this.el.homeNewsSliderTrack) this.el.homeNewsSliderTrack.scrollBy({ left: 200, behavior: 'smooth' });
+      });
+    }
   },
 
   initAuth() {
@@ -667,7 +680,7 @@ const APP = {
         this.renderGuestbookUI();
         this.startMessagesListener();
         this.renderEditorialSlider();
-        this.loadTmwNews('gbNewsSlider');
+        this.loadTmwNews('gbNewsSlider', true);
         break;
       case 'members':
         this.el.membersPage.style.display = '';
@@ -767,7 +780,7 @@ const APP = {
 
   showHome() {
     if (this.el.homePage) this.el.homePage.style.display = '';
-    this.loadTmwNews();
+    this.loadTmwNews('homeNewsSlider', true);
   },
 
   showAuth() {
@@ -2622,13 +2635,13 @@ const APP = {
     this.openConversation(userId);
   },
 
-  async loadTmwNews(containerId) {
-    const containerIdVal = containerId || 'homeNewsSlider';
-    const isSlider = containerId === 'gbNewsSlider';
-    const container = document.getElementById(containerIdVal);
+  async loadTmwNews(containerId, asSlider) {
+    const cid = containerId || 'homeNewsSlider';
+    const sliderMode = asSlider || false;
+    const container = document.getElementById(cid);
     if (!container) return;
-    const track = isSlider ? document.getElementById('gbNewsSliderTrack') : null;
-    const errorEl = isSlider ? document.getElementById('gbNewsError') : null;
+    const track = sliderMode ? document.getElementById(cid + 'Track') : null;
+    const errorEl = sliderMode ? document.getElementById(cid.replace('Slider', 'Error')) : null;
     const fetchData = async () => {
       const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.tuttolatina.com/rss/');
       const data = await res.json();
@@ -2638,14 +2651,14 @@ const APP = {
     const render = (items) => {
       if (!items.length) {
         const msg = '<div class="home-news-loading">Nessuna notizia al momento</div>';
-        if (isSlider) {
+        if (sliderMode) {
           if (track) track.innerHTML = msg;
         } else {
           container.innerHTML = msg;
         }
         return;
       }
-      if (isSlider) {
+      if (sliderMode) {
         let html = '';
         items.forEach(item => {
           const imgUrl = item.enclosure && item.enclosure.link ? item.enclosure.link : '';
@@ -2682,7 +2695,7 @@ const APP = {
       render(cached.items);
       return;
     }
-    if (isSlider && track) {
+    if (sliderMode && track) {
       track.innerHTML = '<div class="home-news-loading"><i class="fas fa-spinner fa-spin"></i> Caricamento notizie...</div>';
     } else {
       container.innerHTML = '<div class="home-news-loading"><i class="fas fa-spinner fa-spin"></i> Caricamento notizie...</div>';
@@ -2693,7 +2706,7 @@ const APP = {
       render(items);
     } catch (e) {
       const msg = '<div class="news-error">Impossibile caricare le notizie. Riprova pi\u00f9 tardi.</div>';
-      if (isSlider) {
+      if (sliderMode) {
         if (track) track.innerHTML = msg;
       } else {
         container.innerHTML = msg;
