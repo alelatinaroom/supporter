@@ -975,9 +975,10 @@ const APP = {
     if (!this.state.currentUser) return;
     this._notifsUnsub = db.collection('notifications')
       .where('userId', '==', this.state.currentUser.id)
-      .where('read', '==', false)
+      .orderBy('createdAt', 'desc')
       .onSnapshot(snap => {
-        const count = snap.size;
+        let count = 0;
+        snap.forEach(d => { if (!d.data().read) count++; });
         const badge = this.el.notifBadge;
         if (badge) {
           if (count > 0) {
