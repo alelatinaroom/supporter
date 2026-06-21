@@ -433,7 +433,12 @@ const APP = {
     if (this.el.editorialSliderTrack) {
       this.el.editorialSliderTrack.addEventListener('click', e => {
         const slide = e.target.closest('.editorial-slide');
-        if (slide) this.openArticle(slide.dataset.id);
+        if (!slide) return;
+        const type = slide.dataset.type;
+        const id = slide.dataset.id;
+        if (type === 'article') this.openArticle(id);
+        else if (type === 'comunicato') this.openComunicato(id);
+        else if (type === 'match') this.openMatch(id);
       });
     }
     if (this.el.editorialSliderPrev) {
@@ -1467,15 +1472,26 @@ const APP = {
   async renderEditorialSlider() {
     if (!this.el.editorialSlider || !this.el.editorialSliderTrack) return;
     try {
-      const snapshot = await db.collection('articles').orderBy('createdAt', 'desc').limit(8).get();
-      const articles = [];
-      snapshot.forEach(doc => articles.push({ id: doc.id, ...doc.data() }));
-      if (articles.length === 0) { this.el.editorialSlider.style.display = 'none'; return; }
+      const [artSnap, comSnap, matchSnap] = await Promise.all([
+        db.collection('articles').orderBy('createdAt', 'desc').limit(8).get(),
+        db.collection('comunicati').orderBy('createdAt', 'desc').limit(8).get(),
+        db.collection('matches').orderBy('createdAt', 'desc').limit(8).get(),
+      ]);
+      const items = [];
+      artSnap.forEach(doc => items.push({ type: 'article', id: doc.id, ...doc.data() }));
+      comSnap.forEach(doc => items.push({ type: 'comunicato', id: doc.id, ...doc.data() }));
+      matchSnap.forEach(doc => items.push({ type: 'match', id: doc.id, ...doc.data() }));
+      items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      const top = items.slice(0, 8);
+      if (top.length === 0) { this.el.editorialSlider.style.display = 'none'; return; }
       this.el.editorialSlider.style.display = '';
-      this.el.editorialSliderTrack.innerHTML = articles.map(a => {
-        const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : '';
-        return '<div class="editorial-slide" data-id="' + a.id + '">' +
-          '<div class="editorial-slide-title">' + this.escapeHtml(a.title) + '</div>' +
+      const icons = { article: 'fa-newspaper', comunicato: 'fa-bullhorn', match: 'fa-futbol' };
+      this.el.editorialSliderTrack.innerHTML = top.map(item => {
+        const dateStr = item.createdAt ? new Date(item.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : '';
+        const title = item.type === 'match' ? 'vs ' + (item.opponent || '?') : item.title;
+        return '<div class="editorial-slide" data-type="' + item.type + '" data-id="' + item.id + '">' +
+          '<div class="editorial-slide-icon"><i class="fas ' + (icons[item.type] || 'fa-newspaper') + '"></i></div>' +
+          '<div class="editorial-slide-title">' + this.escapeHtml(title) + '</div>' +
           '<div class="editorial-slide-date">' + dateStr + '</div></div>';
       }).join('');
     } catch (e) { console.error('Editorial slider error:', e); }

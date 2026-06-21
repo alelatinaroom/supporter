@@ -651,6 +651,11 @@ textarea { resize: vertical; min-height: 60px; }
 .editorial-slide:hover {
   border-color: var(--accent); background: var(--active-bg);
 }
+.editorial-slide-icon {
+  font-size: 11px; margin-bottom: 3px; color: var(--accent);
+}
+.editorial-slide[data-type="comunicato"] .editorial-slide-icon { color: #f59e0b; }
+.editorial-slide[data-type="match"] .editorial-slide-icon { color: #22c55e; }
 .editorial-slide-title {
   font-size: 13px; font-weight: 600; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
