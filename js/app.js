@@ -81,7 +81,7 @@ const APP = {
     radioData: null,
     allMessages: [],
     messagesPage: 1,
-    messagesPerPage: 15,
+    messagesPerPage: 20,
     avatarCache: {},
     _fetchedAuthors: {},
   },
