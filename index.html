@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="images/icon-192.png">
 <link rel="apple-touch-icon" href="images/icon-192.png">
-<link rel="stylesheet" href="css/style.css?v=63">
+<link rel="stylesheet" href="css/style.css?v=64">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -180,6 +180,14 @@
           </div>
         </div>
       </div>
+      <div class="home-news-section">
+        <div class="home-news-header">
+          <h3><i class="fas fa-newspaper"></i> Notizie da TuttoLatina</h3>
+        </div>
+        <div class="home-news-slider" id="homeNewsSlider">
+          <div class="home-news-loading"><i class="fas fa-spinner fa-spin"></i> Caricamento notizie...</div>
+        </div>
+      </div>
       <p class="home-footer">#ForzaLatina</p>
     </div>
   </main>
@@ -276,6 +284,13 @@
       <div class="editorial-slider-track" id="editorialSliderTrack"></div>
       <button class="editorial-slider-btn editorial-slider-prev" id="editorialSliderPrev"><i class="fas fa-chevron-left"></i></button>
       <button class="editorial-slider-btn editorial-slider-next" id="editorialSliderNext"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div class="editorial-slider news-slider-gb" id="gbNewsSlider">
+      <div class="editorial-slider-header"><i class="fas fa-newspaper"></i> Notizie da TuttoLatina</div>
+      <div class="editorial-slider-track" id="gbNewsSliderTrack"><div class="home-news-loading"><i class="fas fa-spinner fa-spin"></i> Caricamento notizie...</div></div>
+      <button class="editorial-slider-btn editorial-slider-prev" id="gbNewsSliderPrev"><i class="fas fa-chevron-left"></i></button>
+      <button class="editorial-slider-btn editorial-slider-next" id="gbNewsSliderNext"><i class="fas fa-chevron-right"></i></button>
+      <div class="gb-news-error" id="gbNewsError" style="display:none"></div>
     </div>
     <div class="gb-new" id="gbNewPost"></div>
     <div class="gb-filters">

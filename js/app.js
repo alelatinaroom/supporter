@@ -153,6 +153,9 @@ const APP = {
       editorialSliderTrack: $('editorialSliderTrack'),
       editorialSliderPrev: $('editorialSliderPrev'),
       editorialSliderNext: $('editorialSliderNext'),
+      gbNewsSliderTrack: $('gbNewsSliderTrack'),
+      gbNewsSliderPrev: $('gbNewsSliderPrev'),
+      gbNewsSliderNext: $('gbNewsSliderNext'),
       gbPagination: $('gbPagination'),
       gbFilters: qsa('.gb-filter'),
       updateCharCount: $('updateCharCount'),
@@ -452,6 +455,16 @@ const APP = {
         if (this.el.editorialSliderTrack) this.el.editorialSliderTrack.scrollBy({ left: 200, behavior: 'smooth' });
       });
     }
+    if (this.el.gbNewsSliderPrev) {
+      this.el.gbNewsSliderPrev.addEventListener('click', () => {
+        if (this.el.gbNewsSliderTrack) this.el.gbNewsSliderTrack.scrollBy({ left: -200, behavior: 'smooth' });
+      });
+    }
+    if (this.el.gbNewsSliderNext) {
+      this.el.gbNewsSliderNext.addEventListener('click', () => {
+        if (this.el.gbNewsSliderTrack) this.el.gbNewsSliderTrack.scrollBy({ left: 200, behavior: 'smooth' });
+      });
+    }
   },
 
   initAuth() {
@@ -654,6 +667,7 @@ const APP = {
         this.renderGuestbookUI();
         this.startMessagesListener();
         this.renderEditorialSlider();
+        this.loadTmwNews('gbNewsSlider');
         break;
       case 'members':
         this.el.membersPage.style.display = '';
@@ -753,6 +767,7 @@ const APP = {
 
   showHome() {
     if (this.el.homePage) this.el.homePage.style.display = '';
+    this.loadTmwNews();
   },
 
   showAuth() {
@@ -2605,6 +2620,85 @@ const APP = {
     if (userId === this.state.currentUser.id) { this.toast('Non puoi scrivere a te stesso.', 'info'); return; }
     this.navigateTo('messages');
     this.openConversation(userId);
+  },
+
+  async loadTmwNews(containerId) {
+    const containerIdVal = containerId || 'homeNewsSlider';
+    const isSlider = containerId === 'gbNewsSlider';
+    const container = document.getElementById(containerIdVal);
+    if (!container) return;
+    const track = isSlider ? document.getElementById('gbNewsSliderTrack') : null;
+    const errorEl = isSlider ? document.getElementById('gbNewsError') : null;
+    const fetchData = async () => {
+      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.tuttolatina.com/rss/');
+      const data = await res.json();
+      if (data.status !== 'ok') throw new Error('RSS feed error');
+      return data.items.slice(0, 8);
+    };
+    const render = (items) => {
+      if (!items.length) {
+        const msg = '<div class="home-news-loading">Nessuna notizia al momento</div>';
+        if (isSlider) {
+          if (track) track.innerHTML = msg;
+        } else {
+          container.innerHTML = msg;
+        }
+        return;
+      }
+      if (isSlider) {
+        let html = '';
+        items.forEach(item => {
+          const imgUrl = item.enclosure && item.enclosure.link ? item.enclosure.link : '';
+          const cat = item.categories && item.categories.length ? item.categories[0] : '';
+          const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+          html += `<a class="editorial-slide" href="${item.link}" target="_blank" rel="noopener">
+            <span class="editorial-slide-icon news-slide-icon"><i class="fas fa-newspaper"></i></span>
+            ${imgUrl ? `<span class="editorial-slide-img" style="background-image:url(${imgUrl})"></span>` : ''}
+            <span class="editorial-slide-title">${this.escapeHtml(item.title)}</span>
+            <span class="editorial-slide-meta">${date} ${cat ? '· ' + cat : ''}</span>
+          </a>`;
+        });
+        if (track) track.innerHTML = html;
+      } else {
+        let html = '';
+        items.forEach(item => {
+          const imgUrl = item.enclosure && item.enclosure.link ? item.enclosure.link : '';
+          const cat = item.categories && item.categories.length ? item.categories[0] : '';
+          const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+          html += `<a class="news-card" href="${item.link}" target="_blank" rel="noopener">
+            ${imgUrl ? `<img class="news-card-img" src="${imgUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : '<div class="news-card-img" style="display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted)"><i class="fas fa-newspaper"></i></div>'}
+            <div class="news-card-body">
+              <div class="news-card-title">${this.escapeHtml(item.title)}</div>
+              <div class="news-card-date">${date}</div>
+              ${cat ? `<div class="news-card-category">${cat}</div>` : ''}
+            </div>
+          </a>`;
+        });
+        container.innerHTML = html;
+      }
+    };
+    const cached = this._tmwCache;
+    if (cached && Date.now() - cached.ts < 300000) {
+      render(cached.items);
+      return;
+    }
+    if (isSlider && track) {
+      track.innerHTML = '<div class="home-news-loading"><i class="fas fa-spinner fa-spin"></i> Caricamento notizie...</div>';
+    } else {
+      container.innerHTML = '<div class="home-news-loading"><i class="fas fa-spinner fa-spin"></i> Caricamento notizie...</div>';
+    }
+    try {
+      const items = await fetchData();
+      this._tmwCache = { items, ts: Date.now() };
+      render(items);
+    } catch (e) {
+      const msg = '<div class="news-error">Impossibile caricare le notizie. Riprova pi\u00f9 tardi.</div>';
+      if (isSlider) {
+        if (track) track.innerHTML = msg;
+      } else {
+        container.innerHTML = msg;
+      }
+    }
   },
 };
 
