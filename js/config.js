@@ -11,4 +11,3 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
-const messaging = firebase.messaging.isSupported() ? firebase.messaging() : null;

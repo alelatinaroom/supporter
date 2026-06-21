@@ -1,9 +1,0 @@
-{
-  "name": "alelatina-functions",
-  "description": "Cloud Functions for AleLatina push notifications",
-  "dependencies": {
-    "firebase-functions": "^4.9.0",
-    "firebase-admin": "^11.11.0"
-  },
-  "private": true
-}
