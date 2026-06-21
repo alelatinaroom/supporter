@@ -140,6 +140,8 @@ const APP = {
       regError: $('regError'),
       authTabs: qsa('.auth-tab'),
       gbMessageInput: $('gbMessageInput'),
+      gbInstallCard: $('gbInstallCard'),
+      gbInstallClose: $('gbInstallClose'),
       gbPostBtn: $('gbPostBtn'),
       gbNewPost: $('gbNewPost'),
       gbMessages: $('gbMessages'),
@@ -380,6 +382,12 @@ const APP = {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendPrivateMessage(); }
     });
     if (this.el.topNotifBtn) this.el.topNotifBtn.addEventListener('click', () => this.showNotifications());
+    if (this.el.gbInstallClose) this.el.gbInstallClose.addEventListener('click', () => {
+      if (this.el.gbInstallCard) this.el.gbInstallCard.style.display = 'none';
+    });
+    if (this.el.gbInstallCard && window.matchMedia('(display-mode: standalone)').matches) {
+      this.el.gbInstallCard.style.display = 'none';
+    }
   },
 
   initAuth() {
