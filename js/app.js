@@ -1041,6 +1041,9 @@ const APP = {
   },
 
   closeNotifModal() {
+    const el = document.getElementById('notifModal');
+    if (el) el.remove();
+  },
 
   async postMessage() {
     if (!this.state.currentUser) { this.toast('Accedi per scrivere!', 'warning'); return; }
