@@ -4,7 +4,7 @@ self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll([
     '/supporter/',
     '/supporter/index.html',
-    '/supporter/css/style.css?v=60',
+    '/supporter/css/style.css?v=61',
     '/supporter/js/config.js?v=2',
     '/supporter/js/app.js?v=53',
     '/supporter/images/logo_white.png',
