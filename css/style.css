@@ -2011,9 +2011,40 @@ body.has-mini-player { padding-bottom: 56px; }
 .notif-time { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 .modal-notif .modal-body { max-height: 400px; overflow-y: auto; }
 /* ---------- LINK APPROVAL ---------- */
-.gb-link-approved { color: var(--accent2); text-decoration: underline; word-break: break-all; }
-.gb-link-approved:hover { opacity: 0.8; }
-.gb-link-pending { color: var(--text-muted); word-break: break-all; opacity: 0.7; }
+.gb-link-card {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 10px; margin: 2px 0;
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: 8px; font-size: 12px; text-decoration: none;
+  transition: all 0.2s;
+}
+.gb-link-card:hover {
+  border-color: var(--accent); background: var(--active-bg);
+}
+.gb-link-card-domain {
+  color: var(--accent2); font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.gb-link-card-open {
+  color: var(--text-muted); font-size: 10px;
+}
+.gb-link-card:hover .gb-link-card-open { color: var(--accent); }
+.gb-link-pending {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: 8px; font-size: 12px;
+  color: var(--text-muted); opacity: 0.7;
+}
+.gb-link-approve-btn, .gb-link-reject-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 12px; padding: 2px 4px; margin-left: 2px;
+  border-radius: 3px; vertical-align: middle;
+}
+.gb-link-approve-btn { color: #4caf50; }
+.gb-link-approve-btn:hover { background: rgba(76,175,80,0.15); }
+.gb-link-reject-btn { color: #f44336; }
+.gb-link-reject-btn:hover { background: rgba(244,67,54,0.15); }
 .gb-link-badge {
   display: inline-block; font-size: 10px; font-weight: 600;
   background: var(--accent); color: #fff; padding: 1px 6px;

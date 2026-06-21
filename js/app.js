@@ -920,9 +920,13 @@ const APP = {
         const link = m.links[parseInt(idx)];
         if (!link) return match;
         if (link.approved) {
-          return '<a href="' + this.escapeHtml(link.url) + '" target="_blank" rel="noopener" class="gb-link-approved">' + this.escapeHtml(link.url) + '</a>';
+          const domain = this._getDomain(link.url);
+          return '<a href="' + this.escapeHtml(link.url) + '" target="_blank" rel="noopener" class="gb-link-card">' +
+            '<span class="gb-link-card-domain"><i class="fas fa-link"></i> ' + this.escapeHtml(domain) + '</span>' +
+            '<span class="gb-link-card-open"><i class="fas fa-external-link-alt"></i></span></a>';
         } else {
-          let html = '<span class="gb-link-pending">' + this.escapeHtml(link.url) + ' <span class="gb-link-badge">in attesa</span></span>';
+          const domain = this._getDomain(link.url);
+          let html = '<span class="gb-link-pending"><i class="fas fa-link"></i> ' + this.escapeHtml(domain) + ' <span class="gb-link-badge">in attesa</span></span>';
           if (isMod) {
             html += '<button class="gb-link-approve-btn" onclick="APP.approveLink(\'' + m.id + '\',' + idx + ')" title="Approva link"><i class="fas fa-check"></i></button>';
             html += '<button class="gb-link-reject-btn" onclick="APP.rejectLink(\'' + m.id + '\',' + idx + ')" title="Rimuovi link"><i class="fas fa-times"></i></button>';
@@ -932,6 +936,10 @@ const APP = {
       });
     }
     return text;
+  },
+
+  _getDomain(url) {
+    try { return new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return url; }
   },
 
   async renderMessages() {
