@@ -388,6 +388,9 @@ const APP = {
     if (this.el.gbInstallCard && window.matchMedia('(display-mode: standalone)').matches) {
       this.el.gbInstallCard.style.display = 'none';
     }
+    if (this.el.gbInstallCard && window.matchMedia('(display-mode: minimal-ui)').matches) {
+      this.el.gbInstallCard.style.display = 'none';
+    }
   },
 
   initAuth() {
