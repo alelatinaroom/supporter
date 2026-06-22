@@ -2760,3 +2760,18 @@ body.has-mini-player { padding-bottom: 56px; }
   .pitch-player-name { display: none; }
   .pitch-player-avg { font-size: 8px; }
 }
+
+/* Mercato page */
+.news-card-latina {
+  border: 2px solid var(--accent2) !important;
+  background: linear-gradient(135deg, rgba(255,215,0,0.08), transparent 60%) !important;
+  position: relative;
+}
+.news-card-latina-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--accent2); color: #000;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 4px; margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.news-card-latina-badge i { font-size: 8px; }

@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="images/icon-192.png">
 <link rel="apple-touch-icon" href="images/icon-192.png">
-<link rel="stylesheet" href="css/style.css?v=78">
+<link rel="stylesheet" href="css/style.css?v=79">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -81,6 +81,7 @@
       <a class="sidebar-item" data-page="pagelle"><i class="fas fa-futbol"></i> Pagelle</a>
       <a class="sidebar-item" data-page="comunicati"><i class="fas fa-bullhorn"></i> Comunicati</a>
       <a class="sidebar-item" data-page="risultati"><i class="fas fa-trophy"></i> Risultati</a>
+      <a class="sidebar-item" data-page="mercato"><i class="fas fa-cart-shopping"></i> Calciomercato</a>
       <a class="sidebar-item editor-only" data-page="comunicatoEditor" id="sidebarComunicatoBtn" style="display:none"><i class="fas fa-pen-fancy"></i> Scrivi Comunicato</a>
       <a class="sidebar-item" data-page="admin" id="sidebarAdminBtn" style="display:none"><i class="fas fa-shield"></i> Gestione</a>
     </div>
@@ -560,6 +561,15 @@
     <div id="classificaContainer" class="classifica-container" style="display:none"></div>
   </main>
 
+  <!-- PAGE: MERCATO -->
+  <main id="mercatoPage" class="page content-page" style="display:none">
+    <div class="page-header">
+      <h2><i class="fas fa-cart-shopping"></i> Calciomercato Serie C</h2>
+      <p>Ultime notizie di calciomercato dal Girone C e non solo <span id="mercatoSource" style="font-size:12px;color:var(--text-muted);display:block;margin-top:4px">Fonte: TuttoC.com</span></p>
+    </div>
+    <div id="mercatoList" class="risultati-list"></div>
+  </main>
+
   <!-- PAGE: ADMIN PANEL -->
   <main id="adminPage" class="page content-page" style="display:none">
     <div class="page-header">
@@ -938,10 +948,12 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=10"></script>
+<script src="js/app.js?v=11"></script>
 <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>
 </body>
 </html>
+
+
 
 
 

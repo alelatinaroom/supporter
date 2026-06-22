@@ -746,7 +746,7 @@ const APP = {
 
   navigateTo(page) {
     this.closeSidebar();
-    const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage', 'risultatiPage'];
+    const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage', 'risultatiPage', 'mercatoPage'];
     pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
     if (this.el.sidebarItems) {
       this.el.sidebarItems.forEach(i => { i.classList.toggle('active', i.dataset.page === page); });
@@ -821,6 +821,10 @@ const APP = {
       case 'risultati':
         this.el.risultatiPage.style.display = '';
         this.renderRisultati();
+        break;
+      case 'mercato':
+        this.el.mercatoPage.style.display = '';
+        this.loadMercatoNews();
         break;
       case 'profile':
         if (!this.state.currentUser) { this.navigateTo('guestbook'); return; }
@@ -3477,6 +3481,56 @@ const APP = {
         container.innerHTML = msg;
       }
     }
+  },
+
+  async loadMercatoNews() {
+    const container = this.el.mercatoList;
+    if (!container) return;
+    container.innerHTML = '<div class="home-news-loading"><i class="fas fa-spinner fa-spin"></i> Caricamento notizie di calciomercato...</div>';
+    const cached = this._mercatoCache;
+    if (cached && Date.now() - cached.ts < 300000) {
+      this.renderMercatoItems(cached.items, container);
+      return;
+    }
+    try {
+      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.tuttoc.com/rss/');
+      const data = await res.json();
+      if (data.status !== 'ok') throw new Error('RSS feed error');
+      const items = data.items.filter(item =>
+        item.categories && item.categories.some(c =>
+          c === 'Calciomercato' || c === 'Ufficialità' || c === 'Girone C' || c === 'Primo piano'
+        )
+      ).slice(0, 30);
+      this._mercatoCache = { items, ts: Date.now() };
+      this.renderMercatoItems(items, container);
+    } catch (e) {
+      container.innerHTML = '<div class="news-error">Impossibile caricare le notizie. Riprova pi\u00f9 tardi.</div>';
+    }
+  },
+
+  renderMercatoItems(items, container) {
+    if (!items.length) {
+      container.innerHTML = '<div class="home-news-loading">Nessuna notizia al momento</div>';
+      return;
+    }
+    const latinaKeywords = ['latina', 'nerazzurr', 'volpe', 'condò'];
+    let html = '';
+    items.forEach(item => {
+      const imgUrl = item.enclosure && item.enclosure.link ? item.enclosure.link : '';
+      const cat = item.categories && item.categories.length ? item.categories[0] : '';
+      const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+      const isLatina = latinaKeywords.some(k => (item.title + ' ' + (cat || '')).toLowerCase().includes(k));
+      html += `<a class="news-card ${isLatina ? 'news-card-latina' : ''}" href="${item.link}" target="_blank" rel="noopener">
+        ${imgUrl ? `<img class="news-card-img" src="${imgUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : '<div class="news-card-img" style="display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted)"><i class="fas fa-newspaper"></i></div>'}
+        <div class="news-card-body">
+          ${isLatina ? '<div class="news-card-latina-badge"><i class="fas fa-star"></i> Latina</div>' : ''}
+          <div class="news-card-title">${this.escapeHtml(item.title)}</div>
+          <div class="news-card-date">${date}</div>
+          ${cat ? `<div class="news-card-category">${cat}</div>` : ''}
+        </div>
+      </a>`;
+    });
+    container.innerHTML = html;
   },
 };
 
