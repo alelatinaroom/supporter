@@ -1686,11 +1686,12 @@ const APP = {
       this.el.editorialsList.innerHTML = articles.map(a => {
         const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
         const editBtn = canEdit ? '<button class="article-edit-btn" onclick="event.stopPropagation();APP.editArticle(\'' + a.id + '\')"><i class="fas fa-pen"></i></button>' : '';
+        const delBtn = canEdit ? '<button class="article-del-btn" onclick="event.stopPropagation();APP.deleteArticle(\'' + a.id + '\',\'' + this.escapeHtml(a.title).replace(/'/g, "\\'") + '\')"><i class="fas fa-trash"></i></button>' : '';
         return '<div class="article-card" onclick="APP.openArticle(\'' + a.id + '\')">' +
           (a.cover ? '<img src="' + a.cover + '" alt="" class="article-card-img">' : '<div class="article-card-img article-card-img-placeholder"><i class="fas fa-newspaper"></i></div>') +
           '<div class="article-card-body"><h3>' + this.escapeHtml(a.title) + '</h3>' +
           (a.subtitle ? '<p>' + this.escapeHtml(a.subtitle) + '</p>' : '') +
-          '<div class="article-card-meta">' + dateStr + ' \u00B7 ' + this.escapeHtml(a.authorName || 'Anonimo') + '</div>' + editBtn +
+          '<div class="article-card-meta">' + dateStr + ' \u00B7 ' + this.escapeHtml(a.authorName || 'Anonimo') + '</div>' + editBtn + delBtn +
           '</div></div>';
       }).join('');
     } catch (e) { console.error('Editorials error:', e); }
@@ -1755,6 +1756,18 @@ const APP = {
       if (this.el.editorPanelTitle) this.el.editorPanelTitle.textContent = 'Modifica Articolo';
       this.navigateTo('editorPanel');
     } catch (e) { this.toast('Errore nel caricamento dell\'articolo.', 'error'); }
+  },
+
+  async deleteArticle(articleId, title) {
+    if (!this.state.currentUser || (this.state.currentUser.role !== 'editor' && this.state.currentUser.role !== 'admin')) return;
+    if (!confirm('Eliminare l\'editoriale "' + title + '"?\nQuesta azione è irreversibile.')) return;
+    try {
+      await db.collection('articles').doc(articleId).delete();
+      this.toast('Editoriale eliminato.', 'success');
+      this.renderEditorials();
+    } catch (e) {
+      this.toast('Errore durante l\'eliminazione.', 'error');
+    }
   },
 
   async saveArticle() {
