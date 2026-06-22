@@ -3510,12 +3510,14 @@ const APP = {
     const track = sliderMode ? document.getElementById(cid + 'Track') : null;
     const errorEl = sliderMode ? document.getElementById(cid.replace('Slider', 'Error')) : null;
     const fetchData = async () => {
-      const [latinaRes, tuttcRes] = await Promise.all([
+      const [latinaRes, tuttcRes, lcdcRes] = await Promise.all([
         fetch('https://api.rss2json.com/v1/api.json?rss_url=https://latinacalcio1932.it/category/tutte/feed/'),
-        fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.tuttoc.com/rss/')
+        fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.tuttoc.com/rss/'),
+        fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.lacasadic.com/rss/')
       ]);
       const latinaData = await latinaRes.json();
       const tuttcData = await tuttcRes.json();
+      const lcdcData = await lcdcRes.json();
       if (latinaData.status !== 'ok') throw new Error('Latina RSS feed error');
       let allItems = latinaData.items.slice(0, 8);
       // Fetch from TuttoC
@@ -3527,7 +3529,16 @@ const APP = {
         );
         allItems = allItems.concat(mercatoItems);
       }
-      // Fetch Girone C page via CORS proxy for Latina-specific news
+      // Fetch from La Casa di C
+      if (lcdcData.status === 'ok') {
+        const lcdcItems = lcdcData.items.filter(item =>
+          item.categories && item.categories.some(c =>
+            c === 'Calciomercato' || c === 'Girone C' || c === 'Primo piano'
+          ) || (item.title && (item.title.toLowerCase().includes('latina') || item.title.toLowerCase().includes('nerazzurr') || item.title.toLowerCase().includes('volpe')))
+        );
+        allItems = allItems.concat(lcdcItems);
+      }
+      // Scrape Girone C pages for Latina-specific news
       try {
         const gcRes = await fetch('https://corsproxy.io/?url=https://www.tuttoc.com/girone-c/');
         if (gcRes.ok) {
@@ -3555,6 +3566,34 @@ const APP = {
           });
         }
       } catch (e) { /* girone c fetch failed, skip */ }
+      // Scrape La Casa di C Girone C page for Latina-specific news
+      try {
+        const lcdcRes = await fetch('https://corsproxy.io/?url=https://www.lacasadic.com/girone-c/');
+        if (lcdcRes.ok) {
+          const html = await lcdcRes.text();
+          const baseUrl = 'https://www.lacasadic.com';
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const links = doc.querySelectorAll('a');
+          const seen = new Set();
+          links.forEach(a => {
+            const t = (a.textContent || '').trim();
+            if (t.length > 10 && /latina|nerazzurr|volpe/i.test(t) && !seen.has(t)) {
+              seen.add(t);
+              let href = a.getAttribute('href') || '';
+              if (href.startsWith('/')) href = baseUrl + href;
+              else if (href && !href.startsWith('http')) href = baseUrl + '/' + href;
+              else if (!href) href = baseUrl + '/girone-c/';
+              allItems.push({
+                title: t,
+                pubDate: new Date().toISOString(),
+                link: href,
+                categories: ['Girone C', 'Latina']
+              });
+            }
+          });
+        }
+      } catch (e) { /* lacasadic fetch failed, skip */ }
       allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
       return allItems.slice(0, 12);
     };
