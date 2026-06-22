@@ -882,16 +882,30 @@ const APP = {
 
   _startBgRotation() {
     if (this._bgTimer) clearInterval(this._bgTimer);
-    this._bgImages = [
+    const el = document.querySelector('.home-bg');
+    if (!el) return;
+    const images = [
       'url("images/curva-nord.jpg")',
       'url("https://ilmanifesto.it/cdn-cgi/image/format=auto,width=1400/https://static.ilmanifesto.it/2014/06/26/curva-latina-calcio-serie-b.jpg")'
     ];
+    images.forEach((img, i) => {
+      let layer = document.getElementById('homeBgLayer' + i);
+      if (!layer) {
+        layer = document.createElement('div');
+        layer.id = 'homeBgLayer' + i;
+        layer.style.cssText = 'position:absolute;inset:0;background:' + img + ' center/cover no-repeat;transition:opacity 1s ease;z-index:' + (1 - i);
+        el.insertBefore(layer, el.firstChild);
+      }
+    });
     this._bgIdx = 0;
-    const el = document.querySelector('.home-bg');
-    if (!el) return;
+    const update = () => {
+      document.getElementById('homeBgLayer0').style.opacity = this._bgIdx === 0 ? '1' : '0';
+      document.getElementById('homeBgLayer1').style.opacity = this._bgIdx === 1 ? '1' : '0';
+    };
+    update();
     this._bgTimer = setInterval(() => {
-      this._bgIdx = (this._bgIdx + 1) % this._bgImages.length;
-      el.style.background = this._bgImages[this._bgIdx] + ' center/cover no-repeat';
+      this._bgIdx = (this._bgIdx + 1) % 2;
+      update();
     }, 10000);
   },
 
