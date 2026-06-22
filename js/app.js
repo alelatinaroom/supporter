@@ -271,6 +271,8 @@ const APP = {
       risultatiStats: $('risultatiStats'),
       risultatiList: $('risultatiList'),
       classificaContainer: $('classificaContainer'),
+      mercatoPage: $('mercatoPage'),
+      mercatoList: $('mercatoList'),
       adminPagelle: $('adminPagelle'),
       adminMatchCount: $('adminMatchCount'),
       adminMatchList: $('adminMatchList'),
@@ -875,7 +877,7 @@ const APP = {
   showAuth() {
     this.state.redirectAfterLogin = this.getCurrentPage();
     this.closeSidebar();
-    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage'];
+    const pages = ['homePage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage', 'risultatiPage', 'mercatoPage'];
     pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
     if (this.el.sidebarItems) {
       this.el.sidebarItems.forEach(i => { i.classList.remove('active'); });
@@ -887,7 +889,7 @@ const APP = {
   },
 
   getCurrentPage() {
-    const pages = ['guestbook', 'members', 'rules', 'radio', 'editorials', 'comunicati', 'pagelle', 'messages'];
+    const pages = ['guestbook', 'members', 'rules', 'radio', 'editorials', 'comunicati', 'pagelle', 'messages', 'risultati', 'mercato'];
     for (const p of pages) {
       if (this.el[p + 'Page'] && this.el[p + 'Page'].style.display !== 'none') return p;
     }
