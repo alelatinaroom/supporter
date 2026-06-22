@@ -244,6 +244,7 @@ const APP = {
       adminRosaCount: $('adminRosaCount'),
       adminRosaList: $('adminRosaList'),
       adminAddPlayerBtn: $('adminAddPlayerBtn'),
+      adminImportRosaBtn: $('adminImportRosaBtn'),
       playerModal: $('playerModal'),
       playerModalTitle: $('playerModalTitle'),
       playerModalClose: $('playerModalClose'),
