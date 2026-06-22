@@ -149,8 +149,7 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .splash-title {
   font-size: 42px; font-weight: 900;
-  background: linear-gradient(135deg, #fff 30%, var(--accent));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  color: #fff;
   letter-spacing: 2px;
 }
 .splash-subtitle {
@@ -371,8 +370,7 @@ textarea { resize: vertical; min-height: 60px; }
 .home-badge svg { display: block; }
 .home-title {
   font-size: 38px; font-weight: 900;
-  background: linear-gradient(135deg, #fff 30%, var(--accent));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  color: #fff;
   letter-spacing: 2px;
 }
 .home-subtitle {
@@ -617,8 +615,7 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .page-header h2 {
   font-size: 26px; font-weight: 800;
-  background: linear-gradient(135deg, var(--text) 60%, var(--accent));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  color: var(--text);
   display: inline-block;
 }
 .page-header h2 i { color: var(--accent); -webkit-text-fill-color: initial; margin-right: 10px; }
