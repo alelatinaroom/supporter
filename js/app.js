@@ -531,7 +531,7 @@ const APP = {
     if (this.el.sidebarRole) this.el.sidebarRole.textContent = roleMap[u.role] || 'Tifoso';
     if (this.el.sidebarLoginBtn) this.el.sidebarLoginBtn.style.display = 'none';
     if (this.el.logoutBtn) this.el.logoutBtn.style.display = '';
-    if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = u.role === 'admin' ? '' : 'none';
+    if (this.el.sidebarAdminBtn) this.el.sidebarAdminBtn.style.display = (u.role === 'admin' || u.role === 'editor') ? '' : 'none';
     const canEdit = (u.role === 'editor' || u.role === 'editorgruppo' || u.role === 'admin');
     if (this.el.sidebarComunicatoBtn) this.el.sidebarComunicatoBtn.style.display = canEdit ? '' : 'none';
     // Dynamic "Scrivi Articolo" button — only for editor/admin
@@ -692,10 +692,11 @@ const APP = {
         this.el.rulesPage.style.display = '';
         break;
       case 'admin':
-        if (this.state.currentUser && this.state.currentUser.role === 'admin') {
+        if (this.state.currentUser && (this.state.currentUser.role === 'admin' || this.state.currentUser.role === 'editor')) {
           this.el.adminPage.style.display = '';
           this.renderAdminMessages();
           this.renderAdminUsers();
+          this.filterAdminTabs();
         }
         break;
       case 'radio':
@@ -2245,6 +2246,29 @@ const APP = {
   },
 
   /* ---------- ADMIN: MESSAGES ---------- */
+  filterAdminTabs() {
+    const userRole = this.state.currentUser ? this.state.currentUser.role : '';
+    const adminOnly = ['messages', 'users'];
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+      const atab = tab.dataset.atab;
+      if (userRole === 'editor' && adminOnly.includes(atab)) {
+        tab.style.display = 'none';
+      } else {
+        tab.style.display = '';
+      }
+    });
+    if (userRole === 'editor') {
+      const firstTab = document.querySelector('.admin-tab:not([style*="display: none"])');
+      if (firstTab) {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        firstTab.classList.add('active');
+        const section = document.getElementById('admin' + firstTab.dataset.atab.charAt(0).toUpperCase() + firstTab.dataset.atab.slice(1));
+        if (section) section.classList.add('active');
+      }
+    }
+  },
+
   async renderAdminMessages() {
     const messages = [];
     try {
