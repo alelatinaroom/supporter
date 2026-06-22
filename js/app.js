@@ -256,7 +256,8 @@ const APP = {
       mmOpponent: $('mmOpponent'),
       mmDate: $('mmDate'),
       mmResult: $('mmResult'),
-      mmPlayers: $('mmPlayers'),
+      mmPlayersList: $('mmPlayersList'),
+      mmAddPlayerRowBtn: $('mmAddPlayerRowBtn'),
       mmError: $('mmError'),
       mmCancelBtn: $('mmCancelBtn'),
       mmSaveBtn: $('mmSaveBtn'),
@@ -391,6 +392,7 @@ const APP = {
     if (this.el.matchModal) this.el.matchModal.addEventListener('click', e => {
       if (e.target === this.el.matchModal) this.adminCloseMatchModal();
     });
+    if (this.el.mmAddPlayerRowBtn) this.el.mmAddPlayerRowBtn.addEventListener('click', () => this.addPlayerRow());
     if (this.el.radioPlayBtn) this.el.radioPlayBtn.addEventListener('click', () => this.radioPlay());
     if (this.el.radioStopBtn) this.el.radioStopBtn.addEventListener('click', () => this.radioStop());
     if (this.el.miniPlayerStop) this.el.miniPlayerStop.addEventListener('click', () => this.radioStop());
@@ -1946,13 +1948,81 @@ const APP = {
     }).join('');
   },
 
+  collectPlayersFromRows() {
+    const rows = this.el.mmPlayersList.querySelectorAll('.mm-player-row');
+    const players = [];
+    rows.forEach(row => {
+      const numInput = row.querySelector('.mm-num-input');
+      const nameInput = row.querySelector('.mm-name-input');
+      const roleSelect = row.querySelector('.mm-role-select');
+      const name = nameInput ? nameInput.value.trim() : '';
+      if (!name) return;
+      players.push({
+        number: numInput ? numInput.value.trim() : '',
+        name: name,
+        position: roleSelect ? roleSelect.value : 'C',
+      });
+    });
+    return players;
+  },
+
+  renderPlayerRows(players) {
+    const container = this.el.mmPlayersList;
+    if (!container) return;
+    container.innerHTML = '';
+    if (!players || players.length === 0) {
+      players = [{ number: '', name: '', position: 'C' }];
+    }
+    const roleLabel = { P: 'Portiere', D: 'Difensore', C: 'Centrocampista', A: 'Attaccante' };
+    players.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'mm-player-row';
+      row.dataset.id = 'mm_row_' + i;
+      row.innerHTML =
+        '<input type="text" class="form-input mm-num-input" placeholder="N." value="' + this.escapeHtml(p.number || '') + '">' +
+        '<input type="text" class="form-input mm-name-input" placeholder="Nome giocatore" value="' + this.escapeHtml(p.name || '') + '">' +
+        '<select class="form-input mm-role-select">' +
+          '<option value="P"' + (p.position === 'P' ? ' selected' : '') + '>Portiere</option>' +
+          '<option value="D"' + (p.position === 'D' ? ' selected' : '') + '>Difensore</option>' +
+          '<option value="C"' + (p.position === 'C' || !p.position ? ' selected' : '') + '>Centrocampista</option>' +
+          '<option value="A"' + (p.position === 'A' ? ' selected' : '') + '>Attaccante</option>' +
+        '</select>' +
+        '<button class="btn btn-danger btn-sm mm-remove-btn" type="button" title="Rimuovi"><i class="fas fa-times"></i></button>';
+      const removeBtn = row.querySelector('.mm-remove-btn');
+      removeBtn.addEventListener('click', () => {
+        row.remove();
+      });
+      container.appendChild(row);
+    });
+  },
+
+  addPlayerRow() {
+    const container = this.el.mmPlayersList;
+    if (!container) return;
+    const row = document.createElement('div');
+    row.className = 'mm-player-row';
+    row.innerHTML =
+      '<input type="text" class="form-input mm-num-input" placeholder="N." value="">' +
+      '<input type="text" class="form-input mm-name-input" placeholder="Nome giocatore" value="">' +
+      '<select class="form-input mm-role-select">' +
+        '<option value="P">Portiere</option>' +
+        '<option value="D">Difensore</option>' +
+        '<option value="C" selected>Centrocampista</option>' +
+        '<option value="A">Attaccante</option>' +
+      '</select>' +
+      '<button class="btn btn-danger btn-sm mm-remove-btn" type="button" title="Rimuovi"><i class="fas fa-times"></i></button>';
+    const removeBtn = row.querySelector('.mm-remove-btn');
+    removeBtn.addEventListener('click', () => { row.remove(); });
+    container.appendChild(row);
+  },
+
   adminOpenAddMatch() {
     this.state._editingMatchId = null;
     if (this.el.matchModalTitle) this.el.matchModalTitle.innerHTML = '<i class="fas fa-futbol"></i> Nuova Partita';
     if (this.el.mmOpponent) this.el.mmOpponent.value = '';
     if (this.el.mmDate) this.el.mmDate.value = new Date().toISOString().slice(0, 10);
     if (this.el.mmResult) this.el.mmResult.value = '';
-    if (this.el.mmPlayers) this.el.mmPlayers.value = '';
+    this.renderPlayerRows([]);
     if (this.el.mmError) this.el.mmError.textContent = '';
     if (this.el.matchModal) this.el.matchModal.style.display = '';
   },
@@ -1968,7 +2038,7 @@ const APP = {
         if (this.el.mmOpponent) this.el.mmOpponent.value = m.opponent || '';
         if (this.el.mmDate) this.el.mmDate.value = m.date || '';
         if (this.el.mmResult) this.el.mmResult.value = m.result || '';
-        if (this.el.mmPlayers) this.el.mmPlayers.value = (m.players || []).map(p => p.number + '.' + p.name + '.' + (p.position || '')).join('\n');
+        this.renderPlayerRows(m.players || []);
         if (this.el.mmError) this.el.mmError.textContent = '';
         if (this.el.matchModal) this.el.matchModal.style.display = '';
       } catch (e) { console.error(e); }
@@ -1980,20 +2050,17 @@ const APP = {
       const opponent = this.el.mmOpponent.value.trim();
       const date = this.el.mmDate.value;
       const result = this.el.mmResult.value.trim();
-      const playersRaw = this.el.mmPlayers.value.trim();
+      const players = this.collectPlayersFromRows();
       if (this.el.mmError) this.el.mmError.textContent = '';
       if (!opponent) { if (this.el.mmError) this.el.mmError.textContent = 'Inserisci l\'avversario.'; return; }
-      if (!playersRaw) { if (this.el.mmError) this.el.mmError.textContent = 'Inserisci almeno un giocatore.'; return; }
-      const players = playersRaw.split('\n').filter(line => line.trim()).map(line => {
-        const parts = line.split('.');
-        return {
-          id: 'pl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-          number: parts[0] ? parts[0].trim() : '?',
-          name: parts[1] ? parts[1].trim() : '?',
-          position: parts[2] ? parts[2].trim().toUpperCase() : 'C',
-          ratings: {},
-        };
-      });
+      if (players.length === 0) { if (this.el.mmError) this.el.mmError.textContent = 'Aggiungi almeno un giocatore.'; return; }
+      const playersData = players.map(p => ({
+        id: 'pl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        number: p.number || '?',
+        name: p.name,
+        position: p.position.toUpperCase(),
+        ratings: {},
+      }));
       try {
         if (this.state._editingMatchId) {
           const doc = await db.collection('matches').doc(this.state._editingMatchId).get();
@@ -2001,10 +2068,10 @@ const APP = {
           const existing = doc.data();
           const oldRatings = {};
           (existing.players || []).forEach(p => { if (p.ratings) oldRatings[p.name] = p.ratings; });
-          players.forEach(p => { if (oldRatings[p.name]) p.ratings = oldRatings[p.name]; });
-          await db.collection('matches').doc(this.state._editingMatchId).update({ opponent, date, result, players });
+          playersData.forEach(p => { if (oldRatings[p.name]) p.ratings = oldRatings[p.name]; });
+          await db.collection('matches').doc(this.state._editingMatchId).update({ opponent, date, result, players: playersData });
         } else {
-          await db.collection('matches').add({ opponent, date, result, players, createdAt: Date.now(), closed: false });
+          await db.collection('matches').add({ opponent, date, result, players: playersData, createdAt: Date.now(), closed: false });
         }
         this.state._editingMatchId = null;
         this.adminCloseMatchModal();

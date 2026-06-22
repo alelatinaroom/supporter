@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="images/icon-192.png">
 <link rel="apple-touch-icon" href="images/icon-192.png">
-<link rel="stylesheet" href="css/style.css?v=64">
+<link rel="stylesheet" href="css/style.css?v=65">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -731,9 +731,11 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Giocatori (uno per riga: Numero.Nome.Ruolo — es. 9.Marco Rossi.A)</label>
-          <textarea id="mmPlayers" class="form-input" rows="8" placeholder="1.Giuseppe De Luca.P&#10;9.Marco Rossi.A&#10;4.Luca Bianchi.D&#10;7.Antonio Verdi.C"></textarea>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:4px">Ruoli: P=Portiere, D=Difensore, C=Centrocampista, A=Attaccante</p>
+          <label>Giocatori</label>
+          <div id="mmPlayersList" class="mm-players-list"></div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-ghost btn-sm" id="mmAddPlayerRowBtn" type="button"><i class="fas fa-plus"></i> Aggiungi</button>
+          </div>
         </div>
         <p id="mmError" class="form-error"></p>
       </div>
@@ -850,7 +852,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=56"></script>
+<script src="js/app.js?v=57"></script>
 <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>
 </body>
 </html>
