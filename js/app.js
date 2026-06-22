@@ -2369,7 +2369,7 @@ const APP = {
   async renderRosaList() {
     const players = [];
     try {
-      const snap = await db.collection('players_db').orderBy('number', 'asc').get();
+      const snap = await db.collection('players_db').get();
       snap.forEach(d => players.push({ id: d.id, ...d.data() }));
     } catch (e) { console.error(e); }
     const container = this.el.adminRosaList;
@@ -2379,20 +2379,35 @@ const APP = {
       container.innerHTML = '<div class="gb-empty"><i class="fas fa-users-slash"></i><p>Nessun giocatore nella rosa. Aggiungi il primo!</p></div>';
       return;
     }
-    const roleLabel = { P: 'Portiere', D: 'Difensore', C: 'Centrocampista', A: 'Attaccante' };
-    container.innerHTML = players.map(p => {
-      return '<div class="rosa-player-item">' +
+    const roleOrder = { P: 0, D: 1, C: 2, A: 3 };
+    const roleLabel = { P: 'Portieri', D: 'Difensori', C: 'Centrocampisti', A: 'Attaccanti' };
+    players.sort((a, b) => {
+      const ra = roleOrder[a.position] !== undefined ? roleOrder[a.position] : 99;
+      const rb = roleOrder[b.position] !== undefined ? roleOrder[b.position] : 99;
+      if (ra !== rb) return ra - rb;
+      const na = parseInt(a.number, 10) || 999;
+      const nb = parseInt(b.number, 10) || 999;
+      return na - nb;
+    });
+    let html = '';
+    let currentRole = '';
+    for (const p of players) {
+      if (p.position !== currentRole) {
+        currentRole = p.position;
+        html += '<div class="rosa-role-header">' + (roleLabel[currentRole] || currentRole) + '</div>';
+      }
+      html += '<div class="rosa-player-item">' +
         '<div class="rosa-player-num">' + (p.number || '?') + '</div>' +
         '<div class="rosa-player-info">' +
           '<div class="rosa-player-name">' + this.escapeHtml(p.name) + '</div>' +
-          '<div class="rosa-player-role">' + (roleLabel[p.position] || p.position) + '</div>' +
         '</div>' +
         '<div class="rosa-player-actions">' +
           '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditPlayer(\'' + p.id + '\')"><i class="fas fa-pen"></i></button>' +
           '<button class="btn btn-danger btn-sm" onclick="APP.adminDeletePlayer(\'' + p.id + '\')"><i class="fas fa-trash"></i></button>' +
         '</div>' +
       '</div>';
-    }).join('');
+    }
+    container.innerHTML = html;
   },
 
   adminOpenAddPlayer() {
@@ -2485,7 +2500,7 @@ const APP = {
 
   async loadRosaToMatch() {
     try {
-      const snap = await db.collection('players_db').orderBy('number', 'asc').get();
+      const snap = await db.collection('players_db').get();
       const players = [];
       snap.forEach(d => players.push(d.data()));
       if (players.length === 0) {
