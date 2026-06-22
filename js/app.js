@@ -1302,7 +1302,10 @@ const APP = {
           const time = n.createdAt ? new Date(n.createdAt).toLocaleString('it-IT') : '';
           const icon = n.type === 'pm' ? 'fa-envelope' : 'fa-at';
           const action = n.type === 'pm' ? 'ti ha mandato un messaggio privato' : 'ti ha menzionato nel muro';
-          html += '<li class="notif-item' + (n.read ? '' : ' notif-unread') + '">' +
+          const clickAttr = n.type === 'pm' && n.fromId
+            ? 'onclick="APP.closeNotifModal();APP.navigateTo(\'messages\');setTimeout(()=>APP.openConversation(\'' + n.fromId + '\'),100)"'
+            : 'onclick="APP.closeNotifModal();APP.navigateTo(\'guestbook\')"';
+          html += '<li class="notif-item' + (n.read ? '' : ' notif-unread') + '" style="cursor:pointer" ' + clickAttr + '>' +
             '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
             '<div class="notif-body">' +
             '<div class="notif-text"><strong>' + this.escapeHtml(n.fromName) + '</strong> ' + action + ':</div>' +
