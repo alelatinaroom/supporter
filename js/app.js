@@ -897,7 +897,10 @@ const APP = {
   },
 
   enterAsGuest() { this.state.redirectAfterLogin = null; this.navigateTo('guestbook'); },
-  enterAsUser() { this.showAuth(); },
+  enterAsUser() {
+    if (this.state.currentUser) { this.navigateTo('guestbook'); return; }
+    this.showAuth();
+  },
   enterAsGuestPage(page) { this.state.redirectAfterLogin = null; this.navigateTo(page); },
 
   /* ---------- THEME ---------- */
