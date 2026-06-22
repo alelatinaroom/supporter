@@ -886,27 +886,34 @@ const APP = {
     if (!el) return;
     const images = [
       'url("images/curva-nord.jpg")',
-      'url("https://ilmanifesto.it/cdn-cgi/image/format=auto,width=1400/https://static.ilmanifesto.it/2014/06/26/curva-latina-calcio-serie-b.jpg")'
+      'url("https://ilmanifesto.it/cdn-cgi/image/format=auto,width=1400/https://static.ilmanifesto.it/2014/06/26/curva-latina-calcio-serie-b.jpg")',
+      'url("https://www.pianetaempoli.it/wp-content/uploads/2013/08/sbandierata-tifosi-latina-1200x800.jpg")',
+      'url("https://www.latinaquotidiano.it/wp-content/uploads/2016/10/curva_stadio_francioni_latina_calcio.jpg")'
     ];
     images.forEach((img, i) => {
       let layer = document.getElementById('homeBgLayer' + i);
       if (!layer) {
         layer = document.createElement('div');
         layer.id = 'homeBgLayer' + i;
-        layer.style.cssText = 'position:absolute;inset:0;background:' + img + ' center/cover no-repeat;transition:opacity 1s ease;z-index:' + (1 - i) + ';pointer-events:none';
+        layer.style.cssText = 'position:absolute;inset:0;background:' + img + ' center/cover no-repeat;transition:opacity 1s ease;z-index:1;pointer-events:none';
         el.insertBefore(layer, el.firstChild);
       }
     });
+    for (let i = images.length; i < 4; i++) {
+      const layer = document.getElementById('homeBgLayer' + i);
+      if (layer) layer.remove();
+    }
     this._bgIdx = 0;
     const update = () => {
-      document.getElementById('homeBgLayer0').style.opacity = this._bgIdx === 0 ? '1' : '0';
-      document.getElementById('homeBgLayer1').style.opacity = this._bgIdx === 1 ? '1' : '0';
+      for (let i = 0; i < images.length; i++) {
+        document.getElementById('homeBgLayer' + i).style.opacity = i === this._bgIdx ? '1' : '0';
+      }
     };
     update();
     this._bgTimer = setInterval(() => {
-      this._bgIdx = (this._bgIdx + 1) % 2;
+      this._bgIdx = (this._bgIdx + 1) % images.length;
       update();
-    }, 10000);
+    }, 8000);
   },
 
   _startHomeSliderAuto() {
