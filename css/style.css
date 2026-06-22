@@ -384,9 +384,9 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .home-cards {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-top: 32px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-top: 28px;
 }
 .home-card {
   animation: cardIn 0.5s cubic-bezier(0.4,0,0.2,1) backwards;
@@ -396,14 +396,15 @@ textarea { resize: vertical; min-height: 60px; }
 .home-card:nth-child(3) { animation-delay: 0.2s; }
 .home-card:nth-child(4) { animation-delay: 0.25s; }
 .home-card:nth-child(5) { animation-delay: 0.3s; }
+.home-card:nth-child(6) { animation-delay: 0.35s; }
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .home-cards { grid-template-columns: repeat(3, 1fr); }
 }
-@media (max-width: 500px) {
+@media (max-width: 550px) {
   .home-cards { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 360px) {
@@ -412,7 +413,7 @@ textarea { resize: vertical; min-height: 60px; }
 .home-card {
   position: relative; overflow: hidden;
   background: var(--card-bg); border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm); padding: 18px 14px 16px;
+  border-radius: var(--radius-sm); padding: 14px 10px 12px;
   cursor: pointer; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); text-align: center;
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
@@ -471,9 +472,9 @@ textarea { resize: vertical; min-height: 60px; }
 .home-card-comunicati:hover::before { opacity: 1; }
 .home-card-icon {
   position: relative; z-index: 1;
-  width: 40px; height: 40px; border-radius: 12px;
+  width: 34px; height: 34px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px; margin: 0 auto 10px;
+  font-size: 15px; margin: 0 auto 6px;
   transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
 }
 .home-card:hover .home-card-icon {
@@ -521,15 +522,15 @@ textarea { resize: vertical; min-height: 60px; }
 .home-card-comunicati:hover .home-card-icon {
   box-shadow: 0 4px 24px rgba(245,158,11,0.3);
 }
-.home-card h3 { position: relative; z-index: 1; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.home-card h3 { position: relative; z-index: 1; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
 .home-card p { display: none; }
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .home-card p { display: block; position: relative; z-index: 1; font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px; }
 }
 .home-card-btn {
   position: relative; z-index: 1;
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 600;
+  font-size: 10px; font-weight: 600;
   letter-spacing: 0.3px; transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 .home-card-guest .home-card-btn { color: var(--accent); }
