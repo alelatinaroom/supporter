@@ -1291,14 +1291,15 @@ const APP = {
       const notifs = [];
       snap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
       notifs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      const unread = notifs.filter(n => !n.read);
       let html = '<div class="modal-overlay" onclick="APP.closeNotifModal()"><div class="modal modal-notif" onclick="event.stopPropagation()">' +
         '<div class="modal-header"><h3><i class="fas fa-bell"></i> Notifiche</h3><button class="modal-close" onclick="APP.closeNotifModal()">&times;</button></div>' +
         '<div class="modal-body">';
-      if (notifs.length === 0) {
+      if (unread.length === 0) {
         html += '<div class="radio-empty-state"><i class="fas fa-bell-slash"></i><p>Nessuna notifica.</p></div>';
       } else {
         html += '<ul class="notif-list">';
-        for (const n of notifs) {
+        for (const n of unread) {
           const time = n.createdAt ? new Date(n.createdAt).toLocaleString('it-IT') : '';
           const icon = n.type === 'pm' ? 'fa-envelope' : 'fa-at';
           const action = n.type === 'pm' ? 'ti ha mandato un messaggio privato' : 'ti ha menzionato nel muro';
