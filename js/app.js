@@ -532,6 +532,17 @@ const APP = {
         }
       });
     });
+    // Click risultato to open match pagelle
+    if (this.el.risultatiList) {
+      this.el.risultatiList.addEventListener('click', (e) => {
+        const item = e.target.closest('.risultati-item');
+        if (!item) return;
+        const opponent = item.dataset.opponent;
+        const date = item.dataset.date;
+        const score = item.dataset.score;
+        if (opponent) this.openMatchFromRisultati(opponent, date, score);
+      });
+    }
   },
 
   initAuth() {
@@ -2108,7 +2119,7 @@ const APP = {
         const logoUrl = 'https://sport.virgilio.it/img/loghi/' + m.opponentClass + '.svg';
         const latinaScore = m.latinaScore;
         const oppScore = m.opponentScore;
-        return '<div class="risultati-item ' + m.result + '">' +
+        return '<div class="risultati-item ' + m.result + '" data-opponent="' + m.opponent.replace(/"/g, '&quot;') + '" data-date="' + m.date + '" data-score="' + m.latinaScore + '-' + m.opponentScore + '">' +
           '<div class="risultati-date">' + dateStr + '</div>' +
           '<div class="risultati-logo"><img src="' + logoUrl + '" alt="" loading="lazy" onerror="this.style.display=\'none\'"></div>' +
           '<div class="risultati-opponent">' + this.escapeHtml(m.opponent) + '</div>' +
@@ -2176,6 +2187,40 @@ const APP = {
       html += '<div class="classifica-note">* Trapani: -20 punti di penalizzazione</div>';
       container.innerHTML = html;
     } catch (e) { console.error('Classifica error:', e); container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Errore caricamento classifica.<br><small>' + this.escapeHtml(e.message) + '</small></p></div>'; }
+  },
+
+  openMatchFromRisultati(opponent, date, score) {
+    (async () => {
+      try {
+        const snap = await db.collection('matches').where('opponent', '==', opponent).orderBy('createdAt', 'desc').limit(1).get();
+        if (!snap.empty) {
+          this.openMatch(snap.docs[0].id);
+          return;
+        }
+      } catch (e) { /* query might fail if no index, fallback */ }
+      // Match not found: open admin pagelle with pre-filled data (admin/editor only)
+      if (!this.state.currentUser || !['admin', 'editor'].includes(this.state.currentUser.role)) {
+        this.toast('Partita non ancora presente in Pagelle. Contatta l\'amministratore.', 'warning');
+        return;
+      }
+      this.navigateTo('admin');
+      // Activate pagelle tab
+      const pagelleTab = document.querySelector('.admin-tab[data-atab="pagelle"]');
+      if (pagelleTab) pagelleTab.click();
+      // Pre-fill modal
+      setTimeout(() => {
+        this.adminOpenAddMatch();
+        if (this.el.mmOpponent) this.el.mmOpponent.value = opponent;
+        if (this.el.mmDate && date) {
+          // Convert dd/mm/yyyy to yyyy-mm-dd
+          const parts = date.split('/');
+          if (parts.length === 3) {
+            this.el.mmDate.value = parts[2] + '-' + parts[1] + '-' + parts[0];
+          }
+        }
+        if (this.el.mmResult) this.el.mmResult.value = score || '';
+      }, 300);
+    })();
   },
 
   /* ---------- ADMIN: MATCHES ---------- */
