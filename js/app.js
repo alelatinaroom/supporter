@@ -1326,6 +1326,7 @@ const APP = {
         const batch = db.batch();
         unreadIds.forEach(id => batch.update(db.collection('notifications').doc(id), { read: true }));
         await batch.commit();
+        if (this.el.notifBadge) this.el.notifBadge.style.display = 'none';
       }
     } catch (e) { this.toast('Errore nel caricamento notifiche.', 'error'); }
   },
