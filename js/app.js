@@ -240,6 +240,19 @@ const APP = {
       adminComunicati: $('adminComunicati'),
       adminComunicatiList: $('adminComunicatiList'),
       adminComunicatiCount: $('adminComunicatiCount'),
+      adminRosa: $('adminRosa'),
+      adminRosaCount: $('adminRosaCount'),
+      adminRosaList: $('adminRosaList'),
+      adminAddPlayerBtn: $('adminAddPlayerBtn'),
+      playerModal: $('playerModal'),
+      playerModalTitle: $('playerModalTitle'),
+      playerModalClose: $('playerModalClose'),
+      pmName: $('pmName'),
+      pmNumber: $('pmNumber'),
+      pmPosition: $('pmPosition'),
+      pmPlayerError: $('pmPlayerError'),
+      pmPlayerCancelBtn: $('pmPlayerCancelBtn'),
+      pmPlayerSaveBtn: $('pmPlayerSaveBtn'),
       pagellePage: $('pagellePage'),
       pagelleMatchList: $('pagelleMatchList'),
       matchPage: $('matchPage'),
@@ -258,6 +271,7 @@ const APP = {
       mmResult: $('mmResult'),
       mmPlayersList: $('mmPlayersList'),
       mmAddPlayerRowBtn: $('mmAddPlayerRowBtn'),
+      mmLoadRosaBtn: $('mmLoadRosaBtn'),
       mmError: $('mmError'),
       mmCancelBtn: $('mmCancelBtn'),
       mmSaveBtn: $('mmSaveBtn'),
@@ -366,6 +380,9 @@ const APP = {
         } else if (tab.dataset.atab === 'comunicati') {
           this.el.adminComunicati.classList.add('active');
           this.renderAdminComunicati();
+        } else if (tab.dataset.atab === 'rosa') {
+          this.el.adminRosa.classList.add('active');
+          this.renderRosaList();
         }
       });
     });
@@ -393,6 +410,17 @@ const APP = {
       if (e.target === this.el.matchModal) this.adminCloseMatchModal();
     });
     if (this.el.mmAddPlayerRowBtn) this.el.mmAddPlayerRowBtn.addEventListener('click', () => this.addPlayerRow());
+    if (this.el.mmLoadRosaBtn) this.el.mmLoadRosaBtn.addEventListener('click', () => this.loadRosaToMatch());
+
+    // Admin Rosa
+    if (this.el.adminAddPlayerBtn) this.el.adminAddPlayerBtn.addEventListener('click', () => this.adminOpenAddPlayer());
+    if (this.el.playerModalClose) this.el.playerModalClose.addEventListener('click', () => this.adminClosePlayerModal());
+    if (this.el.pmPlayerCancelBtn) this.el.pmPlayerCancelBtn.addEventListener('click', () => this.adminClosePlayerModal());
+    if (this.el.pmPlayerSaveBtn) this.el.pmPlayerSaveBtn.addEventListener('click', () => this.adminSavePlayer());
+    if (this.el.playerModal) this.el.playerModal.addEventListener('click', e => {
+      if (e.target === this.el.playerModal) this.adminClosePlayerModal();
+    });
+
     if (this.el.radioPlayBtn) this.el.radioPlayBtn.addEventListener('click', () => this.radioPlay());
     if (this.el.radioStopBtn) this.el.radioStopBtn.addEventListener('click', () => this.radioStop());
     if (this.el.miniPlayerStop) this.el.miniPlayerStop.addEventListener('click', () => this.radioStop());
@@ -2105,6 +2133,110 @@ const APP = {
       this.renderAdminMatches();
       this.toast(closed ? 'Votazione chiusa.' : 'Votazione riaperta.', 'info');
     } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  /* ---------- ROSA ---------- */
+  async renderRosaList() {
+    const players = [];
+    try {
+      const snap = await db.collection('players_db').orderBy('number', 'asc').get();
+      snap.forEach(d => players.push({ id: d.id, ...d.data() }));
+    } catch (e) { console.error(e); }
+    const container = this.el.adminRosaList;
+    if (!container) return;
+    if (this.el.adminRosaCount) this.el.adminRosaCount.textContent = players.length + ' giocatori';
+    if (players.length === 0) {
+      container.innerHTML = '<div class="gb-empty"><i class="fas fa-users-slash"></i><p>Nessun giocatore nella rosa. Aggiungi il primo!</p></div>';
+      return;
+    }
+    const roleLabel = { P: 'Portiere', D: 'Difensore', C: 'Centrocampista', A: 'Attaccante' };
+    container.innerHTML = players.map(p => {
+      return '<div class="rosa-player-item">' +
+        '<div class="rosa-player-num">' + (p.number || '?') + '</div>' +
+        '<div class="rosa-player-info">' +
+          '<div class="rosa-player-name">' + this.escapeHtml(p.name) + '</div>' +
+          '<div class="rosa-player-role">' + (roleLabel[p.position] || p.position) + '</div>' +
+        '</div>' +
+        '<div class="rosa-player-actions">' +
+          '<button class="btn btn-ghost btn-sm" onclick="APP.adminOpenEditPlayer(\'' + p.id + '\')"><i class="fas fa-pen"></i></button>' +
+          '<button class="btn btn-danger btn-sm" onclick="APP.adminDeletePlayer(\'' + p.id + '\')"><i class="fas fa-trash"></i></button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  },
+
+  adminOpenAddPlayer() {
+    this._editingPlayerId = null;
+    if (this.el.playerModalTitle) this.el.playerModalTitle.innerHTML = '<i class="fas fa-user-plus"></i> Nuovo Giocatore';
+    if (this.el.pmName) this.el.pmName.value = '';
+    if (this.el.pmNumber) this.el.pmNumber.value = '';
+    if (this.el.pmPosition) this.el.pmPosition.value = 'C';
+    if (this.el.pmPlayerError) this.el.pmPlayerError.textContent = '';
+    if (this.el.playerModal) this.el.playerModal.style.display = 'flex';
+  },
+
+  adminOpenEditPlayer(id) {
+    (async () => {
+      try {
+        const doc = await db.collection('players_db').doc(id).get();
+        if (!doc.exists) return;
+        const p = doc.data();
+        this._editingPlayerId = id;
+        if (this.el.playerModalTitle) this.el.playerModalTitle.innerHTML = '<i class="fas fa-user-pen"></i> Modifica Giocatore';
+        if (this.el.pmName) this.el.pmName.value = p.name || '';
+        if (this.el.pmNumber) this.el.pmNumber.value = p.number || '';
+        if (this.el.pmPosition) this.el.pmPosition.value = p.position || 'C';
+        if (this.el.pmPlayerError) this.el.pmPlayerError.textContent = '';
+        if (this.el.playerModal) this.el.playerModal.style.display = 'flex';
+      } catch (e) { console.error(e); }
+    })();
+  },
+
+  async adminSavePlayer() {
+    const name = this.el.pmName.value.trim();
+    const number = this.el.pmNumber.value.trim();
+    const position = this.el.pmPosition.value;
+    if (!name) { if (this.el.pmPlayerError) this.el.pmPlayerError.textContent = 'Inserisci il nome.'; return; }
+    if (this.el.pmPlayerError) this.el.pmPlayerError.textContent = '';
+    try {
+      if (this._editingPlayerId) {
+        await db.collection('players_db').doc(this._editingPlayerId).update({ name, number, position });
+      } else {
+        await db.collection('players_db').add({ name, number, position });
+      }
+      this.adminClosePlayerModal();
+      this.renderRosaList();
+      this.toast('Giocatore salvato!', 'success');
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  adminClosePlayerModal() {
+    this._editingPlayerId = null;
+    if (this.el.playerModal) this.el.playerModal.style.display = 'none';
+    if (this.el.pmPlayerError) this.el.pmPlayerError.textContent = '';
+  },
+
+  async adminDeletePlayer(id) {
+    if (!confirm('Eliminare questo giocatore?')) return;
+    try {
+      await db.collection('players_db').doc(id).delete();
+      this.renderRosaList();
+      this.toast('Giocatore eliminato.', 'info');
+    } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  async loadRosaToMatch() {
+    try {
+      const snap = await db.collection('players_db').orderBy('number', 'asc').get();
+      const players = [];
+      snap.forEach(d => players.push(d.data()));
+      if (players.length === 0) {
+        this.toast('Nessun giocatore nella rosa. Aggiungili prima.', 'warning');
+        return;
+      }
+      this.renderPlayerRows(players);
+      this.toast(players.length + ' giocatori caricati dalla Rosa!', 'success');
+    } catch (e) { this.toast('Errore nel caricamento.', 'error'); }
   },
 
   /* ---------- ADMIN: USERS ---------- */
