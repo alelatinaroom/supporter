@@ -254,6 +254,13 @@ const APP = {
       pmPlayerError: $('pmPlayerError'),
       pmPlayerCancelBtn: $('pmPlayerCancelBtn'),
       pmPlayerSaveBtn: $('pmPlayerSaveBtn'),
+      rosaSelectModal: $('rosaSelectModal'),
+      rosaSelectList: $('rosaSelectList'),
+      rosaSelectCounts: $('rosaSelectCounts'),
+      rosaSelectClose: $('rosaSelectClose'),
+      rosaSelectCancel: $('rosaSelectCancel'),
+      rosaSelectConfirm: $('rosaSelectConfirm'),
+      rosaSelectError: $('rosaSelectError'),
       pagellePage: $('pagellePage'),
       pagelleMatchList: $('pagelleMatchList'),
       matchPage: $('matchPage'),
@@ -415,7 +422,7 @@ const APP = {
       if (e.target === this.el.matchModal) this.adminCloseMatchModal();
     });
     if (this.el.mmAddPlayerRowBtn) this.el.mmAddPlayerRowBtn.addEventListener('click', () => this.addPlayerRow());
-    if (this.el.mmLoadRosaBtn) this.el.mmLoadRosaBtn.addEventListener('click', () => this.loadRosaToMatch());
+    if (this.el.mmLoadRosaBtn) this.el.mmLoadRosaBtn.addEventListener('click', () => this.openRosaSelection());
 
     // Admin Rosa
     if (this.el.adminAddPlayerBtn) this.el.adminAddPlayerBtn.addEventListener('click', () => this.adminOpenAddPlayer());
@@ -425,6 +432,14 @@ const APP = {
     if (this.el.pmPlayerSaveBtn) this.el.pmPlayerSaveBtn.addEventListener('click', () => this.adminSavePlayer());
     if (this.el.playerModal) this.el.playerModal.addEventListener('click', e => {
       if (e.target === this.el.playerModal) this.adminClosePlayerModal();
+    });
+
+    // Rosa selection modal
+    if (this.el.rosaSelectClose) this.el.rosaSelectClose.addEventListener('click', () => this.closeRosaSelection());
+    if (this.el.rosaSelectCancel) this.el.rosaSelectCancel.addEventListener('click', () => this.closeRosaSelection());
+    if (this.el.rosaSelectConfirm) this.el.rosaSelectConfirm.addEventListener('click', () => this.confirmRosaSelection());
+    if (this.el.rosaSelectModal) this.el.rosaSelectModal.addEventListener('click', e => {
+      if (e.target === this.el.rosaSelectModal) this.closeRosaSelection();
     });
 
     if (this.el.radioPlayBtn) this.el.radioPlayBtn.addEventListener('click', () => this.radioPlay());
@@ -1962,6 +1977,26 @@ const APP = {
 
       pitchHtml += '</div></div>';
 
+      // Bench
+      const subs = (m.players || []).filter(p => p.starter === false);
+      let benchHtml = '';
+      if (subs.length > 0) {
+        const roleLabel = { P: 'P', D: 'D', C: 'C', A: 'A' };
+        benchHtml = '<div class="match-bench"><div class="match-bench-title"><i class="fas fa-chair"></i> Panchina</div><div class="match-bench-players">';
+        subs.forEach(p => {
+          const ratings = p.ratings ? Object.values(p.ratings) : [];
+          const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+          const voteCount = ratings.length;
+          benchHtml += '<div class="match-bench-player" onclick="APP.showVotePopup(\'' + m.id + '\',\'' + p.id + '\')">' +
+            '<span class="mbp-num">' + p.number + '</span>' +
+            '<span class="mbp-name">' + this.escapeHtml(p.name) + '</span>' +
+            '<span class="mbp-role">' + (roleLabel[p.position] || '') + '</span>' +
+            '<span class="pitch-player-avg' + (voteCount === 0 ? ' none' : '') + '">' + (voteCount > 0 ? avg.toFixed(1) : '-') + '</span>' +
+            '</div>';
+        });
+        benchHtml += '</div></div>';
+      }
+
       container.innerHTML =
         '<div class="match-info">' +
         '<div class="match-info-item"><span class="match-info-label">Data</span><span class="match-info-value">' + dateStr + '</span></div>' +
@@ -1969,7 +2004,7 @@ const APP = {
         '<div class="match-info-item"><span class="match-info-label">Voti totali</span><span class="match-info-value">' + totalVotes + '</span></div>' +
         (isClosed ? '<div class="match-info-item"><span class="match-info-label">Stato</span><span class="match-info-value" style="color:var(--accent3)">Chiusa</span></div>' : '') +
         '</div>' +
-        pitchHtml;
+        pitchHtml + benchHtml;
 
       // Create vote popup element if not exists
       if (!document.getElementById('pitchVotePopup')) {
@@ -2265,6 +2300,7 @@ const APP = {
         number: numInput ? numInput.value.trim() : '',
         name: name,
         position: roleSelect ? roleSelect.value : 'C',
+        starter: row.classList.contains('starter'),
       });
     });
     return players;
@@ -2275,14 +2311,20 @@ const APP = {
     if (!container) return;
     container.innerHTML = '';
     if (!players || players.length === 0) {
-      players = [{ number: '', name: '', position: 'C' }];
+      players = [{ number: '', name: '', position: 'C', starter: true }];
     }
-    const roleLabel = { P: 'Portiere', D: 'Difensore', C: 'Centrocampista', A: 'Attaccante' };
     players.forEach((p, i) => {
       const row = document.createElement('div');
-      row.className = 'mm-player-row';
+      row.className = 'mm-player-row' + (p.starter === false ? ' sub' : ' starter');
       row.dataset.id = 'mm_row_' + i;
+      const starterBadge = p.starter === false
+        ? '<span class="mm-starter-badge panchina">PAN</span>'
+        : '<span class="mm-starter-badge titolare">TIT</span>';
+      const starterToggle = p.starter === false
+        ? '<button class="btn btn-ghost btn-sm mm-starter-toggle" type="button" title="Promuovi a titolare"><i class="fas fa-arrow-up"></i></button>'
+        : '<button class="btn btn-ghost btn-sm mm-starter-toggle" type="button" title="Metti in panchina"><i class="fas fa-arrow-down"></i></button>';
       row.innerHTML =
+        starterBadge +
         '<input type="text" class="form-input mm-num-input" placeholder="N." value="' + this.escapeHtml(p.number || '') + '">' +
         '<input type="text" class="form-input mm-name-input" placeholder="Nome giocatore" value="' + this.escapeHtml(p.name || '') + '">' +
         '<select class="form-input mm-role-select">' +
@@ -2291,10 +2333,26 @@ const APP = {
           '<option value="C"' + (p.position === 'C' || !p.position ? ' selected' : '') + '>Centrocampista</option>' +
           '<option value="A"' + (p.position === 'A' ? ' selected' : '') + '>Attaccante</option>' +
         '</select>' +
+        starterToggle +
         '<button class="btn btn-danger btn-sm mm-remove-btn" type="button" title="Rimuovi"><i class="fas fa-times"></i></button>';
       const removeBtn = row.querySelector('.mm-remove-btn');
-      removeBtn.addEventListener('click', () => {
-        row.remove();
+      removeBtn.addEventListener('click', () => { row.remove(); });
+      const toggleBtn = row.querySelector('.mm-starter-toggle');
+      toggleBtn.addEventListener('click', () => {
+        const isStarter = row.classList.contains('starter');
+        row.classList.remove('starter', 'sub');
+        const badge = row.querySelector('.mm-starter-badge');
+        if (isStarter) {
+          row.classList.add('sub');
+          if (badge) { badge.textContent = 'PAN'; badge.className = 'mm-starter-badge panchina'; }
+          toggleBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+          toggleBtn.title = 'Promuovi a titolare';
+        } else {
+          row.classList.add('starter');
+          if (badge) { badge.textContent = 'TIT'; badge.className = 'mm-starter-badge titolare'; }
+          toggleBtn.innerHTML = '<i class="fas fa-arrow-down"></i>';
+          toggleBtn.title = 'Metti in panchina';
+        }
       });
       container.appendChild(row);
     });
@@ -2363,6 +2421,7 @@ const APP = {
         number: p.number || '?',
         name: p.name,
         position: p.position.toUpperCase(),
+        starter: p.starter !== false,
         ratings: {},
       }));
       try {
@@ -2543,18 +2602,122 @@ const APP = {
     } catch (e) { console.error('Import error:', e); this.toast('Errore importazione: ' + e.message, 'error'); }
   },
 
-  async loadRosaToMatch() {
+  /* ---------- ROSA SELECTION ---------- */
+  async openRosaSelection() {
     try {
       const snap = await db.collection('players_db').get();
       const players = [];
-      snap.forEach(d => players.push(d.data()));
+      snap.forEach(d => players.push({ id: d.id, ...d.data() }));
       if (players.length === 0) {
         this.toast('Nessun giocatore nella rosa. Aggiungili prima.', 'warning');
         return;
       }
-      this.renderPlayerRows(players);
-      this.toast(players.length + ' giocatori caricati dalla Rosa!', 'success');
-    } catch (e) { this.toast('Errore nel caricamento.', 'error'); }
+      const roleOrder = { P: 0, D: 1, C: 2, A: 3 };
+      const roleLabel = { P: 'P', D: 'D', C: 'C', A: 'A' };
+      players.sort((a, b) => {
+        const ra = roleOrder[a.position] !== undefined ? roleOrder[a.position] : 99;
+        const rb = roleOrder[b.position] !== undefined ? roleOrder[b.position] : 99;
+        if (ra !== rb) return ra - rb;
+        return (parseInt(a.number, 10) || 999) - (parseInt(b.number, 10) || 999);
+      });
+      this._rosaSelectionPlayers = players;
+      this._rosaSelection = {}; // { playerId: 'titolare' | 'panchina' }
+      this.renderRosaSelection();
+      if (this.el.rosaSelectModal) this.el.rosaSelectModal.style.display = 'flex';
+      if (this.el.rosaSelectError) this.el.rosaSelectError.textContent = '';
+    } catch (e) { this.toast('Errore caricamento rosa.', 'error'); }
+  },
+
+  renderRosaSelection() {
+    const container = this.el.rosaSelectList;
+    const countsEl = this.el.rosaSelectCounts;
+    if (!container) return;
+    const roleOrder = { P: 0, D: 1, C: 2, A: 3 };
+    const roleLabel = { P: 'Portiere', D: 'Difensore', C: 'Centrocampista', A: 'Attaccante' };
+    const players = this._rosaSelectionPlayers || [];
+    const selection = this._rosaSelection || {};
+    const starters = Object.values(selection).filter(s => s === 'titolare').length;
+    const subs = Object.values(selection).filter(s => s === 'panchina').length;
+    if (countsEl) {
+      countsEl.innerHTML = '<span class="rosa-count-starters"><strong>' + starters + '</strong> Titolari</span>' +
+        '<span class="rosa-count-subs"><strong>' + subs + '</strong> Panchina</span>';
+    }
+    let html = '';
+    let currentRole = '';
+    players.forEach(p => {
+      if (p.position !== currentRole) {
+        currentRole = p.position;
+        html += '<div class="rosa-role-header">' + (roleLabel[currentRole] || currentRole) + '</div>';
+      }
+      const status = selection[p.id] || '';
+      const statusClass = status === 'titolare' ? 'titolare' : (status === 'panchina' ? 'panchina' : '');
+      const badge = status === 'titolare' ? '<span class="rsp-badge titolare">TIT</span>'
+        : (status === 'panchina' ? '<span class="rsp-badge panchina">PAN</span>' : '');
+      html += '<div class="rosa-select-player ' + statusClass + '" data-pid="' + p.id + '">' +
+        '<div class="rsp-num">' + (p.number || '?') + '</div>' +
+        '<div class="rsp-name">' + this.escapeHtml(p.name) + '</div>' +
+        '<div class="rsp-role">' + (roleLabel[p.position] || '') + '</div>' +
+        badge +
+        '</div>';
+    });
+    container.innerHTML = html;
+
+    // Click to toggle: unselected → titolare → panchina → unselected
+    container.querySelectorAll('.rosa-select-player').forEach(el => {
+      el.addEventListener('click', () => {
+        const pid = el.dataset.pid;
+        const cur = this._rosaSelection[pid] || '';
+        if (cur === 'titolare') {
+          this._rosaSelection[pid] = 'panchina';
+        } else if (cur === 'panchina') {
+          delete this._rosaSelection[pid];
+        } else {
+          const starters = Object.values(this._rosaSelection).filter(s => s === 'titolare').length;
+          if (starters >= 11) {
+            if (this.el.rosaSelectError) this.el.rosaSelectError.textContent = 'Massimo 11 titolari.';
+            return;
+          }
+          this._rosaSelection[pid] = 'titolare';
+        }
+        if (this.el.rosaSelectError) this.el.rosaSelectError.textContent = '';
+        this.renderRosaSelection();
+      });
+    });
+  },
+
+  confirmRosaSelection() {
+    const selection = this._rosaSelection || {};
+    const selectedIds = Object.keys(selection);
+    if (selectedIds.length === 0) {
+      if (this.el.rosaSelectError) this.el.rosaSelectError.textContent = 'Seleziona almeno un giocatore.';
+      return;
+    }
+    const players = this._rosaSelectionPlayers || [];
+    const selected = [];
+    selectedIds.forEach(id => {
+      const p = players.find(x => x.id === id);
+      if (p) {
+        selected.push({
+          id: undefined, // will be generated on save
+          number: p.number || '',
+          name: p.name,
+          position: p.position || 'C',
+          starter: selection[id] === 'titolare',
+        });
+      }
+    });
+    // Sort: starters first, then subs
+    selected.sort((a, b) => (a.starter === b.starter ? 0 : a.starter ? -1 : 1));
+    this.renderPlayerRows(selected);
+    this.closeRosaSelection();
+    this.toast('Caricati ' + selected.length + ' giocatori dalla Rosa!', 'success');
+  },
+
+  closeRosaSelection() {
+    this._rosaSelection = null;
+    this._rosaSelectionPlayers = null;
+    if (this.el.rosaSelectModal) this.el.rosaSelectModal.style.display = 'none';
+    if (this.el.rosaSelectError) this.el.rosaSelectError.textContent = '';
   },
 
   /* ---------- ADMIN: USERS ---------- */
