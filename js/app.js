@@ -2235,12 +2235,28 @@ const APP = {
   openMatchFromRisultati(opponent, date, score) {
     (async () => {
       try {
-        const snap = await db.collection('matches').where('opponent', '==', opponent).orderBy('createdAt', 'desc').limit(1).get();
+        const snap = await db.collection('matches').where('opponent', '==', opponent).get();
         if (!snap.empty) {
-          this.openMatch(snap.docs[0].id);
-          return;
+          let match = null;
+          snap.forEach(d => {
+            const d2 = { id: d.id, ...d.data() };
+            if (!match || (d2.createdAt || 0) > (match.createdAt || 0)) match = d2;
+          });
+          if (match) { this.openMatch(match.id); return; }
         }
-      } catch (e) { /* query might fail if no index, fallback */ }
+        // Fallback: case-insensitive search across all matches
+        const allSnap = await db.collection('matches').get();
+        let fallbackMatch = null;
+        allSnap.forEach(d => {
+          const data = d.data();
+          if (data.opponent && data.opponent.toLowerCase().trim() === opponent.toLowerCase().trim()) {
+            if (!fallbackMatch || (data.createdAt || 0) > (fallbackMatch.createdAt || 0)) {
+              fallbackMatch = { id: d.id, ...data };
+            }
+          }
+        });
+        if (fallbackMatch) { this.openMatch(fallbackMatch.id); return; }
+      } catch (e) { console.error('Match query error:', e); }
       // Match not found: open admin pagelle with pre-filled data (admin/editor only)
       if (!this.state.currentUser || !['admin', 'editor'].includes(this.state.currentUser.role)) {
         this.toast('Partita non ancora presente in Pagelle. Contatta l\'amministratore.', 'warning');
