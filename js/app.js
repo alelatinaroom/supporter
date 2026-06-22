@@ -1147,12 +1147,23 @@ const APP = {
   startNotifsListener() {
     this.stopNotifsListener();
     if (!this.state.currentUser) return;
+    this._prevNotifCount = 0;
     this._notifsUnsub = db.collection('notifications')
       .where('userId', '==', this.state.currentUser.id)
+      .orderBy('createdAt', 'desc')
+      .limit(5)
       .onSnapshot(snap => {
         let count = 0;
+        let newest = null;
         const all = [];
-        snap.forEach(d => { const data = d.data(); if (!data.read) count++; all.push(data); });
+        snap.forEach(d => {
+          const data = d.data();
+          if (!data.read) {
+            count++;
+            if (!newest || data.createdAt > newest.createdAt) newest = data;
+          }
+          all.push(data);
+        });
         const badge = this.el.notifBadge;
         if (badge) {
           if (count > 0) {
@@ -1162,6 +1173,14 @@ const APP = {
             badge.style.display = 'none';
           }
         }
+        if (newest && count > this._prevNotifCount) {
+          if (newest.type === 'pm') {
+            this.toast('<strong>' + this.escapeHtml(newest.fromName) + '</strong> ti ha mandato un messaggio privato', 'info');
+          } else if (newest.type === 'mention') {
+            this.toast('<strong>' + this.escapeHtml(newest.fromName) + '</strong> ti ha menzionato', 'info');
+          }
+        }
+        this._prevNotifCount = count;
       });
   },
 
@@ -1189,10 +1208,12 @@ const APP = {
         html += '<ul class="notif-list">';
         for (const n of notifs) {
           const time = n.createdAt ? new Date(n.createdAt).toLocaleString('it-IT') : '';
+          const icon = n.type === 'pm' ? 'fa-envelope' : 'fa-at';
+          const action = n.type === 'pm' ? 'ti ha mandato un messaggio privato' : 'ti ha menzionato nel muro';
           html += '<li class="notif-item' + (n.read ? '' : ' notif-unread') + '">' +
-            '<div class="notif-icon"><i class="fas fa-at"></i></div>' +
+            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
             '<div class="notif-body">' +
-            '<div class="notif-text"><strong>' + this.escapeHtml(n.fromName) + '</strong> ti ha menzionato nel muro:</div>' +
+            '<div class="notif-text"><strong>' + this.escapeHtml(n.fromName) + '</strong> ' + action + ':</div>' +
             '<div class="notif-preview">' + this.escapeHtml(n.text) + '</div>' +
             '<div class="notif-time">' + time + '</div>' +
             '</div>' +
@@ -2620,6 +2641,17 @@ const APP = {
         lastMessageAt: Date.now(),
         lastSenderId: uid,
       }, { merge: true });
+
+      await db.collection('notifications').add({
+        userId: partnerId,
+        type: 'pm',
+        fromId: uid,
+        fromName: this.state.currentUser.username,
+        text: filtered,
+        createdAt: Date.now(),
+        read: false,
+      });
+
       input.value = '';
       const container = this.el.pmConvMessages;
       if (container) container.scrollTop = container.scrollHeight;
