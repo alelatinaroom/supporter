@@ -3465,12 +3465,10 @@ const APP = {
       if (sliderMode) {
         let html = '';
         items.forEach(item => {
-          const imgUrl = item.enclosure && item.enclosure.link ? item.enclosure.link : '';
           const cat = item.categories && item.categories.length ? item.categories[0] : '';
           const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
           html += `<a class="editorial-slide" href="${item.link}" target="_blank" rel="noopener">
             <span class="editorial-slide-icon news-slide-icon"><i class="fas fa-newspaper"></i></span>
-            ${imgUrl ? `<span class="editorial-slide-img" style="background-image:url(${imgUrl})"></span>` : ''}
             <span class="editorial-slide-title">${this.escapeHtml(item.title)}</span>
             <span class="editorial-slide-meta">${date} ${cat ? '· ' + cat : ''}</span>
           </a>`;
