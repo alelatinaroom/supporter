@@ -1722,6 +1722,111 @@ textarea { resize: vertical; min-height: 60px; }
 }
 
 /* ==============================
+   RISULTATI
+   ============================== */
+.risultati-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.risultati-stat {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 16px 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+}
+.risultati-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.risultati-stat-value.green { color: #4caf50; }
+.risultati-stat-value.yellow { color: #ffc107; }
+.risultati-stat-value.red { color: #ff5252; }
+.risultati-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.risultati-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.risultati-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+.risultati-item:hover {
+  border-color: var(--accent);
+}
+.risultati-item.V { border-left: 3px solid #4caf50; }
+.risultati-item.N { border-left: 3px solid #ffc107; }
+.risultati-item.P { border-left: 3px solid #ff5252; }
+.risultati-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 70px;
+  flex-shrink: 0;
+}
+.risultati-logo {
+  width: 28px; height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.risultati-logo img {
+  width: 24px; height: 24px;
+  object-fit: contain;
+}
+.risultati-logo.latina-logo img { width: 28px; height: 28px; }
+.risultati-opponent {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.risultati-score {
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+  min-width: 48px;
+}
+.risultati-score .latina-score { color: var(--accent2); }
+.risultati-result-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  min-width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.risultati-result-badge.V { background: #4caf50; color: #fff; }
+.risultati-result-badge.N { background: #ffc107; color: #000; }
+.risultati-result-badge.P { background: #ff5252; color: #fff; }
+.risultati-vs {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0 4px;
+}
+
+/* ==============================
    MODAL
    ============================== */
 .modal-overlay {

@@ -259,6 +259,9 @@ const APP = {
       matchPageTitle: $('matchPageTitle'),
       matchContent: $('matchContent'),
       matchBackBtn: $('matchBackBtn'),
+      risultatiPage: $('risultatiPage'),
+      risultatiStats: $('risultatiStats'),
+      risultatiList: $('risultatiList'),
       adminPagelle: $('adminPagelle'),
       adminMatchCount: $('adminMatchCount'),
       adminMatchList: $('adminMatchList'),
@@ -696,7 +699,7 @@ const APP = {
 
   navigateTo(page) {
     this.closeSidebar();
-    const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage'];
+    const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage', 'risultatiPage'];
     pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
     if (this.el.sidebarItems) {
       this.el.sidebarItems.forEach(i => { i.classList.toggle('active', i.dataset.page === page); });
@@ -767,6 +770,10 @@ const APP = {
         break;
       case 'match':
         this.el.matchPage.style.display = '';
+        break;
+      case 'risultati':
+        this.el.risultatiPage.style.display = '';
+        this.renderRisultati();
         break;
       case 'profile':
         if (!this.state.currentUser) { this.navigateTo('guestbook'); return; }
@@ -2041,6 +2048,57 @@ const APP = {
   getRoleLabel(pos) {
     const labels = { P: 'Portiere', D: 'Difensore', C: 'Centrocampista', A: 'Attaccante' };
     return labels[pos] || pos || 'Giocatore';
+  },
+
+  /* ---------- RISULTATI ---------- */
+  async renderRisultati() {
+    const container = this.el.risultatiList;
+    const statsEl = this.el.risultatiStats;
+    if (!container) return;
+    try {
+      const res = await fetch('js/season_results.json');
+      if (!res.ok) { container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Impossibile caricare i risultati.</p></div>'; return; }
+      const matches = await res.json();
+      if (!matches || matches.length === 0) {
+        container.innerHTML = '<div class="gb-empty"><i class="fas fa-trophy"></i><p>Nessun risultato disponibile.</p></div>';
+        if (statsEl) statsEl.innerHTML = '';
+        return;
+      }
+
+      // Stats
+      const wins = matches.filter(m => m.result === 'V').length;
+      const draws = matches.filter(m => m.result === 'N').length;
+      const losses = matches.filter(m => m.result === 'P').length;
+      const gf = matches.reduce((s, m) => s + m.latinaScore, 0);
+      const ga = matches.reduce((s, m) => s + m.opponentScore, 0);
+      if (statsEl) {
+        statsEl.innerHTML =
+          '<div class="risultati-stat"><div class="risultati-stat-value green">' + wins + '</div><div class="risultati-stat-label">Vinte</div></div>' +
+          '<div class="risultati-stat"><div class="risultati-stat-value yellow">' + draws + '</div><div class="risultati-stat-label">Pareggiate</div></div>' +
+          '<div class="risultati-stat"><div class="risultati-stat-value red">' + losses + '</div><div class="risultati-stat-label">Perse</div></div>' +
+          '<div class="risultati-stat"><div class="risultati-stat-value">' + gf + '</div><div class="risultati-stat-label">Gol Fatti</div></div>' +
+          '<div class="risultati-stat"><div class="risultati-stat-value">' + ga + '</div><div class="risultati-stat-label">Gol Subiti</div></div>' +
+          '<div class="risultati-stat"><div class="risultati-stat-value">' + (wins * 3 + draws) + '</div><div class="risultati-stat-label">Punti</div></div>';
+      }
+
+      container.innerHTML = matches.map(m => {
+        const dateObj = new Date(m.date.split('/').reverse().join('-'));
+        const dateStr = dateObj.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+        const logoUrl = 'https://sport.virgilio.it/img/loghi/' + m.opponentClass + '.svg';
+        const latinaScore = m.latinaScore;
+        const oppScore = m.opponentScore;
+        return '<div class="risultati-item ' + m.result + '">' +
+          '<div class="risultati-date">' + dateStr + '</div>' +
+          '<div class="risultati-logo"><img src="' + logoUrl + '" alt="" loading="lazy" onerror="this.style.display=\'none\'"></div>' +
+          '<div class="risultati-opponent">' + this.escapeHtml(m.opponent) + '</div>' +
+          '<div class="risultati-score">' +
+            (m.isHome ? '<span class="latina-score">' + latinaScore + '</span><span class="risultati-vs">-</span><span>' + oppScore + '</span>'
+                      : '<span>' + oppScore + '</span><span class="risultati-vs">-</span><span class="latina-score">' + latinaScore + '</span>') +
+          '</div>' +
+          '<div class="risultati-result-badge ' + m.result + '">' + { V: 'V', N: 'N', P: 'P' }[m.result] + '</div>' +
+          '</div>';
+      }).join('');
+    } catch (e) { console.error('Risultati error:', e); container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Errore caricamento risultati.</p></div>'; }
   },
 
   /* ---------- ADMIN: MATCHES ---------- */
