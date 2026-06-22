@@ -729,6 +729,7 @@ textarea { resize: vertical; min-height: 60px; }
 .editorial-slider-prev { left: 4px; }
 .editorial-slider-next { right: 4px; }
 @media (max-width: 500px) {
+  .top-logo small { display: none; }
   .editorial-slider { padding: 10px 30px 6px; }
   .editorial-slide { max-width: 160px; min-width: 120px; }
 }
