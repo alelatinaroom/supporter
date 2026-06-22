@@ -262,6 +262,7 @@ const APP = {
       risultatiPage: $('risultatiPage'),
       risultatiStats: $('risultatiStats'),
       risultatiList: $('risultatiList'),
+      classificaContainer: $('classificaContainer'),
       adminPagelle: $('adminPagelle'),
       adminMatchCount: $('adminMatchCount'),
       adminMatchList: $('adminMatchList'),
@@ -511,6 +512,24 @@ const APP = {
         if (this.el.homeNewsSliderTrack) this.el.homeNewsSliderTrack.scrollBy({ left: 200, behavior: 'smooth' });
       });
     }
+
+    // Risultati tabs
+    document.querySelectorAll('.risultati-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.risultati-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const t = tab.dataset.tab;
+        if (t === 'risultati') {
+          if (this.el.risultatiList) this.el.risultatiList.style.display = '';
+          if (this.el.classificaContainer) this.el.classificaContainer.style.display = 'none';
+        } else {
+          if (this.el.risultatiList) this.el.risultatiList.style.display = 'none';
+          if (this.el.classificaContainer) { this.el.classificaContainer.style.display = '';
+            this.renderClassifica();
+          }
+        }
+      });
+    });
   },
 
   initAuth() {
@@ -2099,6 +2118,62 @@ const APP = {
           '</div>';
       }).join('');
     } catch (e) { console.error('Risultati error:', e); container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Errore caricamento risultati.<br><small>' + this.escapeHtml(e.message) + '</small></p></div>'; }
+  },
+
+  /* ---------- CLASSIFICA ---------- */
+  async renderClassifica() {
+    const container = this.el.classificaContainer;
+    if (!container) return;
+    try {
+      const res = await fetch('/supporter/js/classifica.json');
+      if (!res.ok) { container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Impossibile caricare classifica. (HTTP ' + res.status + ')</p></div>'; return; }
+      const data = await res.json();
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="gb-empty"><i class="fas fa-table"></i><p>Nessun dato classifica.</p></div>';
+        return;
+      }
+
+      let html = '<div class="classifica-legend">' +
+        '<span><span class="dot green"></span> Promozione diretta</span>' +
+        '<span><span class="dot blue"></span> Play Off</span>' +
+        '<span><span class="dot orange"></span> Playout</span>' +
+        '<span><span class="dot red"></span> Retrocessione</span>' +
+        '</div>';
+      html += '<table class="classifica-table"><thead><tr>' +
+        '<th></th><th>Squadra</th><th>Pt</th><th>G</th><th>V</th><th>N</th><th>P</th><th>GF</th><th>GS</th><th>DR</th>' +
+        '</tr></thead><tbody>';
+
+      data.forEach(r => {
+        const isLatina = r.team === 'Latina';
+        let rowClass = '';
+        if (r.pos === 1) rowClass = 'cf-prom';
+        else if (r.pos <= 10) rowClass = 'cf-playoff';
+        else if (r.pos >= 19) rowClass = 'cf-retro';
+        if (isLatina) rowClass += ' latina-row';
+        const logoUrl = 'https://sport.virgilio.it/img/loghi/' + r.teamClass + '.svg';
+        const drClass = r.dr > 0 ? '' : (r.dr < 0 ? '' : '');
+        html += '<tr class="' + rowClass + '">' +
+          '<td class="cf-pos">' + r.pos + '</td>' +
+          '<td class="cf-team">' +
+            '<img src="' + logoUrl + '" alt="" loading="lazy" onerror="this.style.display=\'none\'"> ' +
+            this.escapeHtml(r.team) +
+            (r.penalty > 0 ? ' <span class="cf-penalty">(-' + r.penalty + ')</span>' : '') +
+          '</td>' +
+          '<td class="cf-pts">' + r.pts + '</td>' +
+          '<td class="cf-num">' + r.g + '</td>' +
+          '<td class="cf-num">' + r.v + '</td>' +
+          '<td class="cf-num">' + r.n + '</td>' +
+          '<td class="cf-num">' + r.p + '</td>' +
+          '<td class="cf-num">' + r.gf + '</td>' +
+          '<td class="cf-num">' + r.gs + '</td>' +
+          '<td class="cf-num cf-dr">' + (r.dr > 0 ? '+' : '') + r.dr + '</td>' +
+          '</tr>';
+      });
+
+      html += '</tbody></table>';
+      html += '<div class="classifica-note">* Trapani: -20 punti di penalizzazione</div>';
+      container.innerHTML = html;
+    } catch (e) { console.error('Classifica error:', e); container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Errore caricamento classifica.<br><small>' + this.escapeHtml(e.message) + '</small></p></div>'; }
   },
 
   /* ---------- ADMIN: MATCHES ---------- */

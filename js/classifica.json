@@ -1,0 +1,22 @@
+[
+  {"pos":1,"team":"Benevento","teamClass":"benevento","pts":82,"g":38,"v":25,"n":7,"p":6,"gf":74,"gs":28,"dr":46,"penalty":0},
+  {"pos":2,"team":"Catania","teamClass":"catania","pts":70,"g":38,"v":19,"n":13,"p":6,"gf":54,"gs":25,"dr":29,"penalty":0},
+  {"pos":3,"team":"Salernitana","teamClass":"salernitana","pts":69,"g":38,"v":20,"n":9,"p":9,"gf":50,"gs":42,"dr":8,"penalty":0},
+  {"pos":4,"team":"Cosenza","teamClass":"cosenza","pts":67,"g":38,"v":19,"n":10,"p":9,"gf":58,"gs":40,"dr":18,"penalty":0},
+  {"pos":5,"team":"Casertana","teamClass":"casertana","pts":66,"g":38,"v":19,"n":9,"p":10,"gf":55,"gs":44,"dr":11,"penalty":0},
+  {"pos":6,"team":"Crotone","teamClass":"crotone","pts":61,"g":38,"v":18,"n":7,"p":13,"gf":59,"gs":40,"dr":19,"penalty":0},
+  {"pos":7,"team":"Monopoli","teamClass":"monopoli","pts":56,"g":38,"v":15,"n":11,"p":12,"gf":39,"gs":41,"dr":-2,"penalty":0},
+  {"pos":8,"team":"Casarano","teamClass":"casarano","pts":56,"g":38,"v":16,"n":8,"p":14,"gf":56,"gs":57,"dr":-1,"penalty":0},
+  {"pos":9,"team":"Audace Cerignola","teamClass":"audacecerignola","pts":54,"g":38,"v":14,"n":12,"p":12,"gf":50,"gs":54,"dr":-4,"penalty":0},
+  {"pos":10,"team":"Potenza","teamClass":"potenza","pts":49,"g":38,"v":12,"n":13,"p":13,"gf":54,"gs":56,"dr":-2,"penalty":0},
+  {"pos":11,"team":"Atalanta U23","teamClass":"atalantau23","pts":45,"g":38,"v":11,"n":12,"p":15,"gf":53,"gs":50,"dr":3,"penalty":0},
+  {"pos":12,"team":"Team Altamura","teamClass":"teamaltamura","pts":45,"g":38,"v":11,"n":12,"p":15,"gf":32,"gs":49,"dr":-17,"penalty":0},
+  {"pos":13,"team":"Latina","teamClass":"latina","pts":42,"g":38,"v":10,"n":12,"p":16,"gf":35,"gs":44,"dr":-9,"penalty":0},
+  {"pos":14,"team":"Cavese","teamClass":"cavese1919","pts":42,"g":38,"v":9,"n":15,"p":14,"gf":36,"gs":42,"dr":-6,"penalty":0},
+  {"pos":15,"team":"AZ Picerno","teamClass":"picerno","pts":40,"g":38,"v":9,"n":13,"p":16,"gf":43,"gs":55,"dr":-12,"penalty":0},
+  {"pos":16,"team":"Sorrento","teamClass":"sorrento","pts":39,"g":38,"v":9,"n":12,"p":17,"gf":39,"gs":55,"dr":-16,"penalty":0},
+  {"pos":17,"team":"Siracusa","teamClass":"siracusa","pts":37,"g":38,"v":9,"n":10,"p":19,"gf":48,"gs":57,"dr":-9,"penalty":0},
+  {"pos":18,"team":"Giugliano","teamClass":"giugliano","pts":37,"g":38,"v":9,"n":10,"p":19,"gf":35,"gs":52,"dr":-17,"penalty":0},
+  {"pos":19,"team":"Trapani","teamClass":"trapani1905","pts":29,"g":38,"v":13,"n":10,"p":15,"gf":47,"gs":54,"dr":-7,"penalty":20},
+  {"pos":20,"team":"Foggia","teamClass":"foggia","pts":27,"g":38,"v":6,"n":9,"p":23,"gf":28,"gs":60,"dr":-32,"penalty":0}
+]
