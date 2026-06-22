@@ -749,6 +749,7 @@ const APP = {
   navigateTo(page) {
     if (this._homeSliderTimer) { clearInterval(this._homeSliderTimer); this._homeSliderTimer = null; }
     if (this._gbSliderTimer) { clearInterval(this._gbSliderTimer); this._gbSliderTimer = null; }
+    if (this._bgTimer) { clearInterval(this._bgTimer); this._bgTimer = null; }
     this.closeSidebar();
     const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage', 'risultatiPage', 'mercatoPage'];
     pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
@@ -876,6 +877,22 @@ const APP = {
     if (this.el.homePage) this.el.homePage.style.display = '';
     this.loadTmwNews('homeNewsSlider', true);
     this._startHomeSliderAuto();
+    this._startBgRotation();
+  },
+
+  _startBgRotation() {
+    if (this._bgTimer) clearInterval(this._bgTimer);
+    this._bgImages = [
+      'url("images/curva-nord.jpg")',
+      'url("https://ilmanifesto.it/cdn-cgi/image/format=auto,width=1400/https://static.ilmanifesto.it/2014/06/26/curva-latina-calcio-serie-b.jpg")'
+    ];
+    this._bgIdx = 0;
+    const el = document.querySelector('.home-bg');
+    if (!el) return;
+    this._bgTimer = setInterval(() => {
+      this._bgIdx = (this._bgIdx + 1) % this._bgImages.length;
+      el.style.background = this._bgImages[this._bgIdx] + ' center/cover no-repeat';
+    }, 10000);
   },
 
   _startHomeSliderAuto() {
