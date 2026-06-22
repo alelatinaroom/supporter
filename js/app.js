@@ -3408,7 +3408,7 @@ const APP = {
     const track = sliderMode ? document.getElementById(cid + 'Track') : null;
     const errorEl = sliderMode ? document.getElementById(cid.replace('Slider', 'Error')) : null;
     const fetchData = async () => {
-      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.tuttolatina.com/rss/');
+      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://latinacalcio1932.it/category/tutte/feed/');
       const data = await res.json();
       if (data.status !== 'ok') throw new Error('RSS feed error');
       return data.items.slice(0, 8);
@@ -3455,7 +3455,7 @@ const APP = {
         container.innerHTML = html;
       }
     };
-    const cached = this._tmwCache;
+    const cached = this._newsCache;
     if (cached && Date.now() - cached.ts < 300000) {
       render(cached.items);
       return;
@@ -3467,7 +3467,7 @@ const APP = {
     }
     try {
       const items = await fetchData();
-      this._tmwCache = { items, ts: Date.now() };
+      this._newsCache = { items, ts: Date.now() };
       render(items);
     } catch (e) {
       const msg = '<div class="news-error">Impossibile caricare le notizie. Riprova pi\u00f9 tardi.</div>';
