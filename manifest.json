@@ -6,7 +6,7 @@
   "scope": "/supporter/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#151a38",
+  "background_color": "#0a1628",
   "theme_color": "#151a38",
   "categories": ["sports", "social", "entertainment"],
   "icons": [
