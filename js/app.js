@@ -748,6 +748,7 @@ const APP = {
 
   navigateTo(page) {
     if (this._homeSliderTimer) { clearInterval(this._homeSliderTimer); this._homeSliderTimer = null; }
+    if (this._gbSliderTimer) { clearInterval(this._gbSliderTimer); this._gbSliderTimer = null; }
     this.closeSidebar();
     const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage', 'risultatiPage', 'mercatoPage'];
     pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
@@ -764,6 +765,7 @@ const APP = {
         this.startMessagesListener();
         this.renderEditorialSlider();
         this.loadTmwNews('gbNewsSlider', true);
+        this._startGbSliderAuto();
         break;
       case 'members':
         this.el.membersPage.style.display = '';
@@ -881,6 +883,20 @@ const APP = {
     const track = this.el.homeNewsSliderTrack;
     if (!track) return;
     this._homeSliderTimer = setInterval(() => {
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      if (track.scrollLeft >= maxScroll - 5) {
+        track.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        track.scrollBy({ left: 300, behavior: 'smooth' });
+      }
+    }, 5000);
+  },
+
+  _startGbSliderAuto() {
+    if (this._gbSliderTimer) clearInterval(this._gbSliderTimer);
+    const track = this.el.gbNewsSliderTrack;
+    if (!track) return;
+    this._gbSliderTimer = setInterval(() => {
       const maxScroll = track.scrollWidth - track.clientWidth;
       if (track.scrollLeft >= maxScroll - 5) {
         track.scrollTo({ left: 0, behavior: 'smooth' });
