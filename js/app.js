@@ -1933,10 +1933,11 @@ const APP = {
       const isClosed = m.closed;
       const totalVotes = m.players ? m.players.reduce((sum, p) => sum + Object.keys(p.ratings || {}).length, 0) : 0;
 
-      // Group players by role
+      // Group starters by role for pitch
       const roleOrder = ['P', 'D', 'C', 'A'];
       const grouped = { P: [], D: [], C: [], A: [] };
       (m.players || []).forEach(p => {
+        if (p.starter === false) return; // skip subs on pitch
         const role = p.position || 'D';
         if (!grouped[role]) grouped[role] = [];
         grouped[role].push(p);
