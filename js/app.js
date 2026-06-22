@@ -2056,8 +2056,8 @@ const APP = {
     const statsEl = this.el.risultatiStats;
     if (!container) return;
     try {
-      const res = await fetch('js/season_results.json');
-      if (!res.ok) { container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Impossibile caricare i risultati.</p></div>'; return; }
+      const res = await fetch('/supporter/js/season_results.json');
+      if (!res.ok) { container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Impossibile caricare i risultati. (HTTP ' + res.status + ')</p></div>'; return; }
       const matches = await res.json();
       if (!matches || matches.length === 0) {
         container.innerHTML = '<div class="gb-empty"><i class="fas fa-trophy"></i><p>Nessun risultato disponibile.</p></div>';
@@ -2098,7 +2098,7 @@ const APP = {
           '<div class="risultati-result-badge ' + m.result + '">' + { V: 'V', N: 'N', P: 'P' }[m.result] + '</div>' +
           '</div>';
       }).join('');
-    } catch (e) { console.error('Risultati error:', e); container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Errore caricamento risultati.</p></div>'; }
+    } catch (e) { console.error('Risultati error:', e); container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Errore caricamento risultati.<br><small>' + this.escapeHtml(e.message) + '</small></p></div>'; }
   },
 
   /* ---------- ADMIN: MATCHES ---------- */
