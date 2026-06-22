@@ -3522,6 +3522,7 @@ const APP = {
         const gcRes = await fetch('https://corsproxy.io/?url=https://www.tuttoc.com/girone-c/');
         if (gcRes.ok) {
           const html = await gcRes.text();
+          const baseUrl = 'https://www.tuttoc.com';
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
           const links = doc.querySelectorAll('a');
@@ -3530,10 +3531,14 @@ const APP = {
             const t = (a.textContent || '').trim();
             if (t.length > 10 && /latina|nerazzurr/i.test(t) && !seen.has(t)) {
               seen.add(t);
+              let href = a.getAttribute('href') || '';
+              if (href.startsWith('/')) href = baseUrl + href;
+              else if (href && !href.startsWith('http')) href = baseUrl + '/' + href;
+              else if (!href) href = baseUrl + '/girone-c/';
               allItems.push({
                 title: t,
                 pubDate: new Date().toISOString(),
-                link: a.href || 'https://www.tuttoc.com/girone-c/',
+                link: href,
                 categories: ['Girone C', 'Latina']
               });
             }
