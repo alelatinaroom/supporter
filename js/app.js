@@ -3594,6 +3594,34 @@ const APP = {
           });
         }
       } catch (e) { /* lacasadic fetch failed, skip */ }
+      // Scrape TMW Latina page for Latina-specific news
+      try {
+        const tmwRes = await fetch('https://corsproxy.io/?url=https://www.tuttomercatoweb.com/latina/');
+        if (tmwRes.ok) {
+          const html = await tmwRes.text();
+          const baseUrl = 'https://www.tuttomercatoweb.com';
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const links = doc.querySelectorAll('a');
+          const seen = new Set();
+          links.forEach(a => {
+            const t = (a.textContent || '').trim();
+            if (t.length > 10 && /latina|nerazzurr|volpe|cond/i.test(t) && !seen.has(t)) {
+              seen.add(t);
+              let href = a.getAttribute('href') || '';
+              if (href.startsWith('/')) href = baseUrl + href;
+              else if (href && !href.startsWith('http')) href = baseUrl + '/' + href;
+              else if (!href) href = baseUrl + '/latina/';
+              allItems.push({
+                title: t,
+                pubDate: new Date().toISOString(),
+                link: href,
+                categories: ['TMW', 'Latina']
+              });
+            }
+          });
+        }
+      } catch (e) { /* tmw fetch failed, skip */ }
       allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
       return allItems.slice(0, 12);
     };
