@@ -747,6 +747,7 @@ const APP = {
   },
 
   navigateTo(page) {
+    if (this._homeSliderTimer) { clearInterval(this._homeSliderTimer); this._homeSliderTimer = null; }
     this.closeSidebar();
     const pages = ['homePage', 'authPage', 'guestbookPage', 'membersPage', 'rulesPage', 'adminPage', 'profilePage', 'messagesPage', 'radioPage', 'editorialsPage', 'articlePage', 'editorPanelPage', 'comunicatiPage', 'comunicatoPage', 'comunicatoEditorPage', 'pagellePage', 'matchPage', 'risultatiPage', 'mercatoPage'];
     pages.forEach(p => { if (this.el[p]) this.el[p].style.display = 'none'; });
@@ -872,6 +873,21 @@ const APP = {
   showHome() {
     if (this.el.homePage) this.el.homePage.style.display = '';
     this.loadTmwNews('homeNewsSlider', true);
+    this._startHomeSliderAuto();
+  },
+
+  _startHomeSliderAuto() {
+    if (this._homeSliderTimer) clearInterval(this._homeSliderTimer);
+    const track = this.el.homeNewsSliderTrack;
+    if (!track) return;
+    this._homeSliderTimer = setInterval(() => {
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      if (track.scrollLeft >= maxScroll - 5) {
+        track.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        track.scrollBy({ left: 300, behavior: 'smooth' });
+      }
+    }, 5000);
   },
 
   showAuth() {
@@ -3417,10 +3433,24 @@ const APP = {
     const track = sliderMode ? document.getElementById(cid + 'Track') : null;
     const errorEl = sliderMode ? document.getElementById(cid.replace('Slider', 'Error')) : null;
     const fetchData = async () => {
-      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://latinacalcio1932.it/category/tutte/feed/');
-      const data = await res.json();
-      if (data.status !== 'ok') throw new Error('RSS feed error');
-      return data.items.slice(0, 8);
+      const [latinaRes, tuttcRes] = await Promise.all([
+        fetch('https://api.rss2json.com/v1/api.json?rss_url=https://latinacalcio1932.it/category/tutte/feed/'),
+        fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.tuttoc.com/rss/')
+      ]);
+      const latinaData = await latinaRes.json();
+      const tuttcData = await tuttcRes.json();
+      if (latinaData.status !== 'ok') throw new Error('Latina RSS feed error');
+      let allItems = latinaData.items.slice(0, 8);
+      if (tuttcData.status === 'ok') {
+        const mercatoItems = tuttcData.items.filter(item =>
+          item.categories && item.categories.some(c =>
+            c === 'Calciomercato' || c === 'Ufficialità' || c === 'Girone C' || c === 'Primo piano'
+          )
+        );
+        allItems = allItems.concat(mercatoItems);
+      }
+      allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+      return allItems.slice(0, 12);
     };
     const render = (items) => {
       if (!items.length) {
