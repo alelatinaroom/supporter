@@ -920,12 +920,17 @@ const APP = {
     if (this._homeSliderTimer) clearInterval(this._homeSliderTimer);
     const track = this.el.homeNewsSliderTrack;
     if (!track) return;
+    const step = () => {
+      const slide = track.querySelector('.editorial-slide');
+      const slideW = slide ? slide.offsetWidth + 10 : 380;
+      return slideW * 2;
+    };
     this._homeSliderTimer = setInterval(() => {
       const maxScroll = track.scrollWidth - track.clientWidth;
       if (track.scrollLeft >= maxScroll - 5) {
         track.scrollTo({ left: 0, behavior: 'smooth' });
       } else {
-        track.scrollBy({ left: 300, behavior: 'smooth' });
+        track.scrollBy({ left: step(), behavior: 'smooth' });
       }
     }, 5000);
   },
@@ -934,12 +939,17 @@ const APP = {
     if (this._gbSliderTimer) clearInterval(this._gbSliderTimer);
     const track = this.el.gbNewsSliderTrack;
     if (!track) return;
+    const step = () => {
+      const slide = track.querySelector('.editorial-slide');
+      const slideW = slide ? slide.offsetWidth + 10 : 380;
+      return slideW * 2;
+    };
     this._gbSliderTimer = setInterval(() => {
       const maxScroll = track.scrollWidth - track.clientWidth;
       if (track.scrollLeft >= maxScroll - 5) {
         track.scrollTo({ left: 0, behavior: 'smooth' });
       } else {
-        track.scrollBy({ left: 300, behavior: 'smooth' });
+        track.scrollBy({ left: step(), behavior: 'smooth' });
       }
     }, 5000);
   },
