@@ -3519,7 +3519,9 @@ const APP = {
       const tuttcData = await tuttcRes.json();
       const lcdcData = await lcdcRes.json();
       if (latinaData.status !== 'ok') throw new Error('Latina RSS feed error');
-      let allItems = latinaData.items.slice(0, 8);
+      const officialItems = latinaData.items.slice(0, 8);
+      const tmwItems = [];
+      let allItems = [];
       // Fetch from TuttoC
       if (tuttcData.status === 'ok') {
         const mercatoItems = tuttcData.items.filter(item =>
@@ -3612,7 +3614,7 @@ const APP = {
               if (href.startsWith('/')) href = baseUrl + href;
               else if (href && !href.startsWith('http')) href = baseUrl + '/' + href;
               else if (!href) href = baseUrl + '/latina/';
-              allItems.push({
+              tmwItems.push({
                 title: t,
                 pubDate: new Date().toISOString(),
                 link: href,
@@ -3622,6 +3624,14 @@ const APP = {
           });
         }
       } catch (e) { /* tmw fetch failed, skip */ }
+      // Interleave official items with TMW items
+      const interleaved = [];
+      const maxLen = Math.max(officialItems.length, tmwItems.length);
+      for (let i = 0; i < maxLen; i++) {
+        if (i < officialItems.length) interleaved.push(officialItems[i]);
+        if (i < tmwItems.length) interleaved.push(tmwItems[i]);
+      }
+      allItems = interleaved.concat(allItems);
       allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
       return allItems.slice(0, 12);
     };
