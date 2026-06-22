@@ -932,10 +932,14 @@ const APP = {
   },
 
   /* ---------- TOAST ---------- */
-  toast(msg, type) {
+  toast(msg, type, onClick) {
     const t = document.createElement('div');
     t.className = 'toast toast-' + (type || 'info');
     t.innerHTML = msg;
+    if (onClick) {
+      t.style.cursor = 'pointer';
+      t.addEventListener('click', () => { onClick(); t.remove(); });
+    }
     this.el.toastContainer.appendChild(t);
     setTimeout(() => { t.classList.add('toast-fade'); setTimeout(() => t.remove(), 400); }, 3000);
   },
@@ -1260,7 +1264,10 @@ const APP = {
         }
         if (newest && count > this._prevNotifCount) {
           if (newest.type === 'pm') {
-            this.toast('<strong>' + this.escapeHtml(newest.fromName) + '</strong> ti ha mandato un messaggio privato', 'info');
+            this.toast('<strong>' + this.escapeHtml(newest.fromName) + '</strong> ti ha mandato un messaggio privato', 'info', () => {
+              this.navigateTo('messages');
+              this.openConversation(newest.fromId);
+            });
           } else if (newest.type === 'mention') {
             this.toast('<strong>' + this.escapeHtml(newest.fromName) + '</strong> ti ha menzionato', 'info');
           }
