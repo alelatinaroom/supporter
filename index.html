@@ -649,7 +649,10 @@
     <div id="adminRosa" class="admin-section">
       <div class="admin-toolbar">
         <span id="adminRosaCount">0 giocatori</span>
-        <button class="btn btn-primary btn-sm" id="adminAddPlayerBtn"><i class="fas fa-plus"></i> Aggiungi Giocatore</button>
+        <div>
+          <button class="btn btn-outline btn-sm" id="adminImportRosaBtn"><i class="fas fa-file-import"></i> Importa da JSON</button>
+          <button class="btn btn-primary btn-sm" id="adminAddPlayerBtn"><i class="fas fa-plus"></i> Aggiungi</button>
+        </div>
       </div>
       <div id="adminRosaList" class="admin-msg-list"></div>
     </div>
@@ -913,7 +916,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/app.js?v=64"></script>
+<script src="js/app.js?v=65"></script>
 <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>
 </body>
 </html>

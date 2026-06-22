@@ -418,6 +418,7 @@ const APP = {
 
     // Admin Rosa
     if (this.el.adminAddPlayerBtn) this.el.adminAddPlayerBtn.addEventListener('click', () => this.adminOpenAddPlayer());
+    if (this.el.adminImportRosaBtn) this.el.adminImportRosaBtn.addEventListener('click', () => this.importPlayersFromJSON());
     if (this.el.playerModalClose) this.el.playerModalClose.addEventListener('click', () => this.adminClosePlayerModal());
     if (this.el.pmPlayerCancelBtn) this.el.pmPlayerCancelBtn.addEventListener('click', () => this.adminClosePlayerModal());
     if (this.el.pmPlayerSaveBtn) this.el.pmPlayerSaveBtn.addEventListener('click', () => this.adminSavePlayer());
@@ -2451,6 +2452,34 @@ const APP = {
       this.renderRosaList();
       this.toast('Giocatore eliminato.', 'info');
     } catch (e) { this.toast('Errore.', 'error'); }
+  },
+
+  async importPlayersFromJSON() {
+    if (!confirm('Importare la rosa dal file JSON? I giocatori esistenti verranno mantenuti (nessun duplicato per nome).')) return;
+    try {
+      const res = await fetch('/supporter/js/players_import.json');
+      if (!res.ok) { this.toast('Errore caricamento JSON (HTTP ' + res.status + ')', 'error'); return; }
+      const imported = await res.json();
+      if (!imported || imported.length === 0) { this.toast('Nessun giocatore trovato nel JSON.', 'warning'); return; }
+
+      // Get existing players to avoid duplicates
+      const existingSnap = await db.collection('players_db').get();
+      const existingNames = new Set();
+      existingSnap.forEach(d => existingNames.add(d.data().name));
+
+      let added = 0;
+      for (const p of imported) {
+        if (!p.name || existingNames.has(p.name)) continue;
+        await db.collection('players_db').add({
+          name: p.name,
+          number: p.number || '',
+          position: p.position || 'C'
+        });
+        added++;
+      }
+      this.renderRosaList();
+      this.toast('Importati ' + added + ' nuovi giocatori su ' + imported.length + ' totali.', added > 0 ? 'success' : 'info');
+    } catch (e) { console.error('Import error:', e); this.toast('Errore importazione: ' + e.message, 'error'); }
   },
 
   async loadRosaToMatch() {
