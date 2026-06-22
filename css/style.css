@@ -358,6 +358,7 @@ textarea { resize: vertical; min-height: 60px; }
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   background: var(--home-bg-overlay, rgba(0,0,0,0.55));
+  z-index: 2;
 }
 .home-container {
   position: relative; z-index: 1; text-align: center;

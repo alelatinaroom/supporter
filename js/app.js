@@ -893,7 +893,7 @@ const APP = {
       if (!layer) {
         layer = document.createElement('div');
         layer.id = 'homeBgLayer' + i;
-        layer.style.cssText = 'position:absolute;inset:0;background:' + img + ' center/cover no-repeat;transition:opacity 1s ease;z-index:' + (1 - i);
+        layer.style.cssText = 'position:absolute;inset:0;background:' + img + ' center/cover no-repeat;transition:opacity 1s ease;z-index:' + (1 - i) + ';pointer-events:none';
         el.insertBefore(layer, el.firstChild);
       }
     });
