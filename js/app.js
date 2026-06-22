@@ -1876,48 +1876,143 @@ const APP = {
       if (!container) return;
       if (this.el.matchPageTitle) this.el.matchPageTitle.innerHTML = '<i class="fas fa-futbol"></i> ' + this.escapeHtml(m.opponent);
       const dateStr = m.date ? new Date(m.date + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-      const isLoggedIn = !!this.state.currentUser;
-      const currentUid = this.state.currentUser ? this.state.currentUser.id : null;
       const isClosed = m.closed;
-      const players = (m.players || []).map(p => {
-        const ratings = p.ratings ? Object.values(p.ratings) : [];
-        const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
-        const voteCount = ratings.length;
-        const userVote = currentUid && p.ratings ? p.ratings[currentUid] : null;
-        let starsHtml = '';
-        if (isLoggedIn && !isClosed) {
-          for (let s = 1; s <= 10; s++) {
-            const active = userVote === s ? 'voted' : '';
-            starsHtml += '<button class="match-star-btn ' + active + '" onclick="APP.votePlayer(\'' + m.id + '\',\'' + p.id + '\',' + s + ')">' + (s <= userVote ? '\u2605' : '\u2606') + '</button>';
-          }
-        } else if (isClosed) {
-          starsHtml = '<span class="match-closed-msg">Votazione chiusa</span>';
-        } else {
-          starsHtml = '<span style="font-size:11px;color:var(--text-muted)">Accedi per votare</span>';
+      const totalVotes = m.players ? m.players.reduce((sum, p) => sum + Object.keys(p.ratings || {}).length, 0) : 0;
+
+      // Group players by role
+      const roleOrder = ['P', 'D', 'C', 'A'];
+      const grouped = { P: [], D: [], C: [], A: [] };
+      (m.players || []).forEach(p => {
+        const role = p.position || 'D';
+        if (!grouped[role]) grouped[role] = [];
+        grouped[role].push(p);
+      });
+
+      // Render pitch
+      let pitchHtml = '<div class="match-pitch">' +
+        '<div class="pitch-markings"></div>' +
+        '<div class="pitch-pa-top"></div>' +
+        '<div class="pitch-pa-bottom"></div>' +
+        '<div class="pitch-players">';
+
+      roleOrder.forEach(role => {
+        const plist = grouped[role] || [];
+        pitchHtml += '<div class="pitch-row pitch-' + role.toLowerCase() + '">';
+        if (plist.length === 0) {
+          pitchHtml += '</div>';
+          return;
         }
-        const avgClass = voteCount >= 3 ? (avg >= 7 ? 'top-avg' : avg <= 5 ? 'flop-avg' : '') : '';
-        return '<div class="match-player-card">' +
-          '<div class="match-player-number">' + p.number + '</div>' +
-          '<div class="match-player-info">' +
-          '<div class="match-player-name">' + this.escapeHtml(p.name) + '</div>' +
-          '<div class="match-player-role">' + this.getRoleLabel(p.position) + '</div>' +
-          '</div>' +
-          '<div class="match-player-votes">' +
-          '<div class="match-player-avg ' + avgClass + '">' + (voteCount > 0 ? avg.toFixed(1) : '-') + '</div>' +
-          '<div class="match-player-count">' + voteCount + ' voti</div>' +
-          '</div>' +
-          '<div class="match-player-stars">' + starsHtml + '</div>' +
-          '</div>';
-      }).join('');
+        plist.forEach(p => {
+          const ratings = p.ratings ? Object.values(p.ratings) : [];
+          const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+          const voteCount = ratings.length;
+          const userVote = this.state.currentUser && p.ratings ? p.ratings[this.state.currentUser.id] : null;
+          const avgClass = voteCount >= 3 ? (avg >= 7 ? 'top-avg' : avg <= 5 ? 'flop-avg' : '') : '';
+          const votedClass = userVote ? ' voted' : '';
+          const shortName = this.escapeHtml(p.name).split(' ').pop();
+          pitchHtml += '<div class="pitch-player pitch-player-' + role.toLowerCase() + '" onclick="APP.showVotePopup(\'' + m.id + '\',\'' + p.id + '\')">' +
+            '<div class="pitch-player-badge' + votedClass + '">' +
+            '<span class="pitch-player-num">' + p.number + '</span>' +
+            '<span class="pitch-player-name">' + shortName + '</span>' +
+            '<span class="pitch-player-avg' + (voteCount === 0 ? ' none' : '') + ' ' + avgClass + '">' + (voteCount > 0 ? avg.toFixed(1) : '-') + '</span>' +
+            '</div>' +
+            '</div>';
+        });
+        pitchHtml += '</div>';
+      });
+
+      pitchHtml += '</div></div>';
+
       container.innerHTML =
         '<div class="match-info">' +
         '<div class="match-info-item"><span class="match-info-label">Data</span><span class="match-info-value">' + dateStr + '</span></div>' +
         (m.result ? '<div class="match-info-item"><span class="match-info-label">Risultato</span><span class="match-info-value">' + this.escapeHtml(m.result) + '</span></div>' : '') +
-        '<div class="match-info-item"><span class="match-info-label">Voti totali</span><span class="match-info-value">' + (m.players ? m.players.reduce((sum, p) => sum + Object.keys(p.ratings || {}).length, 0) : 0) + '</span></div>' +
+        '<div class="match-info-item"><span class="match-info-label">Voti totali</span><span class="match-info-value">' + totalVotes + '</span></div>' +
         (isClosed ? '<div class="match-info-item"><span class="match-info-label">Stato</span><span class="match-info-value" style="color:var(--accent3)">Chiusa</span></div>' : '') +
         '</div>' +
-        '<div class="match-player-list">' + players + '</div>';
+        pitchHtml;
+
+      // Create vote popup element if not exists
+      if (!document.getElementById('pitchVotePopup')) {
+        const popup = document.createElement('div');
+        popup.id = 'pitchVotePopup';
+        popup.className = 'pitch-vote-popup';
+        popup.innerHTML = '<div class="pitch-vote-card"></div>';
+        popup.addEventListener('click', function (e) {
+          if (e.target === this) APP.closeVotePopup();
+        });
+        document.body.appendChild(popup);
+      }
     } catch (e) { console.error('Open match error:', e); }
+  },
+
+  async showVotePopup(matchId, playerId) {
+    this._voteMatchId = matchId;
+    this._votePlayerId = playerId;
+    try {
+      const doc = await db.collection('matches').doc(matchId).get();
+      if (!doc.exists) return;
+      const m = { id: doc.id, ...doc.data() };
+      const player = (m.players || []).find(p => p.id === playerId);
+      if (!player) return;
+      const ratings = player.ratings ? Object.values(player.ratings) : [];
+      const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+      const voteCount = ratings.length;
+      const currentUid = this.state.currentUser ? this.state.currentUser.id : null;
+      const userVote = currentUid && player.ratings ? player.ratings[currentUid] : null;
+      const isLoggedIn = !!this.state.currentUser;
+      const isClosed = m.closed;
+      const canVote = isLoggedIn && !isClosed;
+
+      let starsHtml = '';
+      for (let s = 1; s <= 10; s++) {
+        const active = userVote === s ? 'voted' : '';
+        const star = s <= (userVote || 0) ? '\u2605' : '\u2606';
+        starsHtml += '<button class="pitch-vote-star ' + active + '" onclick="APP.voteFromPopup(' + s + ')"' + (!canVote ? ' disabled' : '') + '>' + star + '</button>';
+      }
+
+      const popup = document.getElementById('pitchVotePopup');
+      if (!popup) return;
+      const card = popup.querySelector('.pitch-vote-card');
+      card.innerHTML =
+        '<h3>' + this.escapeHtml(player.name) + '</h3>' +
+        '<div class="pitch-vote-role">' + this.getRoleLabel(player.position) + ' \u00B7 #' + player.number + '</div>' +
+        '<div class="pitch-vote-stars">' + starsHtml + '</div>' +
+        '<div class="pitch-vote-info">' + (voteCount > 0 ? 'Media: ' + avg.toFixed(1) + ' (' + voteCount + ' voti)' : 'Ancora nessun voto') + '</div>' +
+        (isClosed ? '<div class="pitch-vote-info" style="color:var(--accent3)">Votazione chiusa</div>' : '') +
+        (!isLoggedIn ? '<div class="pitch-vote-info">Accedi per votare</div>' : '') +
+        '<button class="btn btn-ghost pitch-vote-close" onclick="APP.closeVotePopup()">Chiudi</button>';
+      popup.classList.add('open');
+    } catch (e) { console.error('Show vote popup error:', e); }
+  },
+
+  async voteFromPopup(score) {
+    if (!this.state.currentUser) { this.toast('Accedi per votare!', 'warning'); return; }
+    try {
+      const doc = await db.collection('matches').doc(this._voteMatchId).get();
+      if (!doc.exists) return;
+      const m = { id: doc.id, ...doc.data() };
+      if (m.closed) { this.toast('Votazione chiusa.', 'warning'); this.closeVotePopup(); return; }
+      const player = (m.players || []).find(p => p.id === this._votePlayerId);
+      if (!player) return;
+      if (!player.ratings) player.ratings = {};
+      const uid = this.state.currentUser.id;
+      if (player.ratings[uid] === score) {
+        delete player.ratings[uid];
+        this.toast('Voto rimosso!', 'info');
+      } else {
+        player.ratings[uid] = score;
+        this.toast('Voto registrato: ' + score + '/10', 'success');
+      }
+      await db.collection('matches').doc(this._voteMatchId).update({ players: m.players });
+      this.closeVotePopup();
+      this.openMatch(this._voteMatchId);
+    } catch (e) { this.toast('Errore durante il voto.', 'error'); }
+  },
+
+  closeVotePopup() {
+    const popup = document.getElementById('pitchVotePopup');
+    if (popup) popup.classList.remove('open');
   },
 
   async votePlayer(matchId, playerId, score) {
