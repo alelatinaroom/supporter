@@ -1438,19 +1438,15 @@ const APP = {
     const urls = filtered.match(urlRegex);
     let finalText = filtered;
     let links = [];
-    if (urls) {
-      const unique = [...new Set(urls)];
-      const isMod = this.state.currentUser.role === 'admin' || this.state.currentUser.role === 'editor';
-      links = unique.map(u => ({ url: u, approved: isMod }));
-      let idx = 0;
-      finalText = finalText.replace(urlRegex, () => {
-        const n = idx++;
-        return '[link ' + n + ']';
-      });
-      if (links.length > 0 && !isMod) {
-        this.toast('I link saranno visibili dopo l\'approvazione di un amministratore.', 'info');
+if (urls) {
+        const unique = [...new Set(urls)];
+        links = unique.map(u => ({ url: u, approved: true }));
+        let idx = 0;
+        finalText = finalText.replace(urlRegex, () => {
+          const n = idx++;
+          return '[link ' + n + ']';
+        });
       }
-    }
     try {
       const msgData = {
         text: finalText,
