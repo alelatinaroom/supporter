@@ -2401,7 +2401,6 @@ if (urls) {
       });
 
       html += '</tbody></table>';
-      html += '<div class="classifica-note">* Trapani: -20 punti di penalizzazione</div>';
       container.innerHTML = html;
     } catch (e) { console.error('Classifica error:', e); container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Errore caricamento classifica.<br><small>' + this.escapeHtml(e.message) + '</small></p></div>'; }
   },
