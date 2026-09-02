@@ -44,6 +44,21 @@
   --sidebar-bg: rgba(255,255,255,0.98);
   --active-bg: rgba(37,99,235,0.1);
 }
+[data-theme="light"] .pitch-player-badge {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+}
+[data-theme="light"] .pitch-player-gk .pitch-player-badge {
+  background: linear-gradient(135deg, #e65100, #bf360c);
+}
+[data-theme="light"] .pitch-player-def .pitch-player-badge {
+  background: linear-gradient(135deg, #0d47a1, #1565c0);
+}
+[data-theme="light"] .pitch-player-mid .pitch-player-badge {
+  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+}
+[data-theme="light"] .pitch-player-att .pitch-player-badge {
+  background: linear-gradient(135deg, #b71c1c, #c62828);
+}
 
 html, body {
   height: 100%;
