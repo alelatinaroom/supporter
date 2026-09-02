@@ -2,8 +2,8 @@ name: Update Results & Classifica
 
 on:
   schedule:
-    # Run daily at 21:30 UTC (23:30 Rome, after evening matches)
-    - cron: '30 21 * * *'
+    # Run daily at 21:00 UTC (23:00 Rome, after evening matches)
+    - cron: '0 21 * * *'
   workflow_dispatch: # allow manual trigger
 
 permissions:
