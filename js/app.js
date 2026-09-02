@@ -2709,7 +2709,7 @@ if (urls) {
   async importPlayersFromJSON() {
     if (!confirm('Importare la rosa dal file JSON? Verranno aggiunti i nuovi giocatori e rimossi quelli che non sono più in lista.')) return;
     try {
-      const res = await fetch('/supporter/js/players_import.json');
+      const res = await fetch('js/players_import.json');
       if (!res.ok) { this.toast('Errore caricamento JSON (HTTP ' + res.status + ')', 'error'); return; }
       const imported = await res.json();
       if (!imported || imported.length === 0) { this.toast('Nessun giocatore trovato nel JSON.', 'warning'); return; }
