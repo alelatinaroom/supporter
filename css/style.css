@@ -748,6 +748,66 @@ textarea { resize: vertical; min-height: 60px; }
   text-align: center; padding: 10px; color: var(--text-muted); font-size: 13px;
 }
 
+/* Results widget */
+.gb-results-widget {
+  background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius);
+  margin-bottom: 16px; overflow: hidden;
+}
+.gb-results-widget-header {
+  padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--text);
+  border-bottom: 1px solid var(--card-border); display: flex; align-items: center; gap: 8px;
+}
+.gb-results-widget-body {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+}
+.gb-results-widget-section {
+  padding: 14px 16px;
+}
+.gb-results-widget-section:first-child {
+  border-right: 1px solid var(--card-border);
+}
+.gb-results-widget-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-muted); margin-bottom: 6px;
+}
+.gb-results-widget-opponent {
+  font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px;
+}
+.gb-results-widget-score {
+  font-size: 22px; font-weight: 800; margin-bottom: 2px;
+}
+.gb-results-widget-score .score-win { color: #4caf50; }
+.gb-results-widget-score .score-draw { color: #ffc107; }
+.gb-results-widget-score .score-loss { color: #ff5252; }
+.gb-results-widget-score .score-tbd { color: var(--text-muted); }
+.gb-results-widget-date {
+  font-size: 12px; color: var(--text-muted);
+}
+.gb-results-widget-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 700; margin-top: 4px;
+}
+.gb-results-widget-badge.V { background: #4caf50; color: #fff; }
+.gb-results-widget-badge.N { background: #ffc107; color: #000; }
+.gb-results-widget-badge.P { background: #ff5252; color: #fff; }
+.gb-results-widget-badge.T { background: #607d8b; color: #fff; }
+.gb-results-widget-footer {
+  padding: 10px 16px; border-top: 1px solid var(--card-border); text-align: center;
+}
+.gb-results-widget-link {
+  font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s;
+}
+.gb-results-widget-link:hover { color: var(--accent2); }
+.gb-results-widget-empty {
+  padding: 14px 16px; text-align: center; font-size: 13px; color: var(--text-muted); grid-column: 1 / -1;
+}
+
+@media (max-width: 480px) {
+  .gb-results-widget-body { grid-template-columns: 1fr; }
+  .gb-results-widget-section:first-child { border-right: none; border-bottom: 1px solid var(--card-border); }
+}
+
 /* Filters */
 .gb-filters {
   display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;

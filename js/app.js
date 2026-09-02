@@ -767,6 +767,7 @@ const APP = {
         this.renderEditorialSlider();
         this.loadTmwNews('gbNewsSlider', true);
         this._startGbSliderAuto();
+        this.renderMuroResults();
         break;
       case 'members':
         this.el.membersPage.style.display = '';
@@ -2234,7 +2235,7 @@ if (urls) {
     const statsEl = this.el.risultatiStats;
     if (!container) return;
     try {
-      const res = await fetch('/supporter/js/season_results.json');
+      const res = await fetch('js/season_results.json');
       if (!res.ok) { container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Impossibile caricare i risultati. (HTTP ' + res.status + ')</p></div>'; return; }
       const matches = await res.json();
       if (!matches || matches.length === 0) {
@@ -2284,12 +2285,76 @@ if (urls) {
     } catch (e) { console.error('Risultati error:', e); container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Errore caricamento risultati.<br><small>' + this.escapeHtml(e.message) + '</small></p></div>'; }
   },
 
+  /* ---------- MURO RESULTS WIDGET ---------- */
+  async renderMuroResults() {
+    const widget = document.getElementById('gbResultsWidget');
+    const body = document.getElementById('gbResultsWidgetBody');
+    const link = document.getElementById('gbResultsWidgetLink');
+    if (!widget || !body) return;
+    try {
+      const res = await fetch('js/season_results.json');
+      if (!res.ok) { widget.style.display = 'none'; return; }
+      const matches = await res.json();
+      if (!matches || matches.length === 0) { widget.style.display = 'none'; return; }
+
+      const lastPlayed = [...matches].reverse().find(m => m.result && m.result !== 'T');
+      const nextMatch = matches.find(m => m.result === 'T');
+
+      if (!lastPlayed && !nextMatch) { widget.style.display = 'none'; return; }
+
+      let html = '';
+
+      if (lastPlayed) {
+        const dateObj = new Date(lastPlayed.date.split('/').reverse().join('-'));
+        const dateStr = dateObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+        const logoUrl = 'https://sport.virgilio.it/img/loghi/' + lastPlayed.opponentClass + '.svg';
+        const resultClass = lastPlayed.result === 'V' ? 'score-win' : lastPlayed.result === 'N' ? 'score-draw' : 'score-loss';
+        const badgeLabel = { V: 'Vittoria', N: 'Pareggio', P: 'Sconfitta' }[lastPlayed.result] || '';
+        const scoreText = lastPlayed.isHome
+          ? lastPlayed.latinaScore + ' - ' + lastPlayed.opponentScore
+          : lastPlayed.opponentScore + ' - ' + lastPlayed.latinaScore;
+        const venue = lastPlayed.isHome ? 'Casa' : 'Trasferta';
+
+        html += '<div class="gb-results-widget-section">' +
+          '<div class="gb-results-widget-label"><i class="fas fa-clock"></i> Ultima partita</div>' +
+          '<div class="gb-results-widget-opponent"><img src="' + logoUrl + '" alt="" style="height:18px;vertical-align:middle;margin-right:6px" onerror="this.style.display=\'none\'">' + this.escapeHtml(lastPlayed.opponent) + '</div>' +
+          '<div class="gb-results-widget-score ' + resultClass + '">' + scoreText + '</div>' +
+          '<div class="gb-results-widget-date">' + dateStr + ' · ' + venue + '</div>' +
+          '<div class="gb-results-widget-badge ' + lastPlayed.result + '">' + badgeLabel + '</div>' +
+          '</div>';
+      } else {
+        html += '<div class="gb-results-widget-section"><div class="gb-results-widget-empty">Nessuna partita giocata</div></div>';
+      }
+
+      if (nextMatch) {
+        const dateObj = new Date(nextMatch.date.split('/').reverse().join('-'));
+        const dateStr = dateObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+        const logoUrl = 'https://sport.virgilio.it/img/loghi/' + nextMatch.opponentClass + '.svg';
+        const venue = nextMatch.isHome ? 'Casa' : 'Trasferta';
+
+        html += '<div class="gb-results-widget-section">' +
+          '<div class="gb-results-widget-label"><i class="fas fa-calendar"></i> Prossima partita</div>' +
+          '<div class="gb-results-widget-opponent"><img src="' + logoUrl + '" alt="" style="height:18px;vertical-align:middle;margin-right:6px" onerror="this.style.display=\'none\'">' + this.escapeHtml(nextMatch.opponent) + '</div>' +
+          '<div class="gb-results-widget-score score-tbd">' + (nextMatch.time || 'TBD') + '</div>' +
+          '<div class="gb-results-widget-date">' + dateStr + ' · ' + venue + '</div>' +
+          '<div class="gb-results-widget-badge T">Da giocare</div>' +
+          '</div>';
+      } else {
+        html += '<div class="gb-results-widget-section"><div class="gb-results-widget-empty">Nessuna prossima partita</div></div>';
+      }
+
+      body.innerHTML = html;
+      widget.style.display = '';
+      if (link) link.onclick = (e) => { e.preventDefault(); this.navigateTo('risultati'); };
+    } catch (e) { console.error('Muro results error:', e); widget.style.display = 'none'; }
+  },
+
   /* ---------- CLASSIFICA ---------- */
   async renderClassifica() {
     const container = this.el.classificaContainer;
     if (!container) return;
     try {
-      const res = await fetch('/supporter/js/classifica.json');
+      const res = await fetch('js/classifica.json');
       if (!res.ok) { container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Impossibile caricare classifica. (HTTP ' + res.status + ')</p></div>'; return; }
       const data = await res.json();
       if (!data || data.length === 0) {
