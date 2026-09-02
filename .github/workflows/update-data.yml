@@ -42,5 +42,8 @@ jobs:
             echo "updated=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Report
-        run: echo "Updated=${{ steps.check.outputs.updated }}"
+      - name: Deploy to Firebase Hosting
+        if: steps.check.outputs.updated == 'true'
+        run: npx firebase-tools deploy --only hosting --token "$FIREBASE_TOKEN"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
