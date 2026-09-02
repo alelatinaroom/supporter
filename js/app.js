@@ -2707,43 +2707,32 @@ if (urls) {
   },
 
   async importPlayersFromJSON() {
-    if (!confirm('Importare la rosa dal file JSON? Verranno aggiunti i nuovi giocatori e rimossi quelli che non sono più in lista.')) return;
+    if (!confirm('Importare la rosa dal file JSON? Il database verrà Svuotato e reimportato con la lista aggiornata (29 giocatori).')) return;
     try {
       const res = await fetch('js/players_import.json');
       if (!res.ok) { this.toast('Errore caricamento JSON (HTTP ' + res.status + ')', 'error'); return; }
       const imported = await res.json();
       if (!imported || imported.length === 0) { this.toast('Nessun giocatore trovato nel JSON.', 'warning'); return; }
 
-      const importedNames = new Set(imported.filter(p => p.name).map(p => p.name.trim()));
-
       const existingSnap = await db.collection('players_db').get();
-      const existingNames = new Set();
-      existingSnap.forEach(d => existingNames.add(d.data().name));
+      const removals = [];
+      existingSnap.forEach(d => removals.push(db.collection('players_db').doc(d.id).delete()));
+      await Promise.all(removals);
 
       let added = 0;
       for (const p of imported) {
         const name = (p.name || '').trim();
-        if (!name || existingNames.has(name)) continue;
+        if (!name) continue;
         await db.collection('players_db').add({
           name,
           number: p.number || '',
           position: p.position || 'C'
         });
-        existingNames.add(name);
         added++;
       }
 
-      let removed = 0;
-      const removals = [];
-      existingSnap.forEach(d => {
-        const name = d.data().name;
-        if (name && !importedNames.has(name)) removals.push(db.collection('players_db').doc(d.id).delete());
-      });
-      await Promise.all(removals);
-      removed = removals.length;
-
       this.renderRosaList();
-      this.toast('Importati ' + added + ' nuovi, rimossi ' + removed + ' non più in lista.', (added + removed) > 0 ? 'success' : 'info');
+      this.toast('Rosa aggiornata: rimossi ' + removals.length + ' vecchi, importati ' + added + ' giocatori.', 'success');
     } catch (e) { console.error('Import error:', e); this.toast('Errore importazione: ' + e.message, 'error'); }
   },
 
