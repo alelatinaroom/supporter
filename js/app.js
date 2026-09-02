@@ -2265,15 +2265,20 @@ if (urls) {
         const logoUrl = 'https://sport.virgilio.it/img/loghi/' + m.opponentClass + '.svg';
         const latinaScore = m.latinaScore;
         const oppScore = m.opponentScore;
+        const isScheduled = m.result === 'T';
+        const scoreHtml = isScheduled
+          ? '<span class="risultati-time">' + (m.time || 'TBD') + '</span>'
+          : (m.isHome ? '<span class="latina-score">' + latinaScore + '</span><span class="risultati-vs">-</span><span>' + oppScore + '</span>'
+                      : '<span>' + oppScore + '</span><span class="risultati-vs">-</span><span class="latina-score">' + latinaScore + '</span>');
+        const badgeHtml = isScheduled
+          ? '<div class="risultati-result-badge T">TBD</div>'
+          : '<div class="risultati-result-badge ' + m.result + '">' + { V: 'V', N: 'N', P: 'P' }[m.result] + '</div>';
         return '<div class="risultati-item ' + m.result + '" data-opponent="' + m.opponent.replace(/"/g, '&quot;') + '" data-date="' + m.date + '" data-score="' + m.latinaScore + '-' + m.opponentScore + '">' +
           '<div class="risultati-date">' + dateStr + '</div>' +
           '<div class="risultati-logo"><img src="' + logoUrl + '" alt="" loading="lazy" onerror="this.style.display=\'none\'"></div>' +
           '<div class="risultati-opponent">' + this.escapeHtml(m.opponent) + '</div>' +
-          '<div class="risultati-score">' +
-            (m.isHome ? '<span class="latina-score">' + latinaScore + '</span><span class="risultati-vs">-</span><span>' + oppScore + '</span>'
-                      : '<span>' + oppScore + '</span><span class="risultati-vs">-</span><span class="latina-score">' + latinaScore + '</span>') +
-          '</div>' +
-          '<div class="risultati-result-badge ' + m.result + '">' + { V: 'V', N: 'N', P: 'P' }[m.result] + '</div>' +
+          '<div class="risultati-score">' + scoreHtml + '</div>' +
+          badgeHtml +
           '</div>';
       }).join('');
     } catch (e) { console.error('Risultati error:', e); container.innerHTML = '<div class="gb-empty"><i class="fas fa-exclamation-circle"></i><p>Errore caricamento risultati.<br><small>' + this.escapeHtml(e.message) + '</small></p></div>'; }
