@@ -2057,6 +2057,7 @@ if (urls) {
       // Render pitch
       let pitchHtml = '<div class="match-pitch">' +
         '<div class="pitch-markings"></div>' +
+        '<div class="pitch-logo"><img src="images/logo_white.png" alt="Latina Calcio"></div>' +
         '<div class="pitch-pa-top"></div>' +
         '<div class="pitch-pa-bottom"></div>' +
         '<div class="pitch-players">';
