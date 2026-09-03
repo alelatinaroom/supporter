@@ -823,6 +823,11 @@ textarea { resize: vertical; min-height: 60px; }
   .gb-results-widget-section:first-child { border-right: none; border-bottom: 1px solid var(--card-border); }
 }
 
+.home-results-widget {
+  max-width: 560px;
+  margin: 0 auto 20px;
+}
+
 /* Filters */
 .gb-filters {
   display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;

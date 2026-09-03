@@ -879,6 +879,7 @@ const APP = {
     this.loadTmwNews('homeNewsSlider', true);
     this._startHomeSliderAuto();
     this._startBgRotation();
+    this.renderHomeResults();
   },
 
   _startBgRotation() {
@@ -2288,9 +2289,17 @@ if (urls) {
 
   /* ---------- MURO RESULTS WIDGET ---------- */
   async renderMuroResults() {
-    const widget = document.getElementById('gbResultsWidget');
-    const body = document.getElementById('gbResultsWidgetBody');
-    const link = document.getElementById('gbResultsWidgetLink');
+    this.renderResultsWidget('gb', 'gbResultsWidget', 'gbResultsWidgetBody', 'gbResultsWidgetLink');
+  },
+
+  renderHomeResults() {
+    this.renderResultsWidget('home', 'homeResultsWidget', 'homeResultsWidgetBody', 'homeResultsWidgetLink');
+  },
+
+  async renderResultsWidget(prefix, widgetId, bodyId, linkId) {
+    const widget = document.getElementById(widgetId);
+    const body = document.getElementById(bodyId);
+    const link = document.getElementById(linkId);
     if (!widget || !body) return;
     try {
       const res = await fetch('js/season_results.json');
