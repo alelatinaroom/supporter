@@ -95,7 +95,25 @@ const APP = {
     this.applyTheme();
     this.bindEvents();
     this.initAuth();
+    this.startHomeRotator();
     this.showSplash();
+  },
+
+  startHomeRotator() {
+    const el = document.getElementById('homeRotatorText');
+    if (!el) return;
+    const words = ['Passione', 'Cuore', 'Nerazzurro', 'Torcida', 'Forza Latina'];
+    let i = 0;
+    setInterval(() => {
+      el.classList.add('rotating-out');
+      setTimeout(() => {
+        i = (i + 1) % words.length;
+        el.textContent = words[i];
+        el.classList.remove('rotating-out');
+        el.classList.add('rotating-in');
+      }, 350);
+      setTimeout(() => el.classList.remove('rotating-in'), 750);
+    }, 2500);
   },
 
   cacheDOM() {
@@ -2077,9 +2095,10 @@ if (urls) {
           const userVote = this.state.currentUser && p.ratings ? p.ratings[this.state.currentUser.id] : null;
           const avgClass = voteCount >= 3 ? (avg >= 7 ? 'top-avg' : avg <= 5 ? 'flop-avg' : '') : '';
           const votedClass = userVote ? ' voted' : '';
+          const badgeClass = avgClass === 'top-avg' ? ' is-top' : avgClass === 'flop-avg' ? ' is-flop' : '';
           const shortName = this.escapeHtml(p.name).split(' ').pop();
           pitchHtml += '<div class="pitch-player pitch-player-' + role.toLowerCase() + '" onclick="APP.showVotePopup(\'' + m.id + '\',\'' + p.id + '\')">' +
-            '<div class="pitch-player-badge' + votedClass + '">' +
+            '<div class="pitch-player-badge' + votedClass + badgeClass + '">' +
             '<span class="pitch-player-num">' + p.number + '</span>' +
             '<span class="pitch-player-name">' + shortName + '</span>' +
             '<span class="pitch-player-avg' + (voteCount === 0 ? ' none' : '') + ' ' + avgClass + '">' + (voteCount > 0 ? avg.toFixed(1) : '-') + '</span>' +
