@@ -1,15 +1,15 @@
 [
   {
     "pos": 1,
-    "team": "Forlì",
-    "teamClass": "forli",
-    "pts": 4,
-    "g": 2,
-    "v": 1,
-    "n": 1,
-    "p": 0,
-    "gf": 8,
-    "gs": 5,
+    "team": "Monterosi",
+    "teamClass": "monterosi",
+    "pts": 6,
+    "g": 3,
+    "v": 2,
+    "n": 0,
+    "p": 1,
+    "gf": 5,
+    "gs": 2,
     "dr": 3,
     "penalty": 0
   },
@@ -43,6 +43,20 @@
   },
   {
     "pos": 4,
+    "team": "Forlì",
+    "teamClass": "forli",
+    "pts": 4,
+    "g": 3,
+    "v": 1,
+    "n": 1,
+    "p": 1,
+    "gf": 8,
+    "gs": 7,
+    "dr": 1,
+    "penalty": 0
+  },
+  {
+    "pos": 5,
     "team": "Grosseto",
     "teamClass": "grosseto",
     "pts": 4,
@@ -56,7 +70,7 @@
     "penalty": 0
   },
   {
-    "pos": 5,
+    "pos": 6,
     "team": "Perugia",
     "teamClass": "perugia",
     "pts": 4,
@@ -70,7 +84,7 @@
     "penalty": 0
   },
   {
-    "pos": 6,
+    "pos": 7,
     "team": "Reggiana",
     "teamClass": "reggiana",
     "pts": 4,
@@ -84,7 +98,7 @@
     "penalty": 0
   },
   {
-    "pos": 7,
+    "pos": 8,
     "team": "Livorno",
     "teamClass": "livorno",
     "pts": 4,
@@ -98,7 +112,7 @@
     "penalty": 0
   },
   {
-    "pos": 8,
+    "pos": 9,
     "team": "Spezia",
     "teamClass": "spezia",
     "pts": 4,
@@ -112,31 +126,17 @@
     "penalty": 0
   },
   {
-    "pos": 9,
-    "team": "Monterosi",
-    "teamClass": "monterosi",
-    "pts": 3,
-    "g": 2,
-    "v": 1,
-    "n": 0,
-    "p": 1,
-    "gf": 4,
-    "gs": 2,
-    "dr": 2,
-    "penalty": 0
-  },
-  {
     "pos": 10,
-    "team": "Campobasso",
-    "teamClass": "campobasso",
-    "pts": 3,
-    "g": 2,
+    "team": "Latina",
+    "teamClass": "latina",
+    "pts": 4,
+    "g": 3,
     "v": 1,
-    "n": 0,
+    "n": 1,
     "p": 1,
-    "gf": 2,
-    "gs": 1,
-    "dr": 1,
+    "gf": 3,
+    "gs": 3,
+    "dr": 0,
     "penalty": 0
   },
   {
@@ -169,6 +169,34 @@
   },
   {
     "pos": 13,
+    "team": "Campobasso",
+    "teamClass": "campobasso",
+    "pts": 3,
+    "g": 3,
+    "v": 1,
+    "n": 0,
+    "p": 2,
+    "gf": 4,
+    "gs": 5,
+    "dr": -1,
+    "penalty": 0
+  },
+  {
+    "pos": 14,
+    "team": "Ostia Mare",
+    "teamClass": "ostiamare",
+    "pts": 3,
+    "g": 3,
+    "v": 1,
+    "n": 0,
+    "p": 2,
+    "gf": 3,
+    "gs": 4,
+    "dr": -1,
+    "penalty": 0
+  },
+  {
+    "pos": 15,
     "team": "Atalanta U23",
     "teamClass": "atalantau23",
     "pts": 3,
@@ -182,7 +210,21 @@
     "penalty": 0
   },
   {
-    "pos": 14,
+    "pos": 16,
+    "team": "Gubbio",
+    "teamClass": "gubbio",
+    "pts": 3,
+    "g": 3,
+    "v": 1,
+    "n": 0,
+    "p": 2,
+    "gf": 5,
+    "gs": 7,
+    "dr": -2,
+    "penalty": 0
+  },
+  {
+    "pos": 17,
     "team": "Pineto",
     "teamClass": "pineto",
     "pts": 2,
@@ -196,7 +238,7 @@
     "penalty": 0
   },
   {
-    "pos": 15,
+    "pos": 18,
     "team": "Sambenedettese",
     "teamClass": "sambenedettese",
     "pts": 1,
@@ -210,73 +252,31 @@
     "penalty": 0
   },
   {
-    "pos": 16,
+    "pos": 19,
     "team": "Vis Pesaro",
     "teamClass": "vispesaro",
     "pts": 1,
-    "g": 2,
+    "g": 3,
     "v": 0,
     "n": 1,
-    "p": 1,
-    "gf": 2,
-    "gs": 4,
-    "dr": -2,
-    "penalty": 0
-  },
-  {
-    "pos": 17,
-    "team": "Latina",
-    "teamClass": "latina",
-    "pts": 1,
-    "g": 2,
-    "v": 0,
-    "n": 1,
-    "p": 1,
-    "gf": 1,
-    "gs": 3,
-    "dr": -2,
-    "penalty": 0
-  },
-  {
-    "pos": 18,
-    "team": "Pianese",
-    "teamClass": "pianese",
-    "pts": 1,
-    "g": 2,
-    "v": 0,
-    "n": 1,
-    "p": 1,
-    "gf": 0,
-    "gs": 2,
-    "dr": -2,
-    "penalty": 0
-  },
-  {
-    "pos": 19,
-    "team": "Ostia Mare",
-    "teamClass": "ostiamare",
-    "pts": 0,
-    "g": 2,
-    "v": 0,
-    "n": 0,
     "p": 2,
-    "gf": 1,
-    "gs": 3,
-    "dr": -2,
+    "gf": 3,
+    "gs": 6,
+    "dr": -3,
     "penalty": 0
   },
   {
     "pos": 20,
-    "team": "Gubbio",
-    "teamClass": "gubbio",
-    "pts": 0,
-    "g": 2,
+    "team": "Pianese",
+    "teamClass": "pianese",
+    "pts": 1,
+    "g": 3,
     "v": 0,
-    "n": 0,
+    "n": 1,
     "p": 2,
-    "gf": 1,
-    "gs": 5,
-    "dr": -4,
+    "gf": 0,
+    "gs": 3,
+    "dr": -3,
     "penalty": 0
   }
 ]
