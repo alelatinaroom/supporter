@@ -15,6 +15,20 @@
   },
   {
     "pos": 2,
+    "team": "Ravenna",
+    "teamClass": "ravenna",
+    "pts": 8,
+    "g": 4,
+    "v": 2,
+    "n": 2,
+    "p": 0,
+    "gf": 7,
+    "gs": 2,
+    "dr": 5,
+    "penalty": 0
+  },
+  {
+    "pos": 3,
     "team": "Reggiana",
     "teamClass": "reggiana",
     "pts": 8,
@@ -28,7 +42,7 @@
     "penalty": 0
   },
   {
-    "pos": 3,
+    "pos": 4,
     "team": "Grosseto",
     "teamClass": "grosseto",
     "pts": 8,
@@ -42,7 +56,7 @@
     "penalty": 0
   },
   {
-    "pos": 4,
+    "pos": 5,
     "team": "Monterosi",
     "teamClass": "monterosi",
     "pts": 7,
@@ -56,7 +70,7 @@
     "penalty": 0
   },
   {
-    "pos": 5,
+    "pos": 6,
     "team": "Forlì",
     "teamClass": "forli",
     "pts": 7,
@@ -66,20 +80,6 @@
     "p": 1,
     "gf": 10,
     "gs": 8,
-    "dr": 2,
-    "penalty": 0
-  },
-  {
-    "pos": 6,
-    "team": "Perugia",
-    "teamClass": "perugia",
-    "pts": 7,
-    "g": 3,
-    "v": 2,
-    "n": 1,
-    "p": 0,
-    "gf": 5,
-    "gs": 3,
     "dr": 2,
     "penalty": 0
   },
@@ -99,6 +99,20 @@
   },
   {
     "pos": 8,
+    "team": "Perugia",
+    "teamClass": "perugia",
+    "pts": 7,
+    "g": 4,
+    "v": 2,
+    "n": 1,
+    "p": 1,
+    "gf": 5,
+    "gs": 6,
+    "dr": -1,
+    "penalty": 0
+  },
+  {
+    "pos": 9,
     "team": "Gubbio",
     "teamClass": "gubbio",
     "pts": 6,
@@ -112,7 +126,7 @@
     "penalty": 0
   },
   {
-    "pos": 9,
+    "pos": 10,
     "team": "Campobasso",
     "teamClass": "campobasso",
     "pts": 6,
@@ -126,7 +140,21 @@
     "penalty": 0
   },
   {
-    "pos": 10,
+    "pos": 11,
+    "team": "Torres",
+    "teamClass": "torres",
+    "pts": 6,
+    "g": 4,
+    "v": 2,
+    "n": 0,
+    "p": 2,
+    "gf": 5,
+    "gs": 6,
+    "dr": -1,
+    "penalty": 0
+  },
+  {
+    "pos": 12,
     "team": "Atalanta U23",
     "teamClass": "atalantau23",
     "pts": 6,
@@ -140,21 +168,7 @@
     "penalty": 0
   },
   {
-    "pos": 11,
-    "team": "Ravenna",
-    "teamClass": "ravenna",
-    "pts": 5,
-    "g": 3,
-    "v": 1,
-    "n": 2,
-    "p": 0,
-    "gf": 4,
-    "gs": 2,
-    "dr": 2,
-    "penalty": 0
-  },
-  {
-    "pos": 12,
+    "pos": 13,
     "team": "Pineto",
     "teamClass": "pineto",
     "pts": 5,
@@ -168,7 +182,7 @@
     "penalty": 0
   },
   {
-    "pos": 13,
+    "pos": 14,
     "team": "Vado",
     "teamClass": "vado",
     "pts": 4,
@@ -182,7 +196,7 @@
     "penalty": 0
   },
   {
-    "pos": 14,
+    "pos": 15,
     "team": "Pescara",
     "teamClass": "pescara",
     "pts": 4,
@@ -196,7 +210,7 @@
     "penalty": 0
   },
   {
-    "pos": 15,
+    "pos": 16,
     "team": "Latina",
     "teamClass": "latina",
     "pts": 4,
@@ -210,30 +224,16 @@
     "penalty": 0
   },
   {
-    "pos": 16,
+    "pos": 17,
     "team": "Ostia Mare",
     "teamClass": "ostiamare",
     "pts": 3,
-    "g": 3,
+    "g": 4,
     "v": 1,
     "n": 0,
-    "p": 2,
-    "gf": 3,
-    "gs": 4,
-    "dr": -1,
-    "penalty": 0
-  },
-  {
-    "pos": 17,
-    "team": "Torres",
-    "teamClass": "torres",
-    "pts": 3,
-    "g": 3,
-    "v": 1,
-    "n": 0,
-    "p": 2,
-    "gf": 2,
-    "gs": 4,
+    "p": 3,
+    "gf": 5,
+    "gs": 7,
     "dr": -2,
     "penalty": 0
   },
