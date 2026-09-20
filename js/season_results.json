@@ -60,10 +60,10 @@
     "opponent": "Reggiana",
     "opponentClass": "reggiana",
     "isHome": false,
-    "score": "0-0",
+    "score": "0-1",
     "latinaScore": 0,
-    "opponentScore": 0,
-    "result": "T"
+    "opponentScore": 1,
+    "result": "P"
   },
   {
     "date": "26/09/2026",
