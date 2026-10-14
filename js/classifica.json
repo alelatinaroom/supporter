@@ -169,6 +169,20 @@
   },
   {
     "pos": 13,
+    "team": "Latina",
+    "teamClass": "latina",
+    "pts": 10,
+    "g": 9,
+    "v": 2,
+    "n": 4,
+    "p": 3,
+    "gf": 9,
+    "gs": 10,
+    "dr": -1,
+    "penalty": 0
+  },
+  {
+    "pos": 14,
     "team": "Ostia Mare",
     "teamClass": "ostiamare",
     "pts": 9,
@@ -182,31 +196,17 @@
     "penalty": 0
   },
   {
-    "pos": 14,
+    "pos": 15,
     "team": "Atalanta U23",
     "teamClass": "atalantau23",
     "pts": 9,
-    "g": 7,
+    "g": 8,
     "v": 3,
     "n": 0,
-    "p": 4,
+    "p": 5,
     "gf": 8,
-    "gs": 11,
-    "dr": -3,
-    "penalty": 0
-  },
-  {
-    "pos": 15,
-    "team": "Latina",
-    "teamClass": "latina",
-    "pts": 7,
-    "g": 8,
-    "v": 1,
-    "n": 4,
-    "p": 3,
-    "gf": 7,
-    "gs": 10,
-    "dr": -3,
+    "gs": 13,
+    "dr": -5,
     "penalty": 0
   },
   {
