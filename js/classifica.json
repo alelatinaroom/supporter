@@ -46,13 +46,13 @@
     "team": "Reggiana",
     "teamClass": "reggiana",
     "pts": 17,
-    "g": 9,
+    "g": 10,
     "v": 5,
     "n": 2,
-    "p": 2,
+    "p": 3,
     "gf": 14,
-    "gs": 7,
-    "dr": 7,
+    "gs": 9,
+    "dr": 5,
     "penalty": 0
   },
   {
@@ -197,6 +197,20 @@
   },
   {
     "pos": 15,
+    "team": "Pineto",
+    "teamClass": "pineto",
+    "pts": 11,
+    "g": 10,
+    "v": 2,
+    "n": 5,
+    "p": 3,
+    "gf": 8,
+    "gs": 11,
+    "dr": -3,
+    "penalty": 0
+  },
+  {
+    "pos": 16,
     "team": "Ostia Mare",
     "teamClass": "ostiamare",
     "pts": 9,
@@ -210,7 +224,7 @@
     "penalty": 0
   },
   {
-    "pos": 16,
+    "pos": 17,
     "team": "Pianese",
     "teamClass": "pianese",
     "pts": 8,
@@ -221,20 +235,6 @@
     "gf": 6,
     "gs": 10,
     "dr": -4,
-    "penalty": 0
-  },
-  {
-    "pos": 17,
-    "team": "Pineto",
-    "teamClass": "pineto",
-    "pts": 8,
-    "g": 9,
-    "v": 1,
-    "n": 5,
-    "p": 3,
-    "gf": 6,
-    "gs": 11,
-    "dr": -5,
     "penalty": 0
   },
   {
