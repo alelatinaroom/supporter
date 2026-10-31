@@ -43,6 +43,20 @@
   },
   {
     "pos": 4,
+    "team": "Reggiana",
+    "teamClass": "reggiana",
+    "pts": 20,
+    "g": 12,
+    "v": 6,
+    "n": 2,
+    "p": 4,
+    "gf": 16,
+    "gs": 11,
+    "dr": 5,
+    "penalty": 0
+  },
+  {
+    "pos": 5,
     "team": "Pescara",
     "teamClass": "pescara",
     "pts": 18,
@@ -56,7 +70,7 @@
     "penalty": 0
   },
   {
-    "pos": 5,
+    "pos": 6,
     "team": "Torres",
     "teamClass": "torres",
     "pts": 18,
@@ -67,20 +81,6 @@
     "gf": 13,
     "gs": 12,
     "dr": 1,
-    "penalty": 0
-  },
-  {
-    "pos": 6,
-    "team": "Reggiana",
-    "teamClass": "reggiana",
-    "pts": 17,
-    "g": 11,
-    "v": 5,
-    "n": 2,
-    "p": 4,
-    "gf": 14,
-    "gs": 11,
-    "dr": 3,
     "penalty": 0
   },
   {
@@ -214,13 +214,13 @@
     "team": "Sambenedettese",
     "teamClass": "sambenedettese",
     "pts": 10,
-    "g": 11,
+    "g": 12,
     "v": 2,
     "n": 4,
-    "p": 5,
+    "p": 6,
     "gf": 16,
-    "gs": 18,
-    "dr": -2,
+    "gs": 20,
+    "dr": -4,
     "penalty": 0
   },
   {
