@@ -137,10 +137,10 @@
     "opponent": "Torres",
     "opponentClass": "torres",
     "isHome": false,
-    "score": "0-0",
+    "score": "0-2",
     "latinaScore": 0,
-    "opponentScore": 0,
-    "result": "T"
+    "opponentScore": 2,
+    "result": "P"
   },
   {
     "date": "13/11/2026",
