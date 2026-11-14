@@ -116,17 +116,31 @@
     "team": "Campobasso",
     "teamClass": "campobasso",
     "pts": 19,
-    "g": 13,
+    "g": 14,
     "v": 5,
     "n": 4,
-    "p": 4,
+    "p": 5,
     "gf": 19,
-    "gs": 21,
-    "dr": -2,
+    "gs": 25,
+    "dr": -6,
     "penalty": 0
   },
   {
     "pos": 10,
+    "team": "Latina",
+    "teamClass": "latina",
+    "pts": 18,
+    "g": 14,
+    "v": 4,
+    "n": 6,
+    "p": 4,
+    "gf": 16,
+    "gs": 14,
+    "dr": 2,
+    "penalty": 0
+  },
+  {
+    "pos": 11,
     "team": "Atalanta U23",
     "teamClass": "atalantau23",
     "pts": 18,
@@ -140,7 +154,7 @@
     "penalty": 0
   },
   {
-    "pos": 11,
+    "pos": 12,
     "team": "Pineto",
     "teamClass": "pineto",
     "pts": 17,
@@ -154,7 +168,7 @@
     "penalty": 0
   },
   {
-    "pos": 12,
+    "pos": 13,
     "team": "Perugia",
     "teamClass": "perugia",
     "pts": 17,
@@ -168,7 +182,7 @@
     "penalty": 0
   },
   {
-    "pos": 13,
+    "pos": 14,
     "team": "Vado",
     "teamClass": "vado",
     "pts": 16,
@@ -182,7 +196,7 @@
     "penalty": 0
   },
   {
-    "pos": 14,
+    "pos": 15,
     "team": "Forlì",
     "teamClass": "forli",
     "pts": 15,
@@ -193,20 +207,6 @@
     "gf": 17,
     "gs": 18,
     "dr": -1,
-    "penalty": 0
-  },
-  {
-    "pos": 15,
-    "team": "Latina",
-    "teamClass": "latina",
-    "pts": 15,
-    "g": 13,
-    "v": 3,
-    "n": 6,
-    "p": 4,
-    "gf": 12,
-    "gs": 14,
-    "dr": -2,
     "penalty": 0
   },
   {
