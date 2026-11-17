@@ -43,6 +43,20 @@
   },
   {
     "pos": 4,
+    "team": "Torres",
+    "teamClass": "torres",
+    "pts": 25,
+    "g": 14,
+    "v": 7,
+    "n": 4,
+    "p": 3,
+    "gf": 16,
+    "gs": 12,
+    "dr": 4,
+    "penalty": 0
+  },
+  {
+    "pos": 5,
     "team": "Grosseto",
     "teamClass": "grosseto",
     "pts": 23,
@@ -53,20 +67,6 @@
     "gf": 28,
     "gs": 21,
     "dr": 7,
-    "penalty": 0
-  },
-  {
-    "pos": 5,
-    "team": "Torres",
-    "teamClass": "torres",
-    "pts": 22,
-    "g": 13,
-    "v": 6,
-    "n": 4,
-    "p": 3,
-    "gf": 15,
-    "gs": 12,
-    "dr": 3,
     "penalty": 0
   },
   {
@@ -172,13 +172,13 @@
     "team": "Perugia",
     "teamClass": "perugia",
     "pts": 17,
-    "g": 13,
+    "g": 14,
     "v": 5,
     "n": 2,
-    "p": 6,
+    "p": 7,
     "gf": 18,
-    "gs": 21,
-    "dr": -3,
+    "gs": 22,
+    "dr": -4,
     "penalty": 0
   },
   {
